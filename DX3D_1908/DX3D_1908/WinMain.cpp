@@ -26,7 +26,6 @@ int CALLBACK WinMain(
 
 	// Message Loop
 	MSG msg = { 0 };
-	BOOL msgResult;
 	while (WM_QUIT != msg.message)
 	{
 		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))

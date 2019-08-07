@@ -53,26 +53,23 @@ Graphics::Graphics(HWND hWnd)
 	}
 }
 
-Graphics::~Graphics()
-{
-	//if (gSwap) gSwap->Release();
-	//if (gCon) gCon->Release();
-	//if (gDev) gDev->Release();
-	//if (gRtv) gRtv->Release();
-
-}
-
 void Graphics::Render()
 {
+	// TIMER
+	float deltaT = 0.0f;
+	static ULONGLONG timeStart = 0;
+	ULONGLONG timeCur = GetTickCount64();
+	if (timeStart == 0)
+		timeStart = timeCur;
+	deltaT = (timeCur - timeStart) / 1000.0f;
 
 	// Clear Buffers
-	gCon->ClearRenderTargetView(gRtv.Get(), DirectX::Colors::MistyRose);
+	gCon->ClearRenderTargetView(gRtv.Get(), DirectX::Colors::DarkSeaGreen);
 
 	// Set Shaders and Draw
 	gCon->VSSetShader(gVertexShader.Get(), nullptr, 0u);
 	gCon->PSSetShader(gPixelShader.Get(), nullptr, 0u);
-	gCon->Draw((UINT)numVerts,0u);
-
+	gCon->Draw((UINT)numVerts, 0u);
 
 	// Present ""Finished"" buffer to screen
 	gSwap->Present(1u, 0u);
@@ -83,13 +80,18 @@ HRESULT Graphics::InitDevice()
 {
 	HRESULT hr;
 
-	Graphics::gVertex tri[6];
-	tri[0] = { -0.5f, 0.5f, 0.0f, 1.0f };
-	tri[1] = { 0.5f, 0.5f, 0.0f, 1.0f };
-	tri[2] = { -0.5f,-0.5f, 0.0f, 1.0f };
-	tri[3] = { -0.5f, -0.5f, 0.0f, 1.0f };
-	tri[4] = { 0.5f, 0.5f, 0.0f, 1.0f };
-	tri[5] = { 0.5f,-0.5f, 0.0f, 1.0f };
+
+	Graphics::gVertex tri[6] =
+	{
+		{XMFLOAT4(-0.5f, 0.5f, 0.0f, 1.0f)},
+		{XMFLOAT4(0.5f, 0.5f, 0.0f, 1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f, 0.0f, 1.0f)},
+		{XMFLOAT4(-0.5f, -0.5f, 0.0f, 1.0f)},
+		{XMFLOAT4(0.5f, 0.5f, 0.0f, 1.0f)},
+		{XMFLOAT4(0.5f,-0.5f, 0.0f, 1.0f)},
+
+	};
+
 	UINT array_size = ARRAYSIZE(tri);
 	numVerts = 6;
 
@@ -103,20 +105,26 @@ HRESULT Graphics::InitDevice()
 	buffdesc.StructureByteStride = sizeof(gVertex);
 	D3D11_SUBRESOURCE_DATA subData = {};
 	subData.pSysMem = tri;
-	hr = gDev->CreateBuffer(&buffdesc, &subData, vertBuffer.GetAddressOf());
+	hr = gDev->CreateBuffer(&buffdesc, &subData, gVertBuffer.GetAddressOf());
 	if (FAILED(hr))
+	{
 		ToolBox::ThrowErrorMsg("CreateBuffer Failed in DrawTriangle");
-	
+		return hr;
+	}
+
 	// bind vertex buffers to pipeline
 	const UINT strides = sizeof(gVertex);
 	const UINT offset = 0u;
-	gCon->IASetVertexBuffers(0u, 1u, vertBuffer.GetAddressOf(),&strides,&offset);
+	gCon->IASetVertexBuffers(0u, 1u, gVertBuffer.GetAddressOf(), &strides, &offset);
 
 	// create pixel shader
 	D3DReadFileToBlob(L"PixelShader.cso", &gBlob);
 	hr = gDev->CreatePixelShader(gBlob->GetBufferPointer(), gBlob->GetBufferSize(), nullptr, &gPixelShader);
 	if (FAILED(hr))
+	{
 		ToolBox::ThrowErrorMsg("CreatePixelShader Failed in DrawTriangle");
+		return hr;
+	}
 
 	// bind pixel shader
 	gCon->PSSetShader(gPixelShader.Get(), nullptr, 0u);
@@ -125,11 +133,13 @@ HRESULT Graphics::InitDevice()
 	D3DReadFileToBlob(L"VertexShader.cso", &gBlob);
 	hr = gDev->CreateVertexShader(gBlob->GetBufferPointer(), gBlob->GetBufferSize(), nullptr, &gVertexShader);
 	if (FAILED(hr))
+	{
 		ToolBox::ThrowErrorMsg("CreateVertexShader Failed in DrawTriangle");
+		return hr;
+	}
 
 	// bind vertex.
 	gCon->VSSetShader(gVertexShader.Get(), nullptr, 0u);
-
 
 	// input vertex layout
 	const D3D11_INPUT_ELEMENT_DESC ildes[] =
@@ -138,8 +148,10 @@ HRESULT Graphics::InitDevice()
 	};
 	hr = gDev->CreateInputLayout(ildes, (UINT)ARRAYSIZE(ildes), gBlob->GetBufferPointer(), gBlob->GetBufferSize(), &gInputLayout);
 	if (FAILED(hr))
+	{
 		ToolBox::ThrowErrorMsg("CreateInputLayout Failed in DrawTriangle");
-
+		return hr;
+	}
 	// bind vertex target
 	gCon->IASetInputLayout(gInputLayout.Get());
 
@@ -159,13 +171,5 @@ HRESULT Graphics::InitDevice()
 	vp.TopLeftY = 0;
 	gCon->RSSetViewports(1u, &vp);
 
-	float deltaT = 0.0f;
-	static ULONGLONG timeStart = 0;
-	ULONGLONG timeCur = GetTickCount64();
-	if (timeStart == 0)
-		timeStart = timeCur;
-	deltaT = (timeCur - timeStart) / 1000.0f;
-
-	gCon->Draw(array_size, 0u);
 	return hr;
 }
