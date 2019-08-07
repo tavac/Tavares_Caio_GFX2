@@ -66,9 +66,20 @@ void Graphics::Render()
 	// Clear Buffers
 	gCon->ClearRenderTargetView(gRtv.Get(), DirectX::Colors::DarkSeaGreen);
 
-	// Set Shaders and Draw
+	// Setup Constant buffers to be used in shaders.
+	gConstBuffer gCB;
+	gCB.gWorld = XMMatrixTranspose(globalWorld);
+	XMVECTOR tV = XMMatrixDeterminant(globalView);
+	XMMATRIX tM = XMMatrixInverse(&tV,globalView);
+	gCB.gView = XMMatrixTranspose(tM);
+	gCB.gProj = XMMatrixTranspose(globalProj);
+	gCon->UpdateSubresource(gConstantBuffer.Get(), 0, nullptr, &gCB, 0, 0);
+
+	// Set Shaders and Constant Buffer to Shader and Draw
 	gCon->VSSetShader(gVertexShader.Get(), nullptr, 0u);
+	//gCon->VSSetConstantBuffers();
 	gCon->PSSetShader(gPixelShader.Get(), nullptr, 0u);
+	//gCon->PSSetConstantBuffers();
 	gCon->Draw((UINT)numVerts, 0u);
 
 	// Present ""Finished"" buffer to screen
@@ -95,8 +106,18 @@ HRESULT Graphics::InitDevice()
 	UINT array_size = ARRAYSIZE(tri);
 	numVerts = 6;
 
-	// create vertex buffer
+	// create constant buffer
 	D3D11_BUFFER_DESC buffdesc = {};
+	buffdesc.Usage = D3D11_USAGE_DEFAULT;
+	buffdesc.ByteWidth = sizeof(gConstBuffer);
+	buffdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	buffdesc.CPUAccessFlags = 0;
+	hr = gDev->CreateBuffer(&buffdesc, nullptr, &gConstantBuffer);
+	if (FAILED(hr))
+		return hr;
+
+	// create vertex buffer
+	buffdesc = {};
 	buffdesc.Usage = D3D11_USAGE_DEFAULT;
 	buffdesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	buffdesc.CPUAccessFlags = 0u;
