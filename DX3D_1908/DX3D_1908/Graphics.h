@@ -20,6 +20,7 @@ private:
 	wrl::ComPtr<ID3D11RenderTargetView> gRtv = nullptr;
 	wrl::ComPtr<ID3D11InputLayout> gInputLayout = nullptr;
 	wrl::ComPtr<ID3D11Buffer> gConstantBuffer = nullptr;
+	wrl::ComPtr<ID3D11Buffer> gIndexBuffer = nullptr;
 	wrl::ComPtr<ID3D11VertexShader> gVertexShader = nullptr;
 	wrl::ComPtr<ID3D11Buffer> gVertBuffer = nullptr;
 	wrl::ComPtr<ID3D11PixelShader> gPixelShader = nullptr;
@@ -40,13 +41,13 @@ public:
 	};
 	// Setting up Matrices
 	XMMATRIX globalWorld = XMMatrixIdentity();
-	XMVECTOR Eye = XMVectorSet(0.0f, 4.0f, -10.0f, 0.0f);
+	XMVECTOR Eye = XMVectorSet(0.0f, 0.0f, -1.5f, 0.0f);
 	XMVECTOR At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	XMMATRIX tmpVw = XMMatrixLookAtLH(Eye, At, Up);
 	XMVECTOR detVw = XMMatrixDeterminant(tmpVw);
 	XMMATRIX globalView = XMMatrixInverse(&detVw, tmpVw);
-	XMMATRIX globalProj = XMMatrixPerspectiveFovLH(90.0f, 1280 / 720.0f, 0.1f, 1.0f);
+	XMMATRIX globalProj = XMMatrixPerspectiveFovLH(90.0f, 720.0f / 1280.0f, 0.1f, 20.0f);
 
 	int numVerts = 0;
 	HRESULT InitDevice();

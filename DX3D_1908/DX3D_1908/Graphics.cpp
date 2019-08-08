@@ -64,7 +64,7 @@ void Graphics::Render()
 	deltaT = (timeCur - timeStart) / 1000.0f;
 
 	// Clear Buffers
-	gCon->ClearRenderTargetView(gRtv.Get(), DirectX::Colors::DarkSeaGreen);
+	gCon->ClearRenderTargetView(gRtv.Get(), DirectX::Colors::Gray);
 
 	// Setup Constant buffers to be used in shaders.
 	gConstBuffer gCB;
@@ -77,9 +77,10 @@ void Graphics::Render()
 
 	// Set Shaders and Constant Buffer to Shader and Draw
 	gCon->VSSetShader(gVertexShader.Get(), nullptr, 0u);
-	//gCon->VSSetConstantBuffers();
+	gCon->VSSetConstantBuffers(0u,1u,gConstantBuffer.GetAddressOf());
 	gCon->PSSetShader(gPixelShader.Get(), nullptr, 0u);
-	//gCon->PSSetConstantBuffers();
+	gCon->PSSetConstantBuffers(0u,1u,gConstantBuffer.GetAddressOf());
+	//gCon->DrawIndexed(6u, 0u, 0u);
 	gCon->Draw((UINT)numVerts, 0u);
 
 	// Present ""Finished"" buffer to screen
@@ -94,20 +95,37 @@ HRESULT Graphics::InitDevice()
 
 	Graphics::gVertex tri[6] =
 	{
-		{XMFLOAT4(-0.5f, 0.5f, 0.0f, 1.0f)},
-		{XMFLOAT4(0.5f, 0.5f, 0.0f, 1.0f)},
-		{XMFLOAT4(-0.5f,-0.5f, 0.0f, 1.0f)},
-		{XMFLOAT4(-0.5f, -0.5f, 0.0f, 1.0f)},
-		{XMFLOAT4(0.5f, 0.5f, 0.0f, 1.0f)},
-		{XMFLOAT4(0.5f,-0.5f, 0.0f, 1.0f)},
+		{XMFLOAT4(-0.5f, 0.5f, 2.5f, 1.0f)},
+		{XMFLOAT4( 0.5f, 0.5f, 2.5f, 1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f, 2.5f, 1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f, 2.5f, 1.0f)},
+		{XMFLOAT4( 0.5f, 0.5f, 2.5f, 1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f, 2.5f, 1.0f)},
 
 	};
-
 	UINT array_size = ARRAYSIZE(tri);
 	numVerts = 6;
+	UINT tri_indices[] = // Indices for index buffer to draw multiple triangles
+	{
+		0,1,3,
+		3,1,2
+	};
+
+	// create index buffer
+	D3D11_BUFFER_DESC buffdesc = {};
+	buffdesc.Usage = D3D11_USAGE_DEFAULT;
+	buffdesc.ByteWidth = sizeof(UINT) * numVerts;
+	buffdesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	buffdesc.CPUAccessFlags = 0;
+	D3D11_SUBRESOURCE_DATA subIndiceData = {};
+	subIndiceData.pSysMem = tri_indices;
+	hr = gDev->CreateBuffer(&buffdesc, &subIndiceData, &gIndexBuffer);
+	if (FAILED(hr))
+		return hr;
+	gCon->IASetIndexBuffer(gIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
 
 	// create constant buffer
-	D3D11_BUFFER_DESC buffdesc = {};
+	buffdesc = {};
 	buffdesc.Usage = D3D11_USAGE_DEFAULT;
 	buffdesc.ByteWidth = sizeof(gConstBuffer);
 	buffdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;

@@ -1,6 +1,23 @@
-float4 main(float4 pos : POSITION) : SV_POSITION
+cbuffer constBuff : register(b0)
 {
-	pos.x = pos.x + 0.25f;
-	pos.y = pos.y - 0.25f;
-	return pos;
+	matrix vWorld;
+	matrix vView;
+	matrix vProj;
+	// lights and color floats
+}
+
+struct VS_Input
+{
+	float4 pos : POSITION;
+	// float4 norm;
+	// float4 color;
+};
+
+float4 main(VS_Input vsIn) : SV_POSITION
+{
+	VS_Input vsOut = (VS_Input)0;
+	vsOut.pos = mul(vsIn.pos, vWorld);
+	vsOut.pos = mul(vsOut.pos, vView);
+	vsOut.pos = mul(vsOut.pos, vProj);
+	return vsOut.pos;
 }
