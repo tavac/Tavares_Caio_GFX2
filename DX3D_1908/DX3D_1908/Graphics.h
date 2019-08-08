@@ -20,6 +20,7 @@ private:
 	wrl::ComPtr<ID3D11RenderTargetView> gRtv = nullptr;
 	wrl::ComPtr<ID3D11InputLayout> gInputLayout = nullptr;
 	wrl::ComPtr<ID3D11Buffer> gConstantBuffer = nullptr;
+	wrl::ComPtr<ID3D11Buffer> gLightBuffer = nullptr;
 	wrl::ComPtr<ID3D11Buffer> gIndexBuffer = nullptr;
 	wrl::ComPtr<ID3D11VertexShader> gVertexShader = nullptr;
 	wrl::ComPtr<ID3D11Buffer> gVertBuffer = nullptr;
@@ -28,17 +29,22 @@ private:
 public:
 	struct gVertex
 	{
-		XMFLOAT4 Pos;
-		//DirectX::XMFLOAT4 Norm;
-		XMFLOAT4 Color;
+		XMFLOAT4 pos;
+		XMFLOAT4 norm;
+		XMFLOAT4 color;
 	};
-	struct gConstBuffer
+	struct gConstantBuff
 	{
-		XMMATRIX gWorld;
-		XMMATRIX gView;
-		XMMATRIX gProj;
+		XMMATRIX world;
+		XMMATRIX view;
+		XMMATRIX proj;
 		// Lights and such
-		XMFLOAT4 gAmbLight;
+		XMFLOAT4 ambientLight;
+	};
+	struct gLightBuff
+	{
+		XMFLOAT4 pos;
+		XMFLOAT4 color;
 	};
 	// Setting up Matrices
 	XMMATRIX globalWorld = XMMatrixIdentity();
