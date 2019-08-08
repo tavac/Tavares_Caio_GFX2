@@ -93,18 +93,65 @@ HRESULT Graphics::InitDevice()
 	HRESULT hr;
 
 
-	Graphics::gVertex tri[6] =
+	//Graphics::gVertex tri[6] =
+	//{
+	//	{XMFLOAT4(-0.5f, 0.5f, 0.0f, 1.0f)},
+	//	{XMFLOAT4( 0.5f, 0.5f, 0.0f, 1.0f)},
+	//	{XMFLOAT4(-0.5f,-0.5f, 0.0f, 1.0f)},
+	//	{XMFLOAT4(-0.5f,-0.5f, 0.0f, 1.0f)},
+	//	{XMFLOAT4( 0.5f, 0.5f, 0.0f, 1.0f)},
+	//	{XMFLOAT4( 0.5f,-0.5f, 0.0f, 1.0f)},
+
+	//};
+	//UINT array_size = ARRAYSIZE(tri);
+	Graphics::gVertex cube[36] =
 	{
-		{XMFLOAT4(-0.5f, 0.5f, 2.5f, 1.0f)},
-		{XMFLOAT4( 0.5f, 0.5f, 2.5f, 1.0f)},
-		{XMFLOAT4(-0.5f,-0.5f, 2.5f, 1.0f)},
-		{XMFLOAT4(-0.5f,-0.5f, 2.5f, 1.0f)},
-		{XMFLOAT4( 0.5f, 0.5f, 2.5f, 1.0f)},
-		{XMFLOAT4( 0.5f,-0.5f, 2.5f, 1.0f)},
+		// Front
+		{XMFLOAT4(-1.5f, 1.5f, 1.5f, 1.0f)},
+		{XMFLOAT4( 1.5f, 1.5f, 1.5f, 1.0f)},
+		{XMFLOAT4(-1.5f,-1.5f, 1.5f, 1.0f)},
+		{XMFLOAT4(-1.5f,-1.5f, 1.5f, 1.0f)},
+		{XMFLOAT4( 1.5f, 1.5f, 1.5f, 1.0f)},
+		{XMFLOAT4( 1.5f,-1.5f, 1.5f, 1.0f)},
+		// Back		1 1
+		{XMFLOAT4(-1.5f, 1.5f, 2.5f, 1.0f)},
+		{XMFLOAT4( 1.5f, 1.5f, 2.5f, 1.0f)},
+		{XMFLOAT4(-1.5f,-1.5f, 2.5f, 1.0f)},
+		{XMFLOAT4(-1.5f,-1.5f, 2.5f, 1.0f)},
+		{XMFLOAT4( 1.5f, 1.5f, 2.5f, 1.0f)},
+		{XMFLOAT4( 1.5f,-1.5f, 2.5f, 1.0f)},
+		// Right	1 1
+		{XMFLOAT4( 1.5f, 1.5f, 1.5f, 1.0f)},
+		{XMFLOAT4( 1.5f, 1.5f, 2.5f, 1.0f)},
+		{XMFLOAT4( 1.5f,-1.5f, 1.5f, 1.0f)},
+		{XMFLOAT4( 1.5f,-1.5f, 1.5f, 1.0f)},
+		{XMFLOAT4( 1.5f, 1.5f, 2.5f, 1.0f)},
+		{XMFLOAT4( 1.5f,-1.5f, 2.5f, 1.0f)},
+		// Left		1 1
+		{XMFLOAT4(-1.5f, 1.5f, 2.5f, 1.0f)},
+		{XMFLOAT4(-1.5f, 1.5f, 1.5f, 1.0f)},
+		{XMFLOAT4(-1.5f,-1.5f, 2.5f, 1.0f)},
+		{XMFLOAT4(-1.5f,-1.5f, 2.5f, 1.0f)},
+		{XMFLOAT4(-1.5f, 1.5f, 1.5f, 1.0f)},
+		{XMFLOAT4(-1.5f,-1.5f, 1.5f, 1.0f)},
+		// Top		1 1
+		{XMFLOAT4(-1.5f, 1.5f, 2.5f, 1.0f)},
+		{XMFLOAT4( 1.5f, 1.5f, 2.5f, 1.0f)},
+		{XMFLOAT4(-1.5f, 1.5f, 1.5f, 1.0f)},
+		{XMFLOAT4(-1.5f, 1.5f, 1.5f, 1.0f)},
+		{XMFLOAT4( 1.5f, 1.5f, 2.5f, 1.0f)},
+		{XMFLOAT4( 1.5f, 1.5f, 1.5f, 1.0f)},
+		// Bot		1 1
+		{XMFLOAT4(-1.5f,-1.5f, 1.5f, 1.0f)},
+		{XMFLOAT4( 1.5f,-1.5f, 1.5f, 1.0f)},
+		{XMFLOAT4(-1.5f,-1.5f, 2.5f, 1.0f)},
+		{XMFLOAT4(-1.5f,-1.5f, 2.5f, 1.0f)},
+		{XMFLOAT4( 1.5f,-1.5f, 1.5f, 1.0f)},
+		{XMFLOAT4( 1.5f,-1.5f, 2.5f, 1.0f)},
 
 	};
-	UINT array_size = ARRAYSIZE(tri);
-	numVerts = 6;
+	UINT array_size = ARRAYSIZE(cube);
+	numVerts = array_size;
 	UINT tri_indices[] = // Indices for index buffer to draw multiple triangles
 	{
 		0,1,3,
@@ -113,16 +160,16 @@ HRESULT Graphics::InitDevice()
 
 	// create index buffer
 	D3D11_BUFFER_DESC buffdesc = {};
-	buffdesc.Usage = D3D11_USAGE_DEFAULT;
-	buffdesc.ByteWidth = sizeof(UINT) * numVerts;
-	buffdesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	buffdesc.CPUAccessFlags = 0;
-	D3D11_SUBRESOURCE_DATA subIndiceData = {};
-	subIndiceData.pSysMem = tri_indices;
-	hr = gDev->CreateBuffer(&buffdesc, &subIndiceData, &gIndexBuffer);
-	if (FAILED(hr))
-		return hr;
-	gCon->IASetIndexBuffer(gIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+	//buffdesc.Usage = D3D11_USAGE_DEFAULT;
+	//buffdesc.ByteWidth = sizeof(UINT) * array_size;
+	//buffdesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	//buffdesc.CPUAccessFlags = 0;
+	//D3D11_SUBRESOURCE_DATA subIndiceData = {};
+	//subIndiceData.pSysMem = tri_indices;
+	//hr = gDev->CreateBuffer(&buffdesc, &subIndiceData, &gIndexBuffer);
+	//if (FAILED(hr))
+	//	return hr;
+	//gCon->IASetIndexBuffer(gIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
 
 	// create constant buffer
 	buffdesc = {};
@@ -143,7 +190,7 @@ HRESULT Graphics::InitDevice()
 	buffdesc.ByteWidth = sizeof(gVertex) * array_size;
 	buffdesc.StructureByteStride = sizeof(gVertex);
 	D3D11_SUBRESOURCE_DATA subData = {};
-	subData.pSysMem = tri;
+	subData.pSysMem = cube;
 	hr = gDev->CreateBuffer(&buffdesc, &subData, gVertBuffer.GetAddressOf());
 	if (FAILED(hr))
 	{
