@@ -74,56 +74,56 @@ HRESULT Graphics::InitDevice()
 	Graphics::gVertex cube[36] =
 	{
 		// Front
-		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f)},
-		{XMFLOAT4( 0.5f, 0.5f,-0.5f, 1.0f)},
-		{XMFLOAT4(-0.5f,-0.5f,-0.5f, 1.0f)},
-		{XMFLOAT4(-0.5f,-0.5f,-0.5f, 1.0f)},
-		{XMFLOAT4( 0.5f, 0.5f,-0.5f, 1.0f)},
-		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f)},
-		// Back		1 1	 0
-		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f)},
-		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f)},
-		{XMFLOAT4( 0.5f,-0.5f, 0.5f, 1.0f)},
-		{XMFLOAT4( 0.5f,-0.5f, 0.5f, 1.0f)},
-		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f)},
-		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f)},
-		// Right	1 1	 0
-		{XMFLOAT4( 0.5f, 0.5f,-0.5f, 1.0f)},
-		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f)},
-		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f)},
-		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f)},
-		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f)},
-		{XMFLOAT4( 0.5f,-0.5f, 0.5f, 1.0f)},
-		// Left		1 1	 0
-		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f)},
-		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f)},
-		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f)},
-		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f)},
-		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f)},
-		{XMFLOAT4(-0.5f,-0.5f,-0.5f, 1.0f)},
-		// Top		1 1	 0
-		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f)},
-		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f)},
-		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f)},
-		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f)},
-		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f)},
-		{XMFLOAT4( 0.5f, 0.5f,-0.5f, 1.0f)},
-		// Bot		1 1	 0
-		{XMFLOAT4(-0.5f,-0.5f,-0.5f, 1.0f)},
-		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f)},
-		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f)},
-		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f)},
-		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f)},
-		{XMFLOAT4( 0.5f,-0.5f, 0.5f, 1.0f)},
+		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4( 0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4( 0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		// Back										0.95  0.85  0.95
+		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		// Right									0.95  0.85  0.95
+		{XMFLOAT4( 0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		// Left										0.95  0.85  0.95
+		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		// Top										0.95  0.85  0.95
+		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4( 0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		// Bot										0.95  0.85  0.95
+		{XMFLOAT4(-0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
 
 	};
 	UINT array_size = ARRAYSIZE(cube);
 	numVerts = array_size;
-	UINT tri_indices[] = // Indices for index buffer to draw multiple triangles
-	{
-		0,1,3,
-		3,1,2
-	};
+	//UINT tri_indices[] = // Indices for index buffer to draw multiple triangles
+	//{
+	//	0,1,3,
+	//	3,1,2
+	//};
 
 	// create index buffer
 	D3D11_BUFFER_DESC buffdesc = {};
@@ -197,7 +197,8 @@ HRESULT Graphics::InitDevice()
 	// input vertex layout
 	const D3D11_INPUT_ELEMENT_DESC ildes[] =
 	{
-		{"POSITION",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0}
+		{"POSITION",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
+		{"COLOR",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 	};
 	hr = gDev->CreateInputLayout(ildes, (UINT)ARRAYSIZE(ildes), gBlob->GetBufferPointer(), gBlob->GetBufferSize(), &gInputLayout);
 	if (FAILED(hr))
@@ -244,12 +245,12 @@ void Graphics::Render()
 	gConstBuffer gCB;
 	gCB.gWorld = XMMatrixTranslation(0.0f, 0.0f, 2.0f);
 	gCB.gWorld = XMMatrixRotationAxis({ 1,1,0 }, deltaT);
-	
 	gCB.gWorld = XMMatrixTranspose(gCB.gWorld);
 	XMVECTOR tV = XMMatrixDeterminant(globalView);
 	XMMATRIX tM = XMMatrixInverse(&tV,globalView);
 	gCB.gView = XMMatrixTranspose(tM);
 	gCB.gProj = XMMatrixTranspose(globalProj);
+	gCB.gAmbLight = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
 	gCon->UpdateSubresource(gConstantBuffer.Get(), 0, nullptr, &gCB, 0, 0);
 
 	// Set Shaders and Constant Buffer to Shader and Draw

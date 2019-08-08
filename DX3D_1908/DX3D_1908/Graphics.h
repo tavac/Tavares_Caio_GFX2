@@ -30,7 +30,7 @@ public:
 	{
 		XMFLOAT4 Pos;
 		//DirectX::XMFLOAT4 Norm;
-		//DirectX::XMFLOAT4 Color;
+		XMFLOAT4 Color;
 	};
 	struct gConstBuffer
 	{
@@ -38,16 +38,17 @@ public:
 		XMMATRIX gView;
 		XMMATRIX gProj;
 		// Lights and such
+		XMFLOAT4 gAmbLight;
 	};
 	// Setting up Matrices
 	XMMATRIX globalWorld = XMMatrixIdentity();
-	XMVECTOR Eye = XMVectorSet(0.0f, 2.0f, -3.0f, 0.0f);
-	XMVECTOR At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	XMVECTOR Eye = XMVectorSet(0.0f, 0.5f, -3.0f, 0.0f);
+	XMVECTOR At = XMVectorSet(0.0f,  0.0f, 0.0f, 0.0f);
 	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	XMMATRIX tmpVw = XMMatrixLookAtLH(Eye, At, Up);
 	XMVECTOR detVw = XMMatrixDeterminant(tmpVw);
 	XMMATRIX globalView = XMMatrixInverse(&detVw, tmpVw);
-	XMMATRIX globalProj = XMMatrixPerspectiveFovLH((90.0f*(3.1415f / 180.0f)), 720.0f / 1280.0f, 0.01f, 10.0f);
+	XMMATRIX globalProj = XMMatrixPerspectiveFovLH((90.0f*(3.1415f / 180.0f)), 1280.0f / 720.0f, 0.01f, 10.0f);
 
 	int numVerts = 0;
 	HRESULT InitDevice();
