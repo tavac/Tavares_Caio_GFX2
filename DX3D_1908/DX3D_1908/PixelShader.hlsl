@@ -8,5 +8,5 @@ struct PS_Input
 float4 main(PS_Input psIn) : SV_Target
 {
 
-	return float4(1.0f,0.25f,0.67f,1.0f);
+	return float4(1.0f,1.0f,1.0f,1.0f);
 }

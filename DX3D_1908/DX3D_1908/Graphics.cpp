@@ -53,39 +53,6 @@ Graphics::Graphics(HWND hWnd)
 	}
 }
 
-void Graphics::Render()
-{
-	// TIMER
-	float deltaT = 0.0f;
-	static ULONGLONG timeStart = 0;
-	ULONGLONG timeCur = GetTickCount64();
-	if (timeStart == 0)
-		timeStart = timeCur;
-	deltaT = (timeCur - timeStart) / 1000.0f;
-
-	// Clear Buffers
-	gCon->ClearRenderTargetView(gRtv.Get(), DirectX::Colors::Gray);
-
-	// Setup Constant buffers to be used in shaders.
-	gConstBuffer gCB;
-	gCB.gWorld = XMMatrixTranspose(globalWorld);
-	XMVECTOR tV = XMMatrixDeterminant(globalView);
-	XMMATRIX tM = XMMatrixInverse(&tV,globalView);
-	gCB.gView = XMMatrixTranspose(tM);
-	gCB.gProj = XMMatrixTranspose(globalProj);
-	gCon->UpdateSubresource(gConstantBuffer.Get(), 0, nullptr, &gCB, 0, 0);
-
-	// Set Shaders and Constant Buffer to Shader and Draw
-	gCon->VSSetShader(gVertexShader.Get(), nullptr, 0u);
-	gCon->VSSetConstantBuffers(0u,1u,gConstantBuffer.GetAddressOf());
-	gCon->PSSetShader(gPixelShader.Get(), nullptr, 0u);
-	gCon->PSSetConstantBuffers(0u,1u,gConstantBuffer.GetAddressOf());
-	//gCon->DrawIndexed(6u, 0u, 0u);
-	gCon->Draw((UINT)numVerts, 0u);
-
-	// Present ""Finished"" buffer to screen
-	gSwap->Present(1u, 0u);
-}
 
 
 HRESULT Graphics::InitDevice()
@@ -107,47 +74,47 @@ HRESULT Graphics::InitDevice()
 	Graphics::gVertex cube[36] =
 	{
 		// Front
-		{XMFLOAT4(-1.5f, 1.5f, 1.5f, 1.0f)},
-		{XMFLOAT4( 1.5f, 1.5f, 1.5f, 1.0f)},
-		{XMFLOAT4(-1.5f,-1.5f, 1.5f, 1.0f)},
-		{XMFLOAT4(-1.5f,-1.5f, 1.5f, 1.0f)},
-		{XMFLOAT4( 1.5f, 1.5f, 1.5f, 1.0f)},
-		{XMFLOAT4( 1.5f,-1.5f, 1.5f, 1.0f)},
-		// Back		1 1
-		{XMFLOAT4(-1.5f, 1.5f, 2.5f, 1.0f)},
-		{XMFLOAT4( 1.5f, 1.5f, 2.5f, 1.0f)},
-		{XMFLOAT4(-1.5f,-1.5f, 2.5f, 1.0f)},
-		{XMFLOAT4(-1.5f,-1.5f, 2.5f, 1.0f)},
-		{XMFLOAT4( 1.5f, 1.5f, 2.5f, 1.0f)},
-		{XMFLOAT4( 1.5f,-1.5f, 2.5f, 1.0f)},
-		// Right	1 1
-		{XMFLOAT4( 1.5f, 1.5f, 1.5f, 1.0f)},
-		{XMFLOAT4( 1.5f, 1.5f, 2.5f, 1.0f)},
-		{XMFLOAT4( 1.5f,-1.5f, 1.5f, 1.0f)},
-		{XMFLOAT4( 1.5f,-1.5f, 1.5f, 1.0f)},
-		{XMFLOAT4( 1.5f, 1.5f, 2.5f, 1.0f)},
-		{XMFLOAT4( 1.5f,-1.5f, 2.5f, 1.0f)},
-		// Left		1 1
-		{XMFLOAT4(-1.5f, 1.5f, 2.5f, 1.0f)},
-		{XMFLOAT4(-1.5f, 1.5f, 1.5f, 1.0f)},
-		{XMFLOAT4(-1.5f,-1.5f, 2.5f, 1.0f)},
-		{XMFLOAT4(-1.5f,-1.5f, 2.5f, 1.0f)},
-		{XMFLOAT4(-1.5f, 1.5f, 1.5f, 1.0f)},
-		{XMFLOAT4(-1.5f,-1.5f, 1.5f, 1.0f)},
-		// Top		1 1
-		{XMFLOAT4(-1.5f, 1.5f, 2.5f, 1.0f)},
-		{XMFLOAT4( 1.5f, 1.5f, 2.5f, 1.0f)},
-		{XMFLOAT4(-1.5f, 1.5f, 1.5f, 1.0f)},
-		{XMFLOAT4(-1.5f, 1.5f, 1.5f, 1.0f)},
-		{XMFLOAT4( 1.5f, 1.5f, 2.5f, 1.0f)},
-		{XMFLOAT4( 1.5f, 1.5f, 1.5f, 1.0f)},
-		// Bot		1 1
-		{XMFLOAT4(-1.5f,-1.5f, 1.5f, 1.0f)},
-		{XMFLOAT4( 1.5f,-1.5f, 1.5f, 1.0f)},
-		{XMFLOAT4(-1.5f,-1.5f, 2.5f, 1.0f)},
-		{XMFLOAT4(-1.5f,-1.5f, 2.5f, 1.0f)},
-		{XMFLOAT4( 1.5f,-1.5f, 1.5f, 1.0f)},
-		{XMFLOAT4( 1.5f,-1.5f, 2.5f, 1.0f)},
+		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f)},
+		{XMFLOAT4( 0.5f, 0.5f,-0.5f, 1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f,-0.5f, 1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f,-0.5f, 1.0f)},
+		{XMFLOAT4( 0.5f, 0.5f,-0.5f, 1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f)},
+		// Back		1 1	 0
+		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f)},
+		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f, 0.5f, 1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f, 0.5f, 1.0f)},
+		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f)},
+		// Right	1 1	 0
+		{XMFLOAT4( 0.5f, 0.5f,-0.5f, 1.0f)},
+		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f)},
+		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f, 0.5f, 1.0f)},
+		// Left		1 1	 0
+		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f)},
+		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f)},
+		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f,-0.5f, 1.0f)},
+		// Top		1 1	 0
+		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f)},
+		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f)},
+		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f)},
+		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f)},
+		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f)},
+		{XMFLOAT4( 0.5f, 0.5f,-0.5f, 1.0f)},
+		// Bot		1 1	 0
+		{XMFLOAT4(-0.5f,-0.5f,-0.5f, 1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f, 0.5f, 1.0f)},
 
 	};
 	UINT array_size = ARRAYSIZE(cube);
@@ -258,4 +225,41 @@ HRESULT Graphics::InitDevice()
 	gCon->RSSetViewports(1u, &vp);
 
 	return hr;
+}
+
+void Graphics::Render()
+{
+	// TIMER
+	float deltaT = 0.0f;
+	static ULONGLONG timeStart = 0;
+	ULONGLONG timeCur = GetTickCount64();
+	if (timeStart == 0)
+		timeStart = timeCur;
+	deltaT = (timeCur - timeStart) / 1000.0f;
+
+	// Clear Buffers
+	gCon->ClearRenderTargetView(gRtv.Get(), DirectX::Colors::Black);
+
+	// Setup Constant buffers to be used in shaders.
+	gConstBuffer gCB;
+	gCB.gWorld = XMMatrixTranslation(0.0f, 0.0f, 2.0f);
+	gCB.gWorld = XMMatrixRotationAxis({ 1,1,0 }, deltaT);
+	
+	gCB.gWorld = XMMatrixTranspose(gCB.gWorld);
+	XMVECTOR tV = XMMatrixDeterminant(globalView);
+	XMMATRIX tM = XMMatrixInverse(&tV,globalView);
+	gCB.gView = XMMatrixTranspose(tM);
+	gCB.gProj = XMMatrixTranspose(globalProj);
+	gCon->UpdateSubresource(gConstantBuffer.Get(), 0, nullptr, &gCB, 0, 0);
+
+	// Set Shaders and Constant Buffer to Shader and Draw
+	gCon->VSSetShader(gVertexShader.Get(), nullptr, 0u);
+	gCon->VSSetConstantBuffers(0u,1u,gConstantBuffer.GetAddressOf());
+	gCon->PSSetShader(gPixelShader.Get(), nullptr, 0u);
+	gCon->PSSetConstantBuffers(0u,1u,gConstantBuffer.GetAddressOf());
+	//gCon->DrawIndexed(6u, 0u, 0u);
+	gCon->Draw((UINT)numVerts, 0u);
+
+	// Present ""Finished"" buffer to screen
+	gSwap->Present(1u, 0u);
 }
