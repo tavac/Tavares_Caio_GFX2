@@ -16,17 +16,21 @@ void ToolBox::ThrowErrorMsg(const char* ErrMsg)
 
 std::string ToolBox::CommandProcesser(std::string command)
 {
+	std::string rtn;
 	if (command.substr(0, 3) == "gc ")
 	{
-		//for(int i = 0; i < 3; i++) command.;
-		// return command
-		return command;
+		for (UINT s = 3; s < (UINT)command.size(); s++)
+			rtn.push_back(command.at(s));
+	}
+	else if (command.substr(0, 3) == "cls")
+	{
+		rtn = command.substr(0, 3);
 	}
 	else
 	{
-		command = "";
-		return command;
+		rtn = "";
 	}
+		return rtn;
 
 
 	//if string is this

@@ -17,14 +17,14 @@ struct VS_Input
 {
 	float4 pos : POSITION;
 	float4 norm : NORMAL0;
-	float4 color : COLOR0;
+	float2 uv : TEXCOORD0;
 };
 
 struct VS_Output
 {
 	float4 pos : SV_POSITION;
 	float4 norm : NORMAL0;
-	float4 color : COLOR0;
+	float2 uv : TEXCOORD0;
 };
 
 VS_Output main(VS_Input vsIn)
@@ -34,6 +34,6 @@ VS_Output main(VS_Input vsIn)
 	vsOut.norm = mul(vsIn.norm, vWorld);
 	vsOut.pos = mul(vsOut.pos, vView);
 	vsOut.pos = mul(vsOut.pos, vProj);
-	vsOut.color = vsIn.color;
+	vsOut.uv = vsIn.uv;
 	return vsOut;
 }

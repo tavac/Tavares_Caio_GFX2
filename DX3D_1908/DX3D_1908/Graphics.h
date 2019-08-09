@@ -2,6 +2,10 @@
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <DirectXColors.h>
+#include <fbxsdk.h>
+#include <vector>
+#include "DDSTextureLoader.h"
+
 using namespace DirectX;
 
 namespace wrl = Microsoft::WRL;
@@ -12,7 +16,11 @@ public:
 	Graphics(const Graphics&) = delete;
 	Graphics& operator=(const Graphics&) = delete;
 	~Graphics() = default;
+	HRESULT InitDevice();
 	void Render();
+	void ProcessFBXMesh(FbxNode* Node);
+	void LoadUVFromFBX(FbxMesh* pMesh, std::vector<XMFLOAT2>* pVecUV);
+	void TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode);
 private:
 	wrl::ComPtr<ID3D11Device> gDev = nullptr;
 	wrl::ComPtr<IDXGISwapChain> gSwap = nullptr;
@@ -26,13 +34,27 @@ private:
 	wrl::ComPtr<ID3D11Buffer> gVertBuffer = nullptr;
 	wrl::ComPtr<ID3D11PixelShader> gPixelShader = nullptr;
 	wrl::ComPtr<ID3DBlob> gBlob = nullptr;
+	wrl::ComPtr<ID3D11ShaderResourceView> shaderRV = nullptr;
+	wrl::ComPtr<ID3D11SamplerState> smplrState = nullptr;
 public:
 	struct gVertex
 	{
 		XMFLOAT4 pos;
 		XMFLOAT4 norm;
-		XMFLOAT4 color;
+		XMFLOAT2 uv;
 	};
+	// Mesh Variables
+	struct gMesh
+	{
+		gVertex* verts = nullptr;
+		int numVertices = 0;
+		int* indices;
+		int numIndices = 0;
+		float scale = 5.0f;
+	};
+	gMesh* meshes;
+	gMesh mesh_1;
+
 	struct gConstantBuff
 	{
 		XMMATRIX world;
@@ -41,21 +63,35 @@ public:
 		// Lights and such
 		XMFLOAT4 ambientLight;
 	};
+#pragma region Lights
 	struct gDirLightBuff
 	{
 		XMFLOAT4 dir;
 		XMFLOAT4 color;
 	};
+	gDirLightBuff gDirectional_1 = {};
+#pragma endregion
 	// Setting up Matrices
 	XMMATRIX globalWorld = XMMatrixIdentity();
-	XMVECTOR Eye = XMVectorSet(0.0f, 0.5f, -3.0f, 0.0f);
-	XMVECTOR At = XMVectorSet(0.0f,  0.0f, 0.0f, 0.0f);
+	XMVECTOR Eye = XMVectorSet(0.0f, 0.5f, -10.0f, 0.0f);
+	XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	XMMATRIX tmpVw = XMMatrixLookAtLH(Eye, At, Up);
 	XMVECTOR detVw = XMMatrixDeterminant(tmpVw);
 	XMMATRIX globalView = XMMatrixInverse(&detVw, tmpVw);
-	XMMATRIX globalProj = XMMatrixPerspectiveFovLH((90.0f*(3.1415f / 180.0f)), 1280.0f / 720.0f, 0.01f, 10.0f);
+	XMMATRIX globalProj = XMMatrixPerspectiveFovLH((90.0f * (3.1415f / 180.0f)), 1280.0f / 720.0f, 0.01f, 100.0f);
 
-	int numVerts = 0;
-	HRESULT InitDevice();
+	// Win32 + DirectX = gobeldegooks
+	void CameraMoveInOut(float loc_z);
+	void CameraMoveLR(WPARAM key);
+	enum DirLightComs
+	{
+		DirectionLight_Default,
+		DirectionLight_Red,
+		DirectionLight_Green,
+		DirectionLight_Blue,
+		DirectionLight_Off,
+	};
+	DirLightComs LightState = DirectionLight_Default;
+	bool DirectionLightSwitch(DirLightComs cmd);
 };

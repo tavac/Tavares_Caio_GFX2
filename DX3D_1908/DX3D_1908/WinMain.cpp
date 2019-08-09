@@ -6,13 +6,18 @@
 
 #pragma region Variables
 WNDCLASSEX WndCls;
+HWND hWnd;
+std::string winTitle = "Hit 'TAB' to enter command, Execute with 'ENTER'";
+Graphics* Gfx = nullptr;
 std::string strIB;
+bool isTyping = false;
 #pragma endregion
 
 #pragma region ForwardDeclarations
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 WNDCLASSEX Init_WindowClass(const char* _className, HINSTANCE _hInst);
 HWND Init_Window(int _width, int _height, std::string _title, WNDCLASSEX* _WndClass);
+bool DirLight_ComProc(std::string s);
 #pragma endregion
 
 int CALLBACK WinMain(
@@ -23,15 +28,16 @@ int CALLBACK WinMain(
 {
 
 	WNDCLASSEX wc = Init_WindowClass("WndClassEX", hInstance);
-	HWND hWnd = Init_Window(1280, 720, "DirectX11 Window", &wc);
-	Graphics* Gfx = new Graphics(hWnd);
+	hWnd = Init_Window(1280, 720, winTitle, &wc);
+
+	Gfx = new Graphics(hWnd);
 	Gfx->InitDevice();
 
 	// Message Loop
 	MSG msg = { 0 };
 	while (WM_QUIT != msg.message)
 	{
-		
+
 		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{
 			TranslateMessage(&msg);
@@ -44,7 +50,11 @@ int CALLBACK WinMain(
 	}
 
 	// CLEAN UP
-	delete Gfx;
+	if (Gfx != nullptr)
+	{
+		delete Gfx;
+		Gfx = nullptr;
+	}
 	ToolBox::CleanUp(&hWnd);
 
 	return msg.wParam;
@@ -59,37 +69,44 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 	case VK_RETURN:
 	{
-		
+
 	}
-		break;
+	break;
 	case WM_CHAR: // TranslateMessage(); processes WM_CHAR allow for easy key input.
 	{
-		// send strIB to string processor
-		if (wParam == VK_RETURN)
+		if (wParam == VK_TAB || isTyping)
 		{
-			if ((strIB = ToolBox::CommandProcesser(strIB)) != "")
+			if (!isTyping)
 			{
-					OutputDebugString(strIB.c_str());
-				if (strIB == "grow")
-				{
-					hWnd = Init_Window(1920, 1080, "NEW WINDOW", &WndCls);
-				}
-				/*OutputDebugString("BALLER!!!");
-				if (strIB.size() == 0)
-					OutputDebugString("Cleared");*/
+				isTyping = true;
+				break;
 			}
-			strIB = "";
+			// "Enter" to send strIB to string processor
+			if (wParam == VK_RETURN)
+			{
+				if ((strIB = ToolBox::CommandProcesser(strIB)) != "")
+				{
+					if (strIB == "cls")
+					{
+						PostQuitMessage(0);
+						isTyping = false;
+					}
+					//else if (strIB.substr(0,6) == "alight")
+					else if (strIB.substr(0, 6) == "dlight")
+					{
+						DirLight_ComProc(strIB);
+						isTyping = false;
+					}
+				}
+				strIB = "";
+				SetWindowText(hWnd, winTitle.c_str());
+				break;
+			}
+			// While Typing...
+			strIB.push_back((char)wParam);
 			SetWindowText(hWnd, strIB.c_str());
-			break;
 		}
-		strIB.push_back((char)wParam);
-		//SetActiveWindow(hWnd);
-		//Iss << mySin.push_back((char)wParam);
 
-
-		/*static std::string title;
-		title.push_back((char)wParam);*/
-		SetWindowText(hWnd, strIB.c_str());
 	}
 	break;
 	case WM_LBUTTONDOWN: // Left Click to get coordinate of raster where (0,0) is top left.
@@ -103,16 +120,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	break;
 	case WM_MOUSEWHEEL:
 	{
-		if (GET_WHEEL_DELTA_WPARAM(wParam) > 0)
-		{
-			// mouse wheel forward/up ie:zoom in
-			OutputDebugString("Zoom IN");
-		}
-		else if (GET_WHEEL_DELTA_WPARAM(wParam) < 0)
-		{
-			// mouse wheel back/down ie:zoom out
-			OutputDebugString("Zoom OUT");
-		}
+		Gfx->CameraMoveInOut(GET_WHEEL_DELTA_WPARAM(wParam) * 0.0001f);
 	}
 	break;
 	}
@@ -163,4 +171,36 @@ HWND Init_Window(int _width, int _height, std::string _title, WNDCLASSEX* _WndCl
 	// Draw hWnd.
 	ShowWindow(hWnd, SW_SHOW);
 	return hWnd;
+}
+
+bool DirLight_ComProc(std::string s)
+{
+	bool rtn;
+	if (strIB == "dlight red")
+	{
+		Gfx->LightState = Graphics::DirectionLight_Red;
+		rtn = true;
+	}
+	else if (strIB == "dlight green")
+	{
+		Gfx->LightState = Graphics::DirectionLight_Green;
+		rtn = true;
+	}
+	else if (strIB == "dlight blue")
+	{
+		Gfx->LightState = Graphics::DirectionLight_Blue;
+		rtn = true;
+	}
+	else if (strIB == "dlight reset")
+	{
+		Gfx->LightState = Graphics::DirectionLight_Default;
+		rtn = true;
+	}
+	else
+	{
+		strIB = "";
+		OutputDebugString("Invalid Command");
+		rtn = false;
+	}
+	return rtn;
 }
