@@ -12,13 +12,43 @@ namespace wrl = Microsoft::WRL;
 class Graphics
 {
 public:
+	struct gVertex
+	{
+		XMFLOAT4 pos;
+		XMFLOAT4 norm;
+		XMFLOAT2 uv;
+	};
+	struct gMesh
+	{
+		gVertex* verts = nullptr;
+		int numVertices = 0;
+		int* indices = nullptr;
+		int numIndices = 0;
+		float scale = 1.0f;
+	};
+	gMesh* gpMesh = new gMesh();
+	struct gConstantBuff
+	{
+		XMMATRIX world;
+		XMMATRIX view;
+		XMMATRIX proj;
+		// Lights and such
+		XMFLOAT4 ambientLight;
+	};
+	struct gDirLightBuff
+	{
+		XMFLOAT4 dir;
+		XMFLOAT4 color;
+	};
+
 	Graphics(HWND hWnd);
 	Graphics(const Graphics&) = delete;
 	Graphics& operator=(const Graphics&) = delete;
-	~Graphics() = default;
+	~Graphics();
 	HRESULT InitDevice();
 	void Render();
-	void ProcessFBXMesh(FbxNode* Node);
+	void LoadMesh(std::string fileName, float mesh_scale, gMesh* mesh);
+	void ProcessFBXMesh(FbxNode* Node, gMesh* mesh);
 	void LoadUVFromFBX(FbxMesh* pMesh, std::vector<XMFLOAT2>* pVecUV);
 	void TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode);
 private:
@@ -37,38 +67,7 @@ private:
 	wrl::ComPtr<ID3D11ShaderResourceView> shaderRV = nullptr;
 	wrl::ComPtr<ID3D11SamplerState> smplrState = nullptr;
 public:
-	struct gVertex
-	{
-		XMFLOAT4 pos;
-		XMFLOAT4 norm;
-		XMFLOAT2 uv;
-	};
-	// Mesh Variables
-	struct gMesh
-	{
-		gVertex* verts = nullptr;
-		int numVertices = 0;
-		int* indices;
-		int numIndices = 0;
-		float scale = 5.0f;
-	};
-	gMesh* meshes;
-	gMesh mesh_1;
-
-	struct gConstantBuff
-	{
-		XMMATRIX world;
-		XMMATRIX view;
-		XMMATRIX proj;
-		// Lights and such
-		XMFLOAT4 ambientLight;
-	};
 #pragma region Lights
-	struct gDirLightBuff
-	{
-		XMFLOAT4 dir;
-		XMFLOAT4 color;
-	};
 	gDirLightBuff gDirectional_1 = {};
 #pragma endregion
 	// Setting up Matrices

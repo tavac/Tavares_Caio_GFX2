@@ -54,64 +54,22 @@ Graphics::Graphics(HWND hWnd)
 	}
 }
 
+Graphics::~Graphics()
+{
+	delete gpMesh;
+}
+
 HRESULT Graphics::InitDevice()
 {
 	HRESULT hr;
 
 #pragma region FBX Loading
-	std::string fbxFiles[] =
-	{
-		"cube.fbx",
-	};
-
-	mesh_1.scale = 1.0f;
-	meshes =
-	{
-		&mesh_1,
-	};
-	// Initialize the SDK manager. This object handles all our memory management.
-	FbxManager* lSdkManager = FbxManager::Create();
-
-	// Create the IO settings object.
-	FbxIOSettings* ios = FbxIOSettings::Create(lSdkManager, IOSROOT);
-	lSdkManager->SetIOSettings(ios);
-
-	// Create an importer using the SDK manager.
-	FbxImporter* lImporter = FbxImporter::Create(lSdkManager, "");
-
-	// Use the first argument as the filename for the importer.
-	if (!lImporter->Initialize(fbxFiles[0].c_str(), -1, lSdkManager->GetIOSettings())) {
-		printf("Call to FbxImporter::Initialize() failed.\n");
-		printf("Error returned: %s\n\n", lImporter->GetStatus().GetErrorString());
-		exit(-1);
-	}
-
-	// Create a new scene so that it can be populated by the imported file.
-	FbxScene* lScene = FbxScene::Create(lSdkManager, "myScene");
-
-	// Import the contents of the file into the scene.
-	lImporter->Import(lScene);
-
-	// The file is imported; so get rid of the importer.
-	lImporter->Destroy();
-
-	// Process the scene and build DirectX Arrays
-	ProcessFBXMesh(lScene->GetRootNode());
+	
+	LoadMesh("cube.fbx",25.0f, gpMesh);
 #pragma endregion
 
 
-	// create index buffer
 	D3D11_BUFFER_DESC buffdesc = {};
-	//buffdesc.Usage = D3D11_USAGE_DEFAULT;
-	//buffdesc.ByteWidth = sizeof(UINT) * array_size;
-	//buffdesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	//buffdesc.CPUAccessFlags = 0;
-	//D3D11_SUBRESOURCE_DATA subIndiceData = {};
-	//subIndiceData.pSysMem = tri_indices;
-	//hr = gDev->CreateBuffer(&buffdesc, &subIndiceData, &gIndexBuffer);
-	//if (FAILED(hr))
-	//	return hr;
-	//gCon->IASetIndexBuffer(gIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
 
 	// create constant buffer
 	buffdesc = {};
@@ -139,10 +97,10 @@ HRESULT Graphics::InitDevice()
 	buffdesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	buffdesc.CPUAccessFlags = 0u;
 	buffdesc.MiscFlags = 0u;
-	buffdesc.ByteWidth = sizeof(gVertex) * meshes[0].numVertices;
+	buffdesc.ByteWidth = sizeof(gVertex) * gpMesh->numVertices;
 	buffdesc.StructureByteStride = sizeof(gVertex);
 	D3D11_SUBRESOURCE_DATA subData = {};
-	subData.pSysMem = meshes[0].verts;
+	subData.pSysMem = gpMesh->verts;
 	hr = gDev->CreateBuffer(&buffdesc, &subData, gVertBuffer.GetAddressOf());
 	if (FAILED(hr))
 	{
@@ -152,11 +110,11 @@ HRESULT Graphics::InitDevice()
 
 	buffdesc = {};
 	buffdesc.Usage = D3D11_USAGE_DEFAULT;
-	buffdesc.ByteWidth = sizeof(int) * meshes[0].numIndices;
+	buffdesc.ByteWidth = sizeof(int) * gpMesh->numIndices;
 	buffdesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	buffdesc.CPUAccessFlags = 0;
 	subData = {};
-	subData.pSysMem = meshes[0].indices;
+	subData.pSysMem = gpMesh->indices;
 	hr = gDev->CreateBuffer(&buffdesc, &subData, &gIndexBuffer);
 	if (FAILED(hr))
 	{
@@ -203,7 +161,7 @@ HRESULT Graphics::InitDevice()
 		{"NORMAL",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 		{"TEXCOORD",0,DXGI_FORMAT_R32G32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 	};
-	//TextureFileFromFBX(textName);
+	//TextureFileFromFBX();
 	HRESULT res = CreateDDSTextureFromFile(gDev.Get(), L"Crate.dds", nullptr, &shaderRV);
 	//HRESULT res = CreateDDSTextureFromFile(g_pd3dDevice, (const wchar_t*)textName, nullptr,&shadRes);
 	if (FAILED(res))
@@ -267,18 +225,18 @@ void Graphics::Render()
 
 	// Setup Constant buffers to be used in shaders.
 	gConstantBuff gCB;
-	gCB.world = XMMatrixTranslation(0.0f, 0.0f, 2.0f);
+	gCB.world = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
 	gCB.world = XMMatrixRotationAxis({ 0,1,0 }, deltaT);
 	gCB.world = XMMatrixTranspose(gCB.world);
 	XMVECTOR tV = XMMatrixDeterminant(globalView);
 	XMMATRIX tM = XMMatrixInverse(&tV, globalView);
 	gCB.view = XMMatrixTranspose(tM);
 	gCB.proj = XMMatrixTranspose(globalProj);
-	gCB.ambientLight = XMFLOAT4(0.1f, 0.5f, 0.1f, 1.0f);
+	gCB.ambientLight = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
 	gCon->UpdateSubresource(gConstantBuffer.Get(), 0, nullptr, &gCB, 0, 0);
 
 	// Light Buffer Setup
-	gDirectional_1.dir = XMFLOAT4(1.0f, -2.0f, 1.0f, 0.0f);
+	gDirectional_1.dir = XMFLOAT4(0.0f, 0.0f, 1.0f, 0.0f);
 	DirectionLightSwitch(LightState);
 	gCon->UpdateSubresource(gLightBuffer.Get(), 0, nullptr, &gDirectional_1, 0, 0);
 
@@ -288,22 +246,21 @@ void Graphics::Render()
 	gCon->VSSetConstantBuffers(0u, (UINT)ARRAYSIZE(buffs), buffs);
 	gCon->PSSetShader(gPixelShader.Get(), nullptr, 0u);
 	gCon->PSSetConstantBuffers(0u, (UINT)ARRAYSIZE(buffs), buffs);
-	gCon->DrawIndexed((UINT)meshes[0].numIndices, 0u, 0u);
 	gCon->PSSetShaderResources(0, 1, shaderRV.GetAddressOf());
 	gCon->PSSetSamplers(0, 1, smplrState.GetAddressOf());
 	//gCon->DrawIndexed(6u, 0u, 0u);
-	gCon->DrawIndexed((UINT)meshes[0].numIndices, 0u, 0u);
+	gCon->DrawIndexed((UINT)gpMesh->numVertices, 0u, 0);
 
 	// Present ""Finished"" buffer to screen
 	gSwap->Present(1u, 0u);
 }
 
-void Graphics::ProcessFBXMesh(FbxNode* Node)
+void Graphics::ProcessFBXMesh(FbxNode* Node, gMesh* gmesh)
 {
 	// set up output console
-	AllocConsole();
-	freopen("CONOUT$", "w", stdout);
-	freopen("CONOUT$", "w", stderr);
+	//AllocConsole();
+	//freopen("CONOUT$", "w", stdout);
+	//freopen("CONOUT$", "w", stderr);
 
 	//FBX Mesh stuff
 	int childrenCount = Node->GetChildCount();
@@ -324,27 +281,27 @@ void Graphics::ProcessFBXMesh(FbxNode* Node)
 			std::cout << "\nMesh:" << childNode->GetName();
 
 			// Get index count from mesh
-			meshes[0].numIndices = mesh->GetPolygonVertexCount();
-			std::cout << "\nIndice Count:" << meshes[0].numIndices;
+			gmesh->numIndices = mesh->GetPolygonVertexCount();
+			std::cout << "\nIndice Count:" << gmesh->numIndices;
 
 			// No need to allocate int array, FBX does for us
-			meshes[0].indices = mesh->GetPolygonVertices();
+			gmesh->indices = mesh->GetPolygonVertices();
 
 			// Get vertex count from mesh
-			meshes[0].numVertices = mesh->GetControlPointsCount();
-			std::cout << "\nVertex Count:" << meshes[0].numVertices;
+			gmesh->numVertices = mesh->GetControlPointsCount();
+			std::cout << "\nVertex Count:" << gmesh->numVertices;
 
 			// Create SimpleVertex array to size of this mesh
-			meshes[0].verts = new gVertex[meshes[0].numVertices];
+			gmesh->verts = new gVertex[gmesh->numVertices];
 
 			//================= Process Vertices ===================
-			for (int j = 0; j < meshes[0].numVertices; j++)
+			for (int j = 0; j < gmesh->numVertices; j++)
 			{
 				FbxVector4 vert = mesh->GetControlPointAt(j);
-				meshes[0].verts[j].pos.x = (float)vert.mData[0] / meshes[0].scale;
-				meshes[0].verts[j].pos.y = (float)vert.mData[1] / meshes[0].scale;
-				meshes[0].verts[j].pos.z = (float)vert.mData[2] / meshes[0].scale;
-				meshes[0].verts[j].pos.w = (float)vert.mData[3];
+				gmesh->verts[j].pos.x = (float)vert.mData[0] / gmesh->scale;
+				gmesh->verts[j].pos.y = (float)vert.mData[1] / gmesh->scale;
+				gmesh->verts[j].pos.z = (float)vert.mData[2] / gmesh->scale;
+				gmesh->verts[j].pos.w = 1.0f;
 				// Generate random normal
 				//verts[j].Normal = RAND_NORMAL;
 			}
@@ -356,54 +313,70 @@ void Graphics::ProcessFBXMesh(FbxNode* Node)
 
 			// Declare a new array for the second vertex array
 			// Note the size is numIndices not numVertices
-			gVertex* vertices2 = new gVertex[meshes[0].numIndices];
+			gVertex* vertices2 = new gVertex[gmesh->numIndices];
 
 			// align (expand) vertex array and set the normals
-			for (int j = 0; j < meshes[0].numIndices; j++)
+			for (int j = 0; j < gmesh->numIndices; j++)
 			{
-				vertices2[j].pos = meshes[0].verts[meshes[0].indices[j]].pos;
+				vertices2[j].pos = gmesh->verts[gmesh->indices[j]].pos;
 				//vertices2[j].Normal = vertices[indices[j]].Normal;
 				vertices2[j].norm.x = (float)normalsVec[j].mData[0];
 				vertices2[j].norm.y = (float)normalsVec[j].mData[1];
 				vertices2[j].norm.z = (float)normalsVec[j].mData[2];
 
-				vertices2[j].uv.x = UVvec[j].x;
-				vertices2[j].uv.y = 1.0f - UVvec[j].y;
+				vertices2[j].uv.x =	UVvec[j].x;
+				vertices2[j].uv.y = UVvec[j].y;
 				//vertices2[j].Tex.x = vector[j].mData[0];
 			}
-			//for (int hlk = 0; hlk < numIndices; hlk++)
-			//{
-			//	cout << endl << "new texture verts : ";
-			//	cout << vertices2[hlk].Tex.x << "," << vertices2[hlk].Tex.y;
-			//	cout << " at indice : " << hlk;
-			//}
+			for (int hlk = 0; hlk < gmesh->numIndices; hlk++)
+			{
+				std::cout << std::endl << "new texture verts : ";
+				std::cout << vertices2[hlk].uv.x << "," << vertices2[hlk].uv.y;
+				std::cout << " at indice : " << hlk;
+			}
 
 			// vertices is an "out" var so make sure it points to the new array
 			// and clean up first array
-			delete meshes[0].verts;
-			meshes[0].verts = vertices2;
+			delete gmesh->verts;
+			gmesh->verts = vertices2;
 
 			// make new indices to match the new vertex(2) array
-			delete meshes[0].indices;
-			meshes[0].indices = new int[meshes[0].numIndices];
-			for (int j = 0; j < meshes[0].numIndices; j++)
+			delete gmesh->indices;
+			gmesh->indices = new int[gmesh->numIndices];
+			for (int j = 0; j < gmesh->numIndices; j++)
 			{
-				meshes[0].indices[j] = j;
+				gmesh->indices[j] = j;
 			}
+			//for (int k = 0; k < gmesh->numIndices; k++)
+			//{
+			//	std::cout << std::endl << "pos( ";
+			//	std::cout << meshes[0].verts[k].pos.x << ", ";
+			//	std::cout << meshes[0].verts[k].pos.y << ", ";
+			//	std::cout << meshes[0].verts[k].pos.z << ", ";
+			//	std::cout << meshes[0].verts[k].pos.w << ")\t nrm( ";
+			//	std::cout << meshes[0].verts[k].norm.x << ", ";
+			//	std::cout << meshes[0].verts[k].norm.y << ", ";
+			//	std::cout << meshes[0].verts[k].norm.z << ", ";
+			//	std::cout << meshes[0].verts[k].norm.w << ")\t tex( ";
+			//	std::cout << meshes[0].verts[k].uv.x << ", ";
+			//	std::cout << meshes[0].verts[k].uv.y << ")\t index: ";
+			//	std::cout << meshes[0].indices[k];
+			//
+			//}
 
-			if (false)
-			{
-				//Compactify();
-			}
-			else
-			{
+			//if (false)
+			//{
+			//	//Compactify();
+			//}
+			//else
+			//{
 				// numVertices is an "out" var so set to new size
 				// this is used in the DrawIndexed functions to set the 
 				// the right number of triangles
-				meshes[0].numVertices = meshes[0].numIndices;
-			}
+			gmesh->numVertices = gmesh->numIndices;
+			//}
 		}
-		ProcessFBXMesh(childNode);
+		ProcessFBXMesh(childNode, gmesh);
 	}
 
 }
@@ -576,6 +549,40 @@ void Graphics::TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode)
 	}
 }
 
+void Graphics::LoadMesh(std::string fileName, float mesh_scale, gMesh* mesh)
+{
+	mesh->scale = mesh_scale;
+
+	// Initialize the SDK manager. This object handles all our memory management.
+	FbxManager* lSdkManager = FbxManager::Create();
+
+	// Create the IO settings object.
+	FbxIOSettings* ios = FbxIOSettings::Create(lSdkManager, IOSROOT);
+	lSdkManager->SetIOSettings(ios);
+
+	// Create an importer using the SDK manager.
+	FbxImporter* lImporter = FbxImporter::Create(lSdkManager, "");
+
+	// Use the first argument as the filename for the importer.
+	if (!lImporter->Initialize(fileName.c_str(), -1, lSdkManager->GetIOSettings())) {
+		printf("Call to FbxImporter::Initialize() failed.\n");
+		printf("Error returned: %s\n\n", lImporter->GetStatus().GetErrorString());
+		exit(-1);
+	}
+
+	// Create a new scene so that it can be populated by the imported file.
+	FbxScene* lScene = FbxScene::Create(lSdkManager, "myScene");
+
+	// Import the contents of the file into the scene.
+	lImporter->Import(lScene);
+
+	// The file is imported; so get rid of the importer.
+	lImporter->Destroy();
+
+	// Process the scene and build DirectX Arrays
+	ProcessFBXMesh(lScene->GetRootNode(),mesh);
+}
+
 void Graphics::CameraMoveInOut(float loc_z)
 {
 	XMVECTOR tmpEye = (XMVECTOR)globalView.r[3];
@@ -597,17 +604,17 @@ bool Graphics::DirectionLightSwitch(DirLightComs cmd)
 	{
 	case Graphics::DirectionLight_Red:
 	{
-		gDirectional_1.color = XMFLOAT4(1.0f, 0.01f, 0.01f, 1.0f);
+		gDirectional_1.color = XMFLOAT4(1.0f, 0.1f, 0.1f, 1.0f);
 	}
 	break;
 	case Graphics::DirectionLight_Green:
 	{
-		gDirectional_1.color = XMFLOAT4(0.01f, 1.0f, 0.01f, 1.0f);
+		gDirectional_1.color = XMFLOAT4(0.1f, 1.0f, 0.1f, 1.0f);
 	}
 	break;
 	case Graphics::DirectionLight_Blue:
 	{
-		gDirectional_1.color = XMFLOAT4(0.01f, 0.01f, 1.0f, 1.0f);
+		gDirectional_1.color = XMFLOAT4(0.1f, 0.1f, 1.0f, 1.0f);
 	}
 	break;
 	case Graphics::DirectionLight_Off:

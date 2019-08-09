@@ -67,11 +67,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_CLOSE:
 		PostQuitMessage(0); // is the arbitrary value we want to return on quit through wParam.
 		break;
-	case VK_RETURN:
-	{
-
-	}
-	break;
+	//case VK_RETURN:
+	//{
+	//
+	//}
+	//break;
 	case WM_CHAR: // TranslateMessage(); processes WM_CHAR allow for easy key input.
 	{
 		if (wParam == VK_TAB || isTyping)
@@ -81,6 +81,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				isTyping = true;
 				break;
 			}
+			// While Typing...
 			// "Enter" to send strIB to string processor
 			if (wParam == VK_RETURN)
 			{
@@ -102,7 +103,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				SetWindowText(hWnd, winTitle.c_str());
 				break;
 			}
-			// While Typing...
 			strIB.push_back((char)wParam);
 			SetWindowText(hWnd, strIB.c_str());
 		}
