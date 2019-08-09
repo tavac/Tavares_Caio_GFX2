@@ -41,7 +41,7 @@ public:
 		// Lights and such
 		XMFLOAT4 ambientLight;
 	};
-	struct gLightBuff
+	struct gDirLightBuff
 	{
 		XMFLOAT4 dir;
 		XMFLOAT4 color;

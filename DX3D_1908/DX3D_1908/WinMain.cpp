@@ -5,6 +5,8 @@
 #include <time.h>
 
 #pragma region Variables
+WNDCLASSEX WndCls;
+std::string strIB;
 #pragma endregion
 
 #pragma region ForwardDeclarations
@@ -19,6 +21,7 @@ int CALLBACK WinMain(
 	_In_ LPSTR lpCmdLine,
 	_In_ int nCmdShow)
 {
+
 	WNDCLASSEX wc = Init_WindowClass("WndClassEX", hInstance);
 	HWND hWnd = Init_Window(1280, 720, "DirectX11 Window", &wc);
 	Graphics* Gfx = new Graphics(hWnd);
@@ -28,6 +31,7 @@ int CALLBACK WinMain(
 	MSG msg = { 0 };
 	while (WM_QUIT != msg.message)
 	{
+		
 		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{
 			TranslateMessage(&msg);
@@ -53,17 +57,39 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_CLOSE:
 		PostQuitMessage(0); // is the arbitrary value we want to return on quit through wParam.
 		break;
-	case WM_KEYDOWN:
-		if (wParam == 'F')
-		{
-		}
+	case VK_RETURN:
+	{
+		
+	}
 		break;
 	case WM_CHAR: // TranslateMessage(); processes WM_CHAR allow for easy key input.
 	{
-		static std::string title;
-		title.push_back((char)wParam);
-		SetWindowText(hWnd, title.c_str());
+		// send strIB to string processor
+		if (wParam == VK_RETURN)
+		{
+			if ((strIB = ToolBox::CommandProcesser(strIB)) != "")
+			{
+					OutputDebugString(strIB.c_str());
+				if (strIB == "grow")
+				{
+					hWnd = Init_Window(1920, 1080, "NEW WINDOW", &WndCls);
+				}
+				/*OutputDebugString("BALLER!!!");
+				if (strIB.size() == 0)
+					OutputDebugString("Cleared");*/
+			}
+			strIB = "";
+			SetWindowText(hWnd, strIB.c_str());
+			break;
+		}
+		strIB.push_back((char)wParam);
+		//SetActiveWindow(hWnd);
+		//Iss << mySin.push_back((char)wParam);
 
+
+		/*static std::string title;
+		title.push_back((char)wParam);*/
+		SetWindowText(hWnd, strIB.c_str());
 	}
 	break;
 	case WM_LBUTTONDOWN: // Left Click to get coordinate of raster where (0,0) is top left.
@@ -96,23 +122,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 WNDCLASSEX Init_WindowClass(const char* _className, HINSTANCE _hInst)
 {
 	// Register window class.
-	WNDCLASSEX wc = { 0 };
-	wc.cbSize = sizeof(wc);
-	wc.style = CS_OWNDC;
-	wc.lpfnWndProc = WndProc;
-	wc.cbClsExtra = 0;
-	wc.cbWndExtra = 0;
-	wc.hInstance = _hInst;
-	wc.hIcon = nullptr;
-	wc.hCursor = nullptr;
-	wc.hbrBackground = nullptr;
-	wc.lpszMenuName = nullptr;
-	wc.lpszClassName = _className;
+	WndCls = { 0 };
+	WndCls.cbSize = sizeof(WndCls);
+	WndCls.style = CS_OWNDC;
+	WndCls.lpfnWndProc = WndProc;
+	WndCls.cbClsExtra = 0;
+	WndCls.cbWndExtra = 0;
+	WndCls.hInstance = _hInst;
+	WndCls.hIcon = nullptr;
+	WndCls.hCursor = nullptr;
+	WndCls.hbrBackground = nullptr;
+	WndCls.lpszMenuName = nullptr;
+	WndCls.lpszClassName = _className;
 
-	if (RegisterClassEx(&wc) == 0)
+	if (RegisterClassEx(&WndCls) == 0)
 		ToolBox::ThrowErrorMsg("CTERROR: In_WindowClass(const char*, HINSTANCE)\nReturned 0\nWindow Class Failed To Register");
 
-	return wc;
+	return WndCls;
 }
 
 HWND Init_Window(int _width, int _height, std::string _title, WNDCLASSEX* _WndClass)

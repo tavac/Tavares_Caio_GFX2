@@ -14,6 +14,25 @@ void ToolBox::ThrowErrorMsg(const char* ErrMsg)
 	MessageBox(nullptr, ErrMsg, "You've Got Mail", MB_OK | MB_ICONERROR);
 }
 
+std::string ToolBox::CommandProcesser(std::string command)
+{
+	if (command.substr(0, 3) == "gc ")
+	{
+		//for(int i = 0; i < 3; i++) command.;
+		// return command
+		return command;
+	}
+	else
+	{
+		command = "";
+		return command;
+	}
+
+
+	//if string is this
+	//call/do function
+}
+
 //// Initializes the timer.
 //float ToolBox::StartTimer()
 //{

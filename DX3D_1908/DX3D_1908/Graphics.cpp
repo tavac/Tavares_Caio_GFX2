@@ -53,8 +53,6 @@ Graphics::Graphics(HWND hWnd)
 	}
 }
 
-
-
 HRESULT Graphics::InitDevice()
 {
 	HRESULT hr;
@@ -80,42 +78,41 @@ HRESULT Graphics::InitDevice()
 		{XMFLOAT4(-0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(0.0f,0.0f,-1.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4( 0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(0.0f,0.0f,-1.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(0.0f,0.0f,-1.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
-		// Back								MFLOAT4(1.0f,1.0f,1.0f,0.0f),X		0.955f,0.5f,0.5f
+		// Back
 		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,0.0f,1.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,0.0f,1.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4( 0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,0.0f,1.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4( 0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,0.0f,1.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,0.0f,1.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,0.0f,1.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
-		// Right							MFLOAT4(1.0f,1.0f,1.0f,0.0f),X		0.955f,0.5f,0.5f
+		// Right
 		{XMFLOAT4( 0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4( 0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
-		// Left								MFLOAT4(1.0f,1.0f,1.0f,0.0f),X		0.955f,0.5f,0.5f
+		// Left	
 		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(-1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(-1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(-1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(-1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(-1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4(-0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(-1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
-		// Top								MFLOAT4(1.0f,1.0f,1.0f,0.0f),X		0.955f,0.5f,0.5f
+		// Top	
 		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(0.0f,1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(0.0f,1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4( 0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(0.0f,1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
-		// Bot										0.95  0.85  0.95				5f,0.5f,0.5f
+		// Bot
 		{XMFLOAT4(-0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(0.0f,-1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(0.0f,-1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,-1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,-1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(0.0f,-1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 		{XMFLOAT4( 0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,-1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
-
 	};
 	UINT array_size = ARRAYSIZE(cube);
 	numVerts = array_size;
@@ -151,7 +148,7 @@ HRESULT Graphics::InitDevice()
 	// create light buffer
 	buffdesc = {};
 	buffdesc.Usage = D3D11_USAGE_DEFAULT;
-	buffdesc.ByteWidth = sizeof(gLightBuff);
+	buffdesc.ByteWidth = sizeof(gDirLightBuff);
 	buffdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	buffdesc.CPUAccessFlags = 0;
 	hr = gDev->CreateBuffer(&buffdesc, nullptr, &gLightBuffer);
@@ -265,7 +262,7 @@ void Graphics::Render()
 	gCon->UpdateSubresource(gConstantBuffer.Get(), 0, nullptr, &gCB, 0, 0);
 
 	// Light Buffer Setup
-	gLightBuff gDirectional;
+	gDirLightBuff gDirectional;
 	gDirectional.dir = XMFLOAT4(1.0f, -2.0f, 1.0f, 0.0f);
 	gDirectional.color = XMFLOAT4(1.0f, 0.1f, 0.1f, 1.0f);
 	gCon->UpdateSubresource(gLightBuffer.Get(), 0, nullptr, &gDirectional, 0, 0);
