@@ -9,8 +9,8 @@ cbuffer constBuff : register(b0)
 
 cbuffer Dir_LightBuff : register(b1)
 {
-	float4 dir;
-	float4 color;
+	float4 DL_dir;
+	float4 DL_color;
 }
 
 struct VS_Input
@@ -31,6 +31,7 @@ VS_Output main(VS_Input vsIn)
 {
 	VS_Output vsOut = (VS_Input)0;
 	vsOut.pos = mul(vsIn.pos, vWorld);
+	vsOut.norm = mul(vsIn.norm, vWorld);
 	vsOut.pos = mul(vsOut.pos, vView);
 	vsOut.pos = mul(vsOut.pos, vProj);
 	vsOut.color = vsIn.color;

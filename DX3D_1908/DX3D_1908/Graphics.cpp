@@ -74,47 +74,47 @@ HRESULT Graphics::InitDevice()
 	Graphics::gVertex cube[36] =
 	{
 		// Front
-		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4( 0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4(-0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4(-0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4( 0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		// Back								MFLOAT4(1.0f,1.0f,1.0f,1.0f),X		0.95  0.85  0.95
-		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4( 0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4( 0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		// Right							MFLOAT4(1.0f,1.0f,1.0f,1.0f),X		0.95  0.85  0.95
-		{XMFLOAT4( 0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4( 0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		// Left								MFLOAT4(1.0f,1.0f,1.0f,1.0f),X		0.95  0.85  0.95
-		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4(-0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		// Top								MFLOAT4(1.0f,1.0f,1.0f,1.0f),X		0.95  0.85  0.95
-		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4( 0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		// Bot										0.95  0.85  0.95
-		{XMFLOAT4(-0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4(0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4(0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
-		{XMFLOAT4(0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,1.0f,1.0f,1.0f),XMFLOAT4(0.95f,0.85f,0.95f,1.0f)},
+		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(0.0f,0.0f,-1.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4( 0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(0.0f,0.0f,-1.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(0.0f,0.0f,-1.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(0.0f,0.0f,-1.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4( 0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(0.0f,0.0f,-1.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(0.0f,0.0f,-1.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		// Back								MFLOAT4(1.0f,1.0f,1.0f,0.0f),X		0.955f,0.5f,0.5f
+		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,0.0f,1.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,0.0f,1.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,0.0f,1.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,0.0f,1.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,0.0f,1.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,0.0f,1.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		// Right							MFLOAT4(1.0f,1.0f,1.0f,0.0f),X		0.955f,0.5f,0.5f
+		{XMFLOAT4( 0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		// Left								MFLOAT4(1.0f,1.0f,1.0f,0.0f),X		0.955f,0.5f,0.5f
+		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(-1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(-1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(-1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(-1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(-1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(-1.0f,0.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		// Top								MFLOAT4(1.0f,1.0f,1.0f,0.0f),X		0.955f,0.5f,0.5f
+		{XMFLOAT4(-0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(0.0f,1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4(-0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(0.0f,1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4( 0.5f, 0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4( 0.5f, 0.5f,-0.5f, 1.0f),XMFLOAT4(0.0f,1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		// Bot										0.95  0.85  0.95				5f,0.5f,0.5f
+		{XMFLOAT4(-0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(0.0f,-1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(0.0f,-1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,-1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4(-0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,-1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f,-0.5f, 1.0f),XMFLOAT4(0.0f,-1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
+		{XMFLOAT4( 0.5f,-0.5f, 0.5f, 1.0f),XMFLOAT4(0.0f,-1.0f,0.0f,0.0f),XMFLOAT4(0.5f,0.5f,0.5f,1.0f)},
 
 	};
 	UINT array_size = ARRAYSIZE(cube);
@@ -261,13 +261,13 @@ void Graphics::Render()
 	XMMATRIX tM = XMMatrixInverse(&tV,globalView);
 	gCB.view = XMMatrixTranspose(tM);
 	gCB.proj = XMMatrixTranspose(globalProj);
-	gCB.ambientLight = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+	gCB.ambientLight = XMFLOAT4(0.1f, 0.5f, 0.1f, 1.0f);
 	gCon->UpdateSubresource(gConstantBuffer.Get(), 0, nullptr, &gCB, 0, 0);
 
 	// Light Buffer Setup
 	gLightBuff gDirectional;
-	gDirectional.pos = XMFLOAT4(1.0f, 0.0f, 0.0f, 0.0f);
-	gDirectional.color = XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f);
+	gDirectional.dir = XMFLOAT4(1.0f, -2.0f, 1.0f, 0.0f);
+	gDirectional.color = XMFLOAT4(1.0f, 0.1f, 0.1f, 1.0f);
 	gCon->UpdateSubresource(gLightBuffer.Get(), 0, nullptr, &gDirectional, 0, 0);
 
 	// Set Shaders and Constant Buffer to Shader and Draw

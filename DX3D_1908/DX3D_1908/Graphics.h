@@ -43,7 +43,7 @@ public:
 	};
 	struct gLightBuff
 	{
-		XMFLOAT4 pos;
+		XMFLOAT4 dir;
 		XMFLOAT4 color;
 	};
 	// Setting up Matrices

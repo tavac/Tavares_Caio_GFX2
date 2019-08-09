@@ -9,8 +9,8 @@ cbuffer constBuff : register(b0)
 
 cbuffer Dir_LightBuff : register(b1)
 {
-	float4 dir;
-	float4 color;
+	float4 DL_dir;
+	float4 DL_color;
 }
 
 struct PS_Input
@@ -22,6 +22,11 @@ struct PS_Input
 
 float4 main(PS_Input psIn) : SV_Target
 {
-	float4 outie = vAmbLight*psIn.color;
+	float4 outie;
+	// Directional Light
+	float LR = saturate(dot((-DL_dir) , psIn.norm));
+	outie = (LR * DL_color * psIn.color);
+	// Ambient Light
+	outie += vAmbLight*psIn.color;
 	return outie;
 }
