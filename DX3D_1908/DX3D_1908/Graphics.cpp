@@ -227,7 +227,7 @@ void Graphics::Render()
 	// Setup Constant buffers to be used in shaders.
 	gConstantBuff gCB;
 	gCB.world = XMMatrixTranslation(-5.0f, 0.0f, 0.0f);
-	gCB.world = XMMatrixRotationAxis({ 0,1,0 }, deltaT);
+	//gCB.world = XMMatrixRotationAxis({ 0,1,0 }, deltaT);
 	gCB.world = XMMatrixTranspose(gCB.world);
 	XMVECTOR tV = XMMatrixDeterminant(globalView);
 	XMMATRIX tM = XMMatrixInverse(&tV, globalView);
@@ -592,18 +592,33 @@ void Graphics::LoadMesh(std::string fileName, float mesh_scale, gMesh* mesh)
 	ProcessFBXMesh(lScene->GetRootNode(),mesh);
 }
 
-void Graphics::CameraMoveInOut(float loc_z)
+void Graphics::CameraMove(XMVECTOR E = {0}, XMVECTOR A = {0}, XMVECTOR U = {0})
 {
-	XMVECTOR tmpEye = (XMVECTOR)globalView.r[3];
-	tmpEye += XMVectorSet(0.0f, 0.0f, loc_z, 0.0f);
-	XMMATRIX tmpp = XMMatrixLookAtLH(tmpEye, At, Up);
-	XMVECTOR tmpDet = XMMatrixDeterminant(tmpp);
-	globalView = XMMatrixInverse(&tmpDet, tmpp);
+	//XMMATRIX nMtx = XMMatrixLookAtLH(Eye, At, Up);
+	globalView.r[2] += E;
+	
+	
+
+	//XMMATRIX nMtx = XMMatrixLookAtLH(Eye, At, Up);
+	//detmnt = XMMatrixDeterminant(globalView);
+	////XMVECTOR tmpEye = (XMVECTOR)globalView.r[3];
+	////tmpEye += XMVectorSet(0.0f, 0.0f, loc_z, 0.0f);
+	////XMMATRIX tmpp = XMMatrixLookAtLH(tmpEye, At, Up);
+	////XMVECTOR tmpDet = XMMatrixDeterminant(tmpp);
+	//globalView = XMMatrixInverse(&detmnt, nMtx);
 }
-
-void Graphics::CameraMoveLR(WPARAM key)
+void Graphics::CameraRotate(XMVECTOR axis, float angle)
 {
-
+	globalView *= XMMatrixRotationAxis(axis, angle);
+	
+	At += (axis * angle);
+	XMMATRIX nMtx = XMMatrixLookAtLH(Eye, At, Up);
+	detmnt = XMMatrixDeterminant(globalView);
+	//XMVECTOR tmpEye = (XMVECTOR)globalView.r[3];
+	//tmpEye += XMVectorSet(0.0f, 0.0f, loc_z, 0.0f);
+	//XMMATRIX tmpp = XMMatrixLookAtLH(tmpEye, At, Up);
+	//XMVECTOR tmpDet = XMMatrixDeterminant(tmpp);
+	globalView = XMMatrixInverse(&detmnt, nMtx);
 }
 
 

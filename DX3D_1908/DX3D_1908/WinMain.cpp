@@ -67,48 +67,48 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_CLOSE:
 		PostQuitMessage(0); // is the arbitrary value we want to return on quit through wParam.
 		break;
-	//case VK_RETURN:
-	//{
-	//
-	//}
-	//break;
-	case WM_CHAR: // TranslateMessage(); processes WM_CHAR allow for easy key input.
-	{
-		if (wParam == VK_TAB || isTyping)
-		{
-			if (!isTyping)
-			{
-				isTyping = true;
-				break;
-			}
-			// While Typing...
-			// "Enter" to send strIB to string processor
-			if (wParam == VK_RETURN)
-			{
-				if ((strIB = ToolBox::CommandProcesser(strIB)) != "")
-				{
-					if (strIB == "cls")
-					{
-						PostQuitMessage(0);
-						isTyping = false;
-					}
-					//else if (strIB.substr(0,6) == "alight")
-					else if (strIB.substr(0, 6) == "dlight")
-					{
-						DirLight_ComProc(strIB);
-						isTyping = false;
-					}
-				}
-				strIB = "";
-				SetWindowText(hWnd, winTitle.c_str());
-				break;
-			}
-			strIB.push_back((char)wParam);
-			SetWindowText(hWnd, strIB.c_str());
-		}
-
-	}
-	break;
+		//case VK_RETURN:
+		//{
+		//
+		//}
+		//break;
+		//case WM_CHAR: // TranslateMessage(); processes WM_CHAR allow for easy key input.
+		//{
+		//	if (wParam == VK_TAB || isTyping)
+		//	{
+		//		if (!isTyping)
+		//		{
+		//			isTyping = true;
+		//			break;
+		//		}
+		//		// While Typing...
+		//		// "Enter" to send strIB to string processor
+		//		if (wParam == VK_RETURN)
+		//		{
+		//			if ((strIB = ToolBox::CommandProcesser(strIB)) != "")
+		//			{
+		//				if (strIB == "cls")
+		//				{
+		//					PostQuitMessage(0);
+		//					isTyping = false;
+		//				}
+		//				//else if (strIB.substr(0,6) == "alight")
+		//				else if (strIB.substr(0, 6) == "dlight")
+		//				{
+		//					DirLight_ComProc(strIB);
+		//					isTyping = false;
+		//				}
+		//			}
+		//			strIB = "";
+		//			SetWindowText(hWnd, winTitle.c_str());
+		//			break;
+		//		}
+		//		strIB.push_back((char)wParam);
+		//		SetWindowText(hWnd, strIB.c_str());
+		//	}
+		//
+		//}
+		//break;
 	case WM_LBUTTONDOWN: // Left Click to get coordinate of raster where (0,0) is top left.
 	{
 		POINTS pt = MAKEPOINTS(lParam);
@@ -118,9 +118,43 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		oss.clear();
 	}
 	break;
+	// Camera Controls
 	case WM_MOUSEWHEEL:
 	{
-		Gfx->CameraMoveInOut(GET_WHEEL_DELTA_WPARAM(wParam) * 0.0001f);
+		XMVECTOR rotate = XMVectorSet(0.0f, -GET_WHEEL_DELTA_WPARAM(wParam) * 0.001f, 0.0f, 0.0f);
+		Gfx->CameraMove({ 0 }, rotate, { 0 });
+	}
+	break;
+	case WM_MOUSEHWHEEL:
+	{
+
+		XMVECTOR rotateAxis = { 0.0f,1.0f,0.0f };
+		float angle = GET_WHEEL_DELTA_WPARAM(wParam) * 0.001f;
+		Gfx->CameraRotate(rotateAxis,angle);
+	}
+	break;
+	case WM_CHAR:
+	{
+		if ((char)wParam == 'w')
+		{
+			XMVECTOR velocity = XMVectorSet(0.0f, 0.0f, 0.1f, 0.0f);
+			Gfx->CameraMove(velocity, velocity, { 0 });
+		}
+		else if ((char)wParam == 'a')
+		{
+			XMVECTOR velocity = XMVectorSet(-0.1f, 0.0f, 0.0f, 0.0f);
+			Gfx->CameraMove(velocity, velocity, { 0 });
+		}
+		else if ((char)wParam == 's')
+		{
+			XMVECTOR velocity = XMVectorSet(0.0f, 0.0f, -0.1f, 0.0f);
+			Gfx->CameraMove(velocity, velocity, { 0 });
+		}
+		else if ((char)wParam == 'd')
+		{
+			XMVECTOR velocity = XMVectorSet(0.1f, 0.0f, 0.0f, 0.0f);
+			Gfx->CameraMove(velocity, velocity, { 0 });
+		}
 	}
 	break;
 	}
