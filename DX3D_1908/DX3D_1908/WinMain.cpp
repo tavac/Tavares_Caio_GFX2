@@ -121,14 +121,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	// Camera Controls
 	case WM_MOUSEWHEEL:
 	{
-		XMVECTOR rotate = XMVectorSet(0.0f, -GET_WHEEL_DELTA_WPARAM(wParam) * 0.001f, 0.0f, 0.0f);
-		Gfx->CameraMove({ 0 }, rotate, { 0 });
+		XMVECTOR rotateAxis = { 0.0f,1.0f,0.0f };
+		float angle = GET_WHEEL_DELTA_WPARAM(wParam) * 0.001f;
+		Gfx->CameraRotate(rotateAxis, angle);
 	}
 	break;
 	case WM_MOUSEHWHEEL:
 	{
 
-		XMVECTOR rotateAxis = { 0.0f,1.0f,0.0f };
+		XMVECTOR rotateAxis = { 1.0f,0.0f,0.0f };
 		float angle = GET_WHEEL_DELTA_WPARAM(wParam) * 0.001f;
 		Gfx->CameraRotate(rotateAxis,angle);
 	}
@@ -138,23 +139,34 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		if ((char)wParam == 'w')
 		{
 			XMVECTOR velocity = XMVectorSet(0.0f, 0.0f, 0.1f, 0.0f);
-			Gfx->CameraMove(velocity, velocity, { 0 });
+			Gfx->CameraMove(velocity,Gfx->z);
 		}
 		else if ((char)wParam == 'a')
 		{
 			XMVECTOR velocity = XMVectorSet(-0.1f, 0.0f, 0.0f, 0.0f);
-			Gfx->CameraMove(velocity, velocity, { 0 });
+			Gfx->CameraMove(velocity, Gfx->x);
 		}
 		else if ((char)wParam == 's')
 		{
 			XMVECTOR velocity = XMVectorSet(0.0f, 0.0f, -0.1f, 0.0f);
-			Gfx->CameraMove(velocity, velocity, { 0 });
+			Gfx->CameraMove(velocity, Gfx->z);
 		}
 		else if ((char)wParam == 'd')
 		{
 			XMVECTOR velocity = XMVectorSet(0.1f, 0.0f, 0.0f, 0.0f);
-			Gfx->CameraMove(velocity, velocity, { 0 });
+			Gfx->CameraMove(velocity, Gfx->x);
 		}
+	}
+	case VK_SPACE:
+	{
+		XMVECTOR velocity = XMVectorSet(0.0f, 0.1f, 0.0f, 0.0f);
+		Gfx->CameraMove(velocity, Gfx->y);
+	}
+	break;
+	case VK_CONTROL:
+	{
+		XMVECTOR velocity = XMVectorSet(0.0f,-0.1f, 0.0f, 0.0f);
+		Gfx->CameraMove(velocity, Gfx->y);
 	}
 	break;
 	}

@@ -81,7 +81,11 @@ public:
 	XMMATRIX globalProj = XMMatrixPerspectiveFovLH((90.0f * (3.1415f / 180.0f)), 1280.0f / 720.0f, 0.01f, 100.0f);
 
 	// Win32 + DirectX = gobeldegooks
-	void CameraMove(XMVECTOR E, XMVECTOR A, XMVECTOR U);
+	enum Axis
+	{
+		x,y,z,w,u,v
+	};
+	void CameraMove(XMVECTOR E, Axis axi);
 	void CameraRotate(XMVECTOR axis, float angle);
 	enum DirLightComs
 	{
