@@ -65,7 +65,7 @@ HRESULT Graphics::InitDevice()
 
 #pragma region FBX Loading
 	
-	LoadMesh("cube.fbx",25.0f, gpMesh);
+	LoadMesh("NewDragon.fbx",25.0f, gpMesh);
 #pragma endregion
 
 
@@ -223,9 +223,10 @@ void Graphics::Render()
 	// Clear Buffers
 	gCon->ClearRenderTargetView(gRtv.Get(), DirectX::Colors::Black);
 
+	// from here
 	// Setup Constant buffers to be used in shaders.
 	gConstantBuff gCB;
-	gCB.world = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
+	gCB.world = XMMatrixTranslation(-5.0f, 0.0f, 0.0f);
 	gCB.world = XMMatrixRotationAxis({ 0,1,0 }, deltaT);
 	gCB.world = XMMatrixTranspose(gCB.world);
 	XMVECTOR tV = XMMatrixDeterminant(globalView);
@@ -236,9 +237,16 @@ void Graphics::Render()
 	gCon->UpdateSubresource(gConstantBuffer.Get(), 0, nullptr, &gCB, 0, 0);
 
 	// Light Buffer Setup
-	gDirectional_1.dir = XMFLOAT4(0.0f, 0.0f, 1.0f, 0.0f);
-	DirectionLightSwitch(LightState);
+	gDirectional_1.dir = XMFLOAT4(-1.0f, 2.0f, -1.0f, 0.0f);
+	DirectionLightSwitch(Graphics::DirectionLight_Red);
 	gCon->UpdateSubresource(gLightBuffer.Get(), 0, nullptr, &gDirectional_1, 0, 0);
+	gCon->DrawIndexed((UINT)gpMesh->numVertices, 0u, 0);
+
+	// Light Buffer Setup
+	gDirectional_1.dir = XMFLOAT4(1.0f, -2.0f, 1.0f, 0.0f);
+	DirectionLightSwitch(Graphics::DirectionLight_Green);
+	gCon->UpdateSubresource(gLightBuffer.Get(), 0, nullptr, &gDirectional_1, 0, 0);
+	gCon->DrawIndexed((UINT)gpMesh->numVertices, 0u, 0);
 
 	// Set Shaders and Constant Buffer to Shader and Draw
 	ID3D11Buffer* buffs[] = { *gConstantBuffer.GetAddressOf(), *gLightBuffer.GetAddressOf() };
@@ -250,6 +258,7 @@ void Graphics::Render()
 	gCon->PSSetSamplers(0, 1, smplrState.GetAddressOf());
 	//gCon->DrawIndexed(6u, 0u, 0u);
 	gCon->DrawIndexed((UINT)gpMesh->numVertices, 0u, 0);
+	// to here might be a function???
 
 	// Present ""Finished"" buffer to screen
 	gSwap->Present(1u, 0u);

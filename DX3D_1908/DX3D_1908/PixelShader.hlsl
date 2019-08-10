@@ -25,10 +25,10 @@ struct PS_Input
 
 float4 main(PS_Input psIn) : SV_Target
 {
-    float4 outie = (1.0f, 1.0f, 1.0f, 1.0f);
+    float4 outie = (txDiffuse.Sample(samLinear, psIn.uv));
 	// Directional Light
 	float LR = saturate(dot((-DL_dir) , psIn.norm));
-    outie = (LR * DL_color * (txDiffuse.Sample(samLinear, psIn.uv)));
+    outie += (LR * DL_color * (txDiffuse.Sample(samLinear, psIn.uv)));
 	//// Ambient Light
     outie += vAmbLight * (txDiffuse.Sample(samLinear, psIn.uv));
 	return outie;
