@@ -72,43 +72,43 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		//
 		//}
 		//break;
-		//case WM_CHAR: // TranslateMessage(); processes WM_CHAR allow for easy key input.
-		//{
-		//	if (wParam == VK_TAB || isTyping)
-		//	{
-		//		if (!isTyping)
-		//		{
-		//			isTyping = true;
-		//			break;
-		//		}
-		//		// While Typing...
-		//		// "Enter" to send strIB to string processor
-		//		if (wParam == VK_RETURN)
-		//		{
-		//			if ((strIB = ToolBox::CommandProcesser(strIB)) != "")
-		//			{
-		//				if (strIB == "cls")
-		//				{
-		//					PostQuitMessage(0);
-		//					isTyping = false;
-		//				}
-		//				//else if (strIB.substr(0,6) == "alight")
-		//				else if (strIB.substr(0, 6) == "dlight")
-		//				{
-		//					DirLight_ComProc(strIB);
-		//					isTyping = false;
-		//				}
-		//			}
-		//			strIB = "";
-		//			SetWindowText(hWnd, winTitle.c_str());
-		//			break;
-		//		}
-		//		strIB.push_back((char)wParam);
-		//		SetWindowText(hWnd, strIB.c_str());
-		//	}
-		//
-		//}
-		//break;
+		case WM_CHAR: // TranslateMessage(); processes WM_CHAR allow for easy key input.
+		{
+			if (wParam == VK_TAB || isTyping)
+			{
+				if (!isTyping)
+				{
+					isTyping = true;
+					break;
+				}
+				// While Typing...
+				// "Enter" to send strIB to string processor
+				if (wParam == VK_RETURN)
+				{
+					if ((strIB = ToolBox::CommandProcesser(strIB)) != "")
+					{
+						if (strIB == "cls")
+						{
+							PostQuitMessage(0);
+							isTyping = false;
+						}
+						//else if (strIB.substr(0,6) == "alight")
+						else if (strIB.substr(0, 6) == "dlight")
+						{
+							DirLight_ComProc(strIB);
+							isTyping = false;
+						}
+					}
+					strIB = "";
+					SetWindowText(hWnd, winTitle.c_str());
+					break;
+				}
+				strIB.push_back((char)wParam);
+				SetWindowText(hWnd, strIB.c_str());
+			}
+		
+		}
+		break;
 	case WM_LBUTTONDOWN: // Left Click to get coordinate of raster where (0,0) is top left.
 	{
 		POINTS pt = MAKEPOINTS(lParam);
@@ -134,29 +134,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		Gfx->CameraRotate(rotateAxis,angle);
 	}
 	break;
-	case WM_CHAR:
-	{
-		if ((char)wParam == 'w')
-		{
-			XMVECTOR velocity = XMVectorSet(0.0f, 0.0f, 0.1f, 0.0f);
-			Gfx->CameraMove(velocity,Gfx->z);
-		}
-		else if ((char)wParam == 'a')
-		{
-			XMVECTOR velocity = XMVectorSet(-0.1f, 0.0f, 0.0f, 0.0f);
-			Gfx->CameraMove(velocity, Gfx->x);
-		}
-		else if ((char)wParam == 's')
-		{
-			XMVECTOR velocity = XMVectorSet(0.0f, 0.0f, -0.1f, 0.0f);
-			Gfx->CameraMove(velocity, Gfx->z);
-		}
-		else if ((char)wParam == 'd')
-		{
-			XMVECTOR velocity = XMVectorSet(0.1f, 0.0f, 0.0f, 0.0f);
-			Gfx->CameraMove(velocity, Gfx->x);
-		}
-	}
+	//case WM_CHAR:
+	//{
+	//	if ((char)wParam == 'w')
+	//	{
+	//		XMVECTOR velocity = XMVectorSet(0.0f, 0.0f, 0.1f, 0.0f);
+	//		Gfx->CameraMove(velocity,Gfx->z);
+	//	}
+	//	else if ((char)wParam == 'a')
+	//	{
+	//		XMVECTOR velocity = XMVectorSet(-0.1f, 0.0f, 0.0f, 0.0f);
+	//		Gfx->CameraMove(velocity, Gfx->x);
+	//	}
+	//	else if ((char)wParam == 's')
+	//	{
+	//		XMVECTOR velocity = XMVectorSet(0.0f, 0.0f, -0.1f, 0.0f);
+	//		Gfx->CameraMove(velocity, Gfx->z);
+	//	}
+	//	else if ((char)wParam == 'd')
+	//	{
+	//		XMVECTOR velocity = XMVectorSet(0.1f, 0.0f, 0.0f, 0.0f);
+	//		Gfx->CameraMove(velocity, Gfx->x);
+	//	}
+	//}
 	case VK_SPACE:
 	{
 		XMVECTOR velocity = XMVectorSet(0.0f, 0.1f, 0.0f, 0.0f);

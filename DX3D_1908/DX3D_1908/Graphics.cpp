@@ -65,7 +65,8 @@ HRESULT Graphics::InitDevice()
 
 #pragma region FBX Loading
 	
-	LoadMesh("NewDragon.fbx",25.0f, gpMesh);
+	//LoadMesh("Cube.fbx",50.0f, gpMesh);
+	LoadMesh("NewDragon.fbx",10.0f, gpMesh);
 #pragma endregion
 
 
@@ -213,12 +214,12 @@ void Graphics::Render()
 {
 
 	// TIMER
-	float deltaT = 0.0f;
 	static ULONGLONG timeStart = 0;
 	ULONGLONG timeCur = GetTickCount64();
 	if (timeStart == 0)
 		timeStart = timeCur;
 	deltaT = (timeCur - timeStart) / 1000.0f;
+	
 
 	// Clear Buffers
 	gCon->ClearRenderTargetView(gRtv.Get(), DirectX::Colors::Black);
@@ -226,8 +227,9 @@ void Graphics::Render()
 	// from here
 	// Setup Constant buffers to be used in shaders.
 	gConstantBuff gCB;
-	gCB.world = XMMatrixTranslation(-5.0f, 0.0f, 0.0f);
-	gCB.world = XMMatrixRotationAxis({ 1,0,0 }, deltaT);
+	gCB.dTime = deltaT;
+	gCB.world = XMMatrixTranslation(0.0f, 0.0f, 1.0f);
+	//gCB.world = XMMatrixRotationAxis({ 0,1,0 }, deltaT);
 	gCB.world = XMMatrixTranspose(gCB.world);
 	XMVECTOR tV = XMMatrixDeterminant(globalView);
 	XMMATRIX tM = XMMatrixInverse(&tV, globalView);
@@ -237,16 +239,18 @@ void Graphics::Render()
 	gCon->UpdateSubresource(gConstantBuffer.Get(), 0, nullptr, &gCB, 0, 0);
 
 	// Light Buffer Setup
-	gDirectional_1.dir = XMFLOAT4(-1.0f, 2.0f, -1.0f, 0.0f);
-	DirectionLightSwitch(Graphics::DirectionLight_Red);
+	gDirectional_1.dir[0] = (XMFLOAT4(-1.0f, -2.0f, 1.0f, 0.0f));
+	gDirectional_1.color[0] = gRED;
+	//DirectionLightSwitch(Graphics::DirectionLight_Red);
 	gCon->UpdateSubresource(gLightBuffer.Get(), 0, nullptr, &gDirectional_1, 0, 0);
-	gCon->DrawIndexed((UINT)gpMesh->numVertices, 0u, 0);
+	//gCon->DrawIndexed((UINT)gpMesh->numVertices, 0u, 0);
 
 	// Light Buffer Setup
-	gDirectional_1.dir = XMFLOAT4(1.0f, -2.0f, 1.0f, 0.0f);
-	DirectionLightSwitch(Graphics::DirectionLight_Green);
+	gDirectional_1.dir[1] = (XMFLOAT4(1.0f, 2.0f, 1.0f, 0.0f));
+	gDirectional_1.color[1] = gBLUE;
+	//DirectionLightSwitch(Graphics::DirectionLight_Green);
 	gCon->UpdateSubresource(gLightBuffer.Get(), 0, nullptr, &gDirectional_1, 0, 0);
-	gCon->DrawIndexed((UINT)gpMesh->numVertices, 0u, 0);
+	//gCon->DrawIndexed((UINT)gpMesh->numVertices, 0u, 0);
 
 	// Set Shaders and Constant Buffer to Shader and Draw
 	ID3D11Buffer* buffs[] = { *gConstantBuffer.GetAddressOf(), *gLightBuffer.GetAddressOf() };
@@ -328,14 +332,12 @@ void Graphics::ProcessFBXMesh(FbxNode* Node, gMesh* gmesh)
 			for (int j = 0; j < gmesh->numIndices; j++)
 			{
 				vertices2[j].pos = gmesh->verts[gmesh->indices[j]].pos;
-				//vertices2[j].Normal = vertices[indices[j]].Normal;
 				vertices2[j].norm.x = (float)normalsVec[j].mData[0];
 				vertices2[j].norm.y = (float)normalsVec[j].mData[1];
 				vertices2[j].norm.z = (float)normalsVec[j].mData[2];
 
 				vertices2[j].uv.x =	UVvec[j].x;
 				vertices2[j].uv.y = UVvec[j].y;
-				//vertices2[j].Tex.x = vector[j].mData[0];
 			}
 			for (int hlk = 0; hlk < gmesh->numIndices; hlk++)
 			{
@@ -485,7 +487,6 @@ void Graphics::LoadUVFromFBX(FbxMesh* pMesh, std::vector<XMFLOAT2>* pVecUV)
 		}
 	}
 }
-
 void Graphics::TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode)
 {
 	//================= Texture ========================================
@@ -544,10 +545,21 @@ void Graphics::TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode)
 					// Then, you can get all the properties of the texture, include its name
 					material->ConnectSrcObject(texture);
 					//const char* textureName = texture->GetFileName();
-					const wchar_t* textureName = (const wchar_t*)texture->GetFileName();
-					HRESULT res = CreateDDSTextureFromFile(gDev.Get(), textureName, nullptr, &shaderRV);
+					const char* txtname = texture->GetFileName();
+					int i = 0;
+					std::string t;
+					while (txtname[i] != NULL)
+					{
+						t.push_back(txtname[i]);
+						i++;
+					}
+					OutputDebugString(t.c_str());
+					//HRESULT res = CreateDDSTextureFromFile(gDev.Get(), (const wchar_t*)txtname, nullptr, &shaderRV);
+					HRESULT res = CreateDDSTextureFromFile(gDev.Get(), L"Crate.dds", nullptr, &shaderRV);
+					//const wchar_t* textureName = (const wchar_t*)texture->GetFileName();
+					//HRESULT res = CreateDDSTextureFromFile(gDev.Get(), textureName, nullptr, &shaderRV);
 					//pTextureName = (char*)textureName;
-					std::cout << "Texture Name " << textureName;
+					std::cout << "Texture Name " << txtname;
 
 					FbxProperty p = texture->RootProperty.Find("Filename");
 					std::cout << p.Get<FbxString>() << std::endl;
@@ -557,7 +569,6 @@ void Graphics::TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode)
 		}
 	}
 }
-
 void Graphics::LoadMesh(std::string fileName, float mesh_scale, gMesh* mesh)
 {
 	mesh->scale = mesh_scale;
@@ -595,24 +606,40 @@ void Graphics::LoadMesh(std::string fileName, float mesh_scale, gMesh* mesh)
 void Graphics::CameraMove(XMVECTOR E, Graphics::Axis axi)
 {
 	// Take dot of each axis to identity
-	XMVECTOR dAngle = XMVector4Dot(globalView.r[3], E);
-	XMFLOAT4 dAngleF; 
-	XMStoreFloat4(&dAngleF, dAngle);
+	//XMVECTOR dAngle = XMVector4Dot(globalView.r[3], E);
+	//XMFLOAT4 dAngleF; 
+	//XMStoreFloat4(&dAngleF, dAngle);
 
-	XMMATRIX rotationMtx;
-	switch (axi)
-	{
-	case Graphics::x:
-		rotationMtx = XMMatrixRotationAxis({ 1,0,0 }, dAngleF.x);
-		break;
-	case Graphics::y:
-		rotationMtx = XMMatrixRotationAxis({ 0,1,0 }, dAngleF.y);
-		break;
-	case Graphics::z:
-		rotationMtx = XMMatrixRotationAxis({ 0,0,1 }, dAngleF.z);
-		break;
-	}
-	globalView = XMMatrixMultiply(rotationMtx, globalView);
+
+	//XMMATRIX rotationMtx = XMMatrixIdentity();
+
+	//switch (axi)
+	//{
+	//case Graphics::x:
+	//	rotationMtx = XMMatrixRotationAxis({ 1,0,0 }, dAngleF.x);
+	//	break;
+	//case Graphics::y:
+	//	rotationMtx = XMMatrixRotationAxis({ 0,1,0 }, dAngleF.y);
+	//	break;
+	//case Graphics::z:
+	//	rotationMtx = XMMatrixRotationAxis({ 0,0,1 }, dAngleF.z);
+	//	break;
+	//}
+	/*XMMATRIX tmp = XMMatrixTranspose(globalView);
+	tmp.r[3] *= E;
+	globalView = XMMatrixTranspose(tmp);*/
+	//globalView.r[3] += XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+	E = XMVector3Transform(E, globalWorld);
+	E = XMVector3Transform(E, globalView);
+	globalView.r[3] += E;
+	//Eye = globalView.r[3] + E;
+	//XMMATRIX nMtx = XMMatrixLookAtLH(Eye, At, Up);
+	//XMVECTOR detmnt = XMMatrixDeterminant(nMtx);
+	////XMVECTOR tmpEye = (XMVECTOR)globalView.r[3];
+	//tmpEye += XMVectorSet(0.0f, 0.0f, loc_z, 0.0f);
+	//XMMATRIX tmpp = XMMatrixLookAtLH(tmpEye, At, Up);
+	//XMVECTOR tmpDet = XMMatrixDeterminant(tmpp);
+	//globalView = XMMatrixInverse(&detmnt, nMtx);
 
 	// mult dot to inputVector E
 	// inputVector E into globalView
@@ -650,36 +677,35 @@ void Graphics::CameraRotate(XMVECTOR axis, float angle)
 	//globalView *= XMMatrixRotationAxis(axis, angle);
 }
 
-
 bool Graphics::DirectionLightSwitch(DirLightComs cmd)
 {
-	switch (cmd)
-	{
-	case Graphics::DirectionLight_Red:
-	{
-		gDirectional_1.color = XMFLOAT4(1.0f, 0.1f, 0.1f, 1.0f);
-	}
-	break;
-	case Graphics::DirectionLight_Green:
-	{
-		gDirectional_1.color = XMFLOAT4(0.1f, 1.0f, 0.1f, 1.0f);
-	}
-	break;
-	case Graphics::DirectionLight_Blue:
-	{
-		gDirectional_1.color = XMFLOAT4(0.1f, 0.1f, 1.0f, 1.0f);
-	}
-	break;
-	case Graphics::DirectionLight_Off:
-	{
-		gDirectional_1.color = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
-	}
-	break;
-	case Graphics::DirectionLight_Default:
-	{
-		gDirectional_1.color = XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f);
-	}
-	break;
-	}
+	//switch (cmd)
+	//{
+	//case Graphics::DirectionLight_Red:
+	//{
+	//	gDirectional_1.color = XMFLOAT4(1.0f, 0.01f, 0.01f, 1.0f);
+	//}
+	//break;
+	//case Graphics::DirectionLight_Green:
+	//{
+	//	gDirectional_1.color = XMFLOAT4(0.1f, 1.0f, 0.1f, 1.0f);
+	//}
+	//break;
+	//case Graphics::DirectionLight_Blue:
+	//{
+	//	gDirectional_1.color = XMFLOAT4(0.1f, 0.1f, 1.0f, 1.0f);
+	//}
+	//break;
+	//case Graphics::DirectionLight_Off:
+	//{
+	//	gDirectional_1.color = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+	//}
+	//break;
+	//case Graphics::DirectionLight_Default:
+	//{
+	//	gDirectional_1.color = XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f);
+	//}
+	//break;
+	//}
 	return false;
 }

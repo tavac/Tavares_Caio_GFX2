@@ -6,12 +6,19 @@
 #include <vector>
 #include "DDSTextureLoader.h"
 
+#pragma region Colors
+#define gRED	XMFLOAT4(1.0f,0.1f,0.1f,1.0f)
+#define gGREEN	XMFLOAT4(0.1f,1.0f,0.1f,1.0f)
+#define gBLUE	XMFLOAT4(0.1f,0.1f,1.0f,1.0f)
+#pragma endregion
+
 using namespace DirectX;
 
 namespace wrl = Microsoft::WRL;
 class Graphics
 {
 public:
+	float deltaT = 0.0f; // time keeper
 	struct gVertex
 	{
 		XMFLOAT4 pos;
@@ -32,13 +39,13 @@ public:
 		XMMATRIX world;
 		XMMATRIX view;
 		XMMATRIX proj;
-		// Lights and such
 		XMFLOAT4 ambientLight;
+		float dTime;
 	};
 	struct gDirLightBuff
 	{
-		XMFLOAT4 dir;
-		XMFLOAT4 color;
+		XMFLOAT4 dir[2];
+		XMFLOAT4 color[2];
 	};
 
 	Graphics(HWND hWnd);
@@ -72,13 +79,13 @@ public:
 #pragma endregion
 	// Setting up Matrices
 	XMMATRIX globalWorld = XMMatrixIdentity();
-	XMVECTOR Eye = XMVectorSet(0.0f, 0.5f, -10.0f, 0.0f);
-	XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	XMVECTOR Eye = XMVectorSet(0.0f, 2.0f, -10.0f, 0.0f);
+	XMVECTOR At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	XMMATRIX tmpVw = XMMatrixLookAtLH(Eye, At, Up);
 	XMVECTOR detVw = XMMatrixDeterminant(tmpVw);
 	XMMATRIX globalView = XMMatrixInverse(&detVw, tmpVw);
-	XMMATRIX globalProj = XMMatrixPerspectiveFovLH((90.0f * (3.1415f / 180.0f)), 1280.0f / 720.0f, 0.01f, 100.0f);
+	XMMATRIX globalProj = XMMatrixPerspectiveFovLH((90.0f * (3.1415f / 180.0f)), 1280.0f / 720.0f, 0.01f, 1000.0f);
 
 	// Win32 + DirectX = gobeldegooks
 	enum Axis

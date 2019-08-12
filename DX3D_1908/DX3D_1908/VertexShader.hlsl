@@ -5,12 +5,13 @@ cbuffer constBuff : register(b0)
 	matrix vProj;
 	// lights and color floats
 	float4 vAmbLight;
+    float vDTime;
 }
 
 cbuffer Dir_LightBuff : register(b1)
 {
-	float4 DL_dir;
-	float4 DL_color;
+	float4 DL_dir[2];
+	float4 DL_color[2];
 }
 
 struct VS_Input
