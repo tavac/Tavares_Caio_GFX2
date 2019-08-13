@@ -7,6 +7,9 @@
 #include <stdio.h>
 #include <iostream>
 
+#define	hWndWidth 1280
+#define hWndHeight 720
+
 class ToolBox
 {
 public:

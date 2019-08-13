@@ -56,22 +56,19 @@ Graphics::Graphics(HWND hWnd)
 
 Graphics::~Graphics()
 {
-	delete gpMesh;
+	for (int i = 0; i < numOfMeshs; i++)
+	{
+		delete gppMesh[i];
+	}
+
 }
 
 HRESULT Graphics::InitDevice()
 {
 	HRESULT hr;
 
-#pragma region FBX Loading
-	
-	//LoadMesh("Cube.fbx",50.0f, gpMesh);
-	LoadMesh("NewDragon.fbx",10.0f, gpMesh);
-#pragma endregion
-
-
+#pragma region BUFFERS
 	D3D11_BUFFER_DESC buffdesc = {};
-
 	// create constant buffer
 	buffdesc = {};
 	buffdesc.Usage = D3D11_USAGE_DEFAULT;
@@ -82,45 +79,58 @@ HRESULT Graphics::InitDevice()
 	if (FAILED(hr))
 		return hr;
 
-	// create light buffer
+	// create Directional light buffer
 	buffdesc = {};
 	buffdesc.Usage = D3D11_USAGE_DEFAULT;
 	buffdesc.ByteWidth = sizeof(gDirLightBuff);
 	buffdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	buffdesc.CPUAccessFlags = 0;
-	hr = gDev->CreateBuffer(&buffdesc, nullptr, &gLightBuffer);
+	hr = gDev->CreateBuffer(&buffdesc, nullptr, &gDLightBuffer);
 	if (FAILED(hr))
 		return hr;
 
-	// create vertex buffer
+	// create Point light buffer
 	buffdesc = {};
 	buffdesc.Usage = D3D11_USAGE_DEFAULT;
-	buffdesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	buffdesc.CPUAccessFlags = 0u;
-	buffdesc.MiscFlags = 0u;
-	buffdesc.ByteWidth = sizeof(gVertex) * gpMesh->numVertices;
-	buffdesc.StructureByteStride = sizeof(gVertex);
-	D3D11_SUBRESOURCE_DATA subData = {};
-	subData.pSysMem = gpMesh->verts;
-	hr = gDev->CreateBuffer(&buffdesc, &subData, gVertBuffer.GetAddressOf());
-	if (FAILED(hr))
-	{
-		ToolBox::ThrowErrorMsg("CreateVertexBuffer Failed in InitDevice");
-		return hr;
-	}
-
-	buffdesc = {};
-	buffdesc.Usage = D3D11_USAGE_DEFAULT;
-	buffdesc.ByteWidth = sizeof(int) * gpMesh->numIndices;
-	buffdesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	buffdesc.ByteWidth = sizeof(gPntLightBuff);
+	buffdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	buffdesc.CPUAccessFlags = 0;
-	subData = {};
-	subData.pSysMem = gpMesh->indices;
-	hr = gDev->CreateBuffer(&buffdesc, &subData, &gIndexBuffer);
+	hr = gDev->CreateBuffer(&buffdesc, nullptr, &gPLightBuffer);
 	if (FAILED(hr))
-	{
-		ToolBox::ThrowErrorMsg("CreateIndexBuffer Failed in InitDevice");
 		return hr;
+
+	for (int mI = 0; mI < numOfMeshs; mI++)
+	{
+		// create vertex buffer
+		buffdesc = {};
+		buffdesc.Usage = D3D11_USAGE_DEFAULT;
+		buffdesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		buffdesc.CPUAccessFlags = 0u;
+		buffdesc.MiscFlags = 0u;
+		buffdesc.ByteWidth = sizeof(gVertex) * gppMesh[mI]->numVertices;
+		buffdesc.StructureByteStride = sizeof(gVertex);
+		D3D11_SUBRESOURCE_DATA subData = {};
+		subData.pSysMem = gppMesh[mI]->verts;
+		hr = gDev->CreateBuffer(&buffdesc, &subData, gVertBuffer.GetAddressOf());
+		if (FAILED(hr))
+		{
+			ToolBox::ThrowErrorMsg("CreateVertexBuffer Failed in InitDevice");
+			return hr;
+		}
+
+		buffdesc = {};
+		buffdesc.Usage = D3D11_USAGE_DEFAULT;
+		buffdesc.ByteWidth = sizeof(int) * gppMesh[mI]->numIndices;
+		buffdesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		buffdesc.CPUAccessFlags = 0;
+		subData = {};
+		subData.pSysMem = gppMesh[mI]->indices;
+		hr = gDev->CreateBuffer(&buffdesc, &subData, &gIndexBuffer);
+		if (FAILED(hr))
+		{
+			ToolBox::ThrowErrorMsg("CreateIndexBuffer Failed in InitDevice");
+			return hr;
+		}
 	}
 
 	// Set index buffer
@@ -130,7 +140,9 @@ HRESULT Graphics::InitDevice()
 	const UINT strides = sizeof(gVertex);
 	const UINT offset = 0u;
 	gCon->IASetVertexBuffers(0u, 1u, gVertBuffer.GetAddressOf(), &strides, &offset);
+#pragma endregion
 
+#pragma Vertex,Pixel Shaders
 	// create pixel shader
 	D3DReadFileToBlob(L"PixelShader.cso", &gBlob);
 	hr = gDev->CreatePixelShader(gBlob->GetBufferPointer(), gBlob->GetBufferSize(), nullptr, &gPixelShader);
@@ -162,8 +174,8 @@ HRESULT Graphics::InitDevice()
 		{"NORMAL",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 		{"TEXCOORD",0,DXGI_FORMAT_R32G32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 	};
-	//TextureFileFromFBX();
-	HRESULT res = CreateDDSTextureFromFile(gDev.Get(), L"Crate.dds", nullptr, &shaderRV);
+
+	HRESULT res = CreateDDSTextureFromFile(gDev.Get(), L"crate.dds", nullptr, &shaderRV);
 	//HRESULT res = CreateDDSTextureFromFile(g_pd3dDevice, (const wchar_t*)textName, nullptr,&shadRes);
 	if (FAILED(res))
 		return res;
@@ -185,17 +197,48 @@ HRESULT Graphics::InitDevice()
 	hr = gDev->CreateInputLayout(ildes, (UINT)ARRAYSIZE(ildes), gBlob->GetBufferPointer(), gBlob->GetBufferSize(), &gInputLayout);
 	if (FAILED(hr))
 	{
-		ToolBox::ThrowErrorMsg("CreateInputLayout Failed in DrawTriangle");
+		ToolBox::ThrowErrorMsg("CreateInputLayout Failed in InitDevice");
 		return hr;
 	}
 	// bind vertex target
 	gCon->IASetInputLayout(gInputLayout.Get());
+#pragma endregion
 
-	// bind render target
-	gCon->OMSetRenderTargets(1, gRtv.GetAddressOf(), nullptr);
+#pragma region Views
+
 
 	// Set primitive topology to triangle list ( group of 3 verts)
 	gCon->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// Create depth stencil texture
+	D3D11_TEXTURE2D_DESC descDepth = {};
+	descDepth.Width = hWndWidth;
+	descDepth.Height = hWndHeight;
+	descDepth.MipLevels = 1;
+	descDepth.ArraySize = 1;
+	descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	descDepth.SampleDesc.Count = 1;
+	descDepth.SampleDesc.Quality = 0;
+	descDepth.Usage = D3D11_USAGE_DEFAULT;
+	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	descDepth.CPUAccessFlags = 0;
+	descDepth.MiscFlags = 0;
+	hr = gDev->CreateTexture2D(&descDepth, nullptr, gDepthStencil.GetAddressOf());
+	if (FAILED(hr))
+		return hr;
+
+	//// Create the depth stencil view
+	//D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
+	//descDSV.Format = descDepth.Format;
+	//descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	//descDSV.Texture2D.MipSlice = 0;
+	//hr = gDev->CreateDepthStencilView(gDepthStencil.Get(), &descDSV, gDsv.GetAddressOf());
+	//if (FAILED(hr))
+	//	return hr;
+
+	// bind render target
+	//gCon->OMSetRenderTargets(1, gRtv.GetAddressOf(), gDsv.Get());
+	gCon->OMSetRenderTargets(1, gRtv.GetAddressOf(), nullptr);
 
 	// configer viewport
 	D3D11_VIEWPORT vp;
@@ -206,6 +249,7 @@ HRESULT Graphics::InitDevice()
 	vp.TopLeftX = 0;
 	vp.TopLeftY = 0;
 	gCon->RSSetViewports(1u, &vp);
+#pragma endregion
 
 	return hr;
 }
@@ -219,7 +263,7 @@ void Graphics::Render()
 	if (timeStart == 0)
 		timeStart = timeCur;
 	deltaT = (timeCur - timeStart) / 1000.0f;
-	
+
 
 	// Clear Buffers
 	gCon->ClearRenderTargetView(gRtv.Get(), DirectX::Colors::Black);
@@ -228,32 +272,33 @@ void Graphics::Render()
 	// Setup Constant buffers to be used in shaders.
 	gConstantBuff gCB;
 	gCB.dTime = deltaT;
-	gCB.world = XMMatrixTranslation(0.0f, 0.0f, 1.0f);
-	//gCB.world = XMMatrixRotationAxis({ 0,1,0 }, deltaT);
+	gCB.world = XMMatrixTranslation(0.0f, 0.0f, 10.0f);
+	gCB.world = XMMatrixRotationAxis({ 0,1,0 }, deltaT);
 	gCB.world = XMMatrixTranspose(gCB.world);
 	XMVECTOR tV = XMMatrixDeterminant(globalView);
 	XMMATRIX tM = XMMatrixInverse(&tV, globalView);
 	gCB.view = XMMatrixTranspose(tM);
 	gCB.proj = XMMatrixTranspose(globalProj);
-	gCB.ambientLight = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	gCB.ambientLight = XMFLOAT4(1, 1, 1, 1.0f);
 	gCon->UpdateSubresource(gConstantBuffer.Get(), 0, nullptr, &gCB, 0, 0);
 
-	// Light Buffer Setup
-	gDirectional_1.dir[0] = (XMFLOAT4(-1.0f, -2.0f, 1.0f, 0.0f));
-	gDirectional_1.color[0] = gRED;
-	//DirectionLightSwitch(Graphics::DirectionLight_Red);
-	gCon->UpdateSubresource(gLightBuffer.Get(), 0, nullptr, &gDirectional_1, 0, 0);
-	//gCon->DrawIndexed((UINT)gpMesh->numVertices, 0u, 0);
+	// DLight Buffer Setup
+	gDirectional.dir[0] = (XMFLOAT4(-1.0f, -2.0f, 1.0f, 0.0f));
+	gDirectional.color[0] = gRED;
+	gCon->UpdateSubresource(gDLightBuffer.Get(), 0, nullptr, &gDirectional, 0, 0);
 
-	// Light Buffer Setup
-	gDirectional_1.dir[1] = (XMFLOAT4(1.0f, 2.0f, 1.0f, 0.0f));
-	gDirectional_1.color[1] = gBLUE;
-	//DirectionLightSwitch(Graphics::DirectionLight_Green);
-	gCon->UpdateSubresource(gLightBuffer.Get(), 0, nullptr, &gDirectional_1, 0, 0);
-	//gCon->DrawIndexed((UINT)gpMesh->numVertices, 0u, 0);
+	// DLight Buffer Setup
+	gDirectional.dir[1] = (XMFLOAT4(1.0f, 2.0f, 1.0f, 0.0f));
+	gDirectional.color[1] = gBLUE;
+	gCon->UpdateSubresource(gDLightBuffer.Get(), 0, nullptr, &gDirectional, 0, 0);
+
+	// PLight Buffer Setup
+	gPointLight.pos[0] = (XMFLOAT4(0.0f, 0.0f, 7.5f, 0.0f));
+	gPointLight.color[0] = gGREEN;
+	gCon->UpdateSubresource(gPLightBuffer.Get(), 0, nullptr, &gPointLight, 0, 0);
 
 	// Set Shaders and Constant Buffer to Shader and Draw
-	ID3D11Buffer* buffs[] = { *gConstantBuffer.GetAddressOf(), *gLightBuffer.GetAddressOf() };
+	ID3D11Buffer* buffs[] = { *gConstantBuffer.GetAddressOf(), *gDLightBuffer.GetAddressOf() };
 	gCon->VSSetShader(gVertexShader.Get(), nullptr, 0u);
 	gCon->VSSetConstantBuffers(0u, (UINT)ARRAYSIZE(buffs), buffs);
 	gCon->PSSetShader(gPixelShader.Get(), nullptr, 0u);
@@ -261,7 +306,9 @@ void Graphics::Render()
 	gCon->PSSetShaderResources(0, 1, shaderRV.GetAddressOf());
 	gCon->PSSetSamplers(0, 1, smplrState.GetAddressOf());
 	//gCon->DrawIndexed(6u, 0u, 0u);
-	gCon->DrawIndexed((UINT)gpMesh->numVertices, 0u, 0);
+	//for (int i = 0; i < numOfMeshs; i++)
+		//gCon->DrawIndexedInstanced(36, 2, 0, 0, 0);
+	gCon->DrawIndexed((UINT)gppMesh[0]->numVertices, 0u, 0);
 	// to here might be a function???
 
 	// Present ""Finished"" buffer to screen
@@ -336,7 +383,7 @@ void Graphics::ProcessFBXMesh(FbxNode* Node, gMesh* gmesh)
 				vertices2[j].norm.y = (float)normalsVec[j].mData[1];
 				vertices2[j].norm.z = (float)normalsVec[j].mData[2];
 
-				vertices2[j].uv.x =	UVvec[j].x;
+				vertices2[j].uv.x = UVvec[j].x;
 				vertices2[j].uv.y = UVvec[j].y;
 			}
 			for (int hlk = 0; hlk < gmesh->numIndices; hlk++)
@@ -569,38 +616,47 @@ void Graphics::TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode)
 		}
 	}
 }
-void Graphics::LoadMesh(std::string fileName, float mesh_scale, gMesh* mesh)
+void Graphics::LoadMesh(std::string fileName, float mesh_scale, gMesh** meshArr, UINT meshIndex)
 {
-	mesh->scale = mesh_scale;
+		if (meshArr[meshIndex] == nullptr) // If empty, fill.
+		{
+			meshArr[meshIndex] = new gMesh();
+			meshArr[meshIndex]->scale = mesh_scale;
+			// Initialize the SDK manager. This object handles all our memory management.
+			FbxManager* lSdkManager = FbxManager::Create();
 
-	// Initialize the SDK manager. This object handles all our memory management.
-	FbxManager* lSdkManager = FbxManager::Create();
+			// Create the IO settings object.
+			FbxIOSettings* ios = FbxIOSettings::Create(lSdkManager, IOSROOT);
+			lSdkManager->SetIOSettings(ios);
 
-	// Create the IO settings object.
-	FbxIOSettings* ios = FbxIOSettings::Create(lSdkManager, IOSROOT);
-	lSdkManager->SetIOSettings(ios);
+			// Create an importer using the SDK manager.
+			FbxImporter* lImporter = FbxImporter::Create(lSdkManager, "");
 
-	// Create an importer using the SDK manager.
-	FbxImporter* lImporter = FbxImporter::Create(lSdkManager, "");
+			// Use the first argument as the filename for the importer.
+			if (!lImporter->Initialize(fileName.c_str(), -1, lSdkManager->GetIOSettings())) {
+				printf("Call to FbxImporter::Initialize() failed.\n");
+				printf("Error returned: %s\n\n", lImporter->GetStatus().GetErrorString());
+				exit(-1);
+			}
 
-	// Use the first argument as the filename for the importer.
-	if (!lImporter->Initialize(fileName.c_str(), -1, lSdkManager->GetIOSettings())) {
-		printf("Call to FbxImporter::Initialize() failed.\n");
-		printf("Error returned: %s\n\n", lImporter->GetStatus().GetErrorString());
-		exit(-1);
-	}
+			// Create a new scene so that it can be populated by the imported file.
+			FbxScene* lScene = FbxScene::Create(lSdkManager, "myScene");
 
-	// Create a new scene so that it can be populated by the imported file.
-	FbxScene* lScene = FbxScene::Create(lSdkManager, "myScene");
+			// Import the contents of the file into the scene.
+			lImporter->Import(lScene);
 
-	// Import the contents of the file into the scene.
-	lImporter->Import(lScene);
+			// The file is imported; so get rid of the importer.
+			lImporter->Destroy();
 
-	// The file is imported; so get rid of the importer.
-	lImporter->Destroy();
-
-	// Process the scene and build DirectX Arrays
-	ProcessFBXMesh(lScene->GetRootNode(),mesh);
+			// Process the scene and build DirectX Arrays
+			ProcessFBXMesh(lScene->GetRootNode(), meshArr[meshIndex]);
+			numOfMeshs++;
+			return;
+		}
+		else
+		{
+			ToolBox::ThrowErrorMsg("LoadMesh() failed::meshArr was not nullptr.\nWe do not overwrite memory in this house!");
+		}
 }
 
 void Graphics::CameraMove(XMVECTOR E, Graphics::Axis axi)
@@ -609,10 +665,10 @@ void Graphics::CameraMove(XMVECTOR E, Graphics::Axis axi)
 	//XMVECTOR dAngle = XMVector4Dot(globalView.r[3], E);
 	//XMFLOAT4 dAngleF; 
 	//XMStoreFloat4(&dAngleF, dAngle);
-
-
+	//
+	//
 	//XMMATRIX rotationMtx = XMMatrixIdentity();
-
+	//
 	//switch (axi)
 	//{
 	//case Graphics::x:
@@ -625,13 +681,13 @@ void Graphics::CameraMove(XMVECTOR E, Graphics::Axis axi)
 	//	rotationMtx = XMMatrixRotationAxis({ 0,0,1 }, dAngleF.z);
 	//	break;
 	//}
-	/*XMMATRIX tmp = XMMatrixTranspose(globalView);
-	tmp.r[3] *= E;
-	globalView = XMMatrixTranspose(tmp);*/
+	//XMMATRIX tmp = XMMatrixTranspose(globalView);
+	//globalView.r[3] += E;
+	//globalView = XMMatrixTranspose(tmp);
 	//globalView.r[3] += XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-	E = XMVector3Transform(E, globalWorld);
-	E = XMVector3Transform(E, globalView);
-	globalView.r[3] += E;
+	//E = XMVector3Transform(E, globalWorld);
+	//E = XMVector3Transform(E, globalView);
+	//globalView.r[3] += E;
 	//Eye = globalView.r[3] + E;
 	//XMMATRIX nMtx = XMMatrixLookAtLH(Eye, At, Up);
 	//XMVECTOR detmnt = XMMatrixDeterminant(nMtx);
@@ -652,8 +708,8 @@ void Graphics::CameraMove(XMVECTOR E, Graphics::Axis axi)
 	//XMMATRIX nMtx = XMMatrixLookAtLH(currEye, currAt, Up);
 	//XMVECTOR detmnt = XMMatrixDeterminant(nMtx);
 	//globalView = XMMatrixInverse(&detmnt, nMtx);
-	
-	
+
+
 
 	//XMMATRIX nMtx = XMMatrixLookAtLH(Eye, At, Up);
 	//detmnt = XMMatrixDeterminant(globalView);
@@ -662,10 +718,21 @@ void Graphics::CameraMove(XMVECTOR E, Graphics::Axis axi)
 	////XMMATRIX tmpp = XMMatrixLookAtLH(tmpEye, At, Up);
 	////XMVECTOR tmpDet = XMMatrixDeterminant(tmpp);
 	//globalView = XMMatrixInverse(&detmnt, nMtx);
+
+
+	Eye += E;
+	At += E;
+	XMMATRIX nMtx = XMMatrixLookAtLH(Eye, At, Up);
+	XMVECTOR detmnt = XMMatrixDeterminant(nMtx);
+	//XMVECTOR tmpEye = (XMVECTOR)globalView.r[3];
+	//tmpEye += XMVectorSet(0.0f, 0.0f, loc_z, 0.0f);
+	//XMMATRIX tmpp = XMMatrixLookAtLH(tmpEye, At, Up);
+	//XMVECTOR tmpDet = XMMatrixDeterminant(tmpp);
+	globalView = XMMatrixInverse(&detmnt, nMtx);
 }
 void Graphics::CameraRotate(XMVECTOR axis, float angle)
 {
-	
+
 	At += (axis * angle);
 	XMMATRIX nMtx = XMMatrixLookAtLH(Eye, At, Up);
 	XMVECTOR detmnt = XMMatrixDeterminant(nMtx);

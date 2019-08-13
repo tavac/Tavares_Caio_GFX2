@@ -11,13 +11,16 @@ std::string winTitle = "Hit 'TAB' to enter command, Execute with 'ENTER'";
 Graphics* Gfx = nullptr;
 std::string strIB;
 bool isTyping = false;
+#define MODEL_COUNT 3
+int currModel = 0;
+bool ModelSwitched = FALSE;
 #pragma endregion
 
 #pragma region ForwardDeclarations
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 WNDCLASSEX Init_WindowClass(const char* _className, HINSTANCE _hInst);
 HWND Init_Window(int _width, int _height, std::string _title, WNDCLASSEX* _WndClass);
-bool DirLight_ComProc(std::string s);
+void ModelDraw_Switch(int nextModelToLoad);
 #pragma endregion
 
 int CALLBACK WinMain(
@@ -28,15 +31,29 @@ int CALLBACK WinMain(
 {
 
 	WNDCLASSEX wc = Init_WindowClass("WndClassEX", hInstance);
-	hWnd = Init_Window(1280, 720, winTitle, &wc);
-
+	hWnd = Init_Window(hWndWidth, hWndHeight, winTitle, &wc);
 	Gfx = new Graphics(hWnd);
+#pragma region LOAD MODELS
+	//ModelDraw_Switch(currModel); // Default Model set to draw, SPACE BAR to cycle.
+	//std::string modelName[MODEL_COUNT] = { "Tester.fbx","NewDragon.fbx","Cube.fbx" }; // convert to array or vector of strings to store multiple mesh directories.
+	Gfx->LoadMesh("Tester.fbx", 1.0f, Gfx->gppMesh, 0);
+	//Gfx->LoadMesh("NewDragon.fbx",10.0f, Gfx->gppMesh, 0);
+	//Gfx->LoadMesh("Cube.fbx", 50.0f, Gfx->gppMesh, 0);
+	//Gfx->LoadMesh("Cube.fbx", 50.0f, Gfx->gppMesh, 1);
+#pragma endregion
 	Gfx->InitDevice();
 
 	// Message Loop
 	MSG msg = { 0 };
 	while (WM_QUIT != msg.message)
 	{
+		if (ModelSwitched)
+		{
+			ModelSwitched = FALSE;
+			ModelDraw_Switch(currModel);
+			Gfx->InitDevice();
+		}
+
 
 		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{
@@ -72,43 +89,43 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		//
 		//}
 		//break;
-		case WM_CHAR: // TranslateMessage(); processes WM_CHAR allow for easy key input.
-		{
-			if (wParam == VK_TAB || isTyping)
-			{
-				if (!isTyping)
-				{
-					isTyping = true;
-					break;
-				}
-				// While Typing...
-				// "Enter" to send strIB to string processor
-				if (wParam == VK_RETURN)
-				{
-					if ((strIB = ToolBox::CommandProcesser(strIB)) != "")
-					{
-						if (strIB == "cls")
-						{
-							PostQuitMessage(0);
-							isTyping = false;
-						}
-						//else if (strIB.substr(0,6) == "alight")
-						else if (strIB.substr(0, 6) == "dlight")
-						{
-							DirLight_ComProc(strIB);
-							isTyping = false;
-						}
-					}
-					strIB = "";
-					SetWindowText(hWnd, winTitle.c_str());
-					break;
-				}
-				strIB.push_back((char)wParam);
-				SetWindowText(hWnd, strIB.c_str());
-			}
-		
-		}
-		break;
+		//case WM_CHAR: // TranslateMessage(); processes WM_CHAR allow for easy key input.
+		//{
+		//	if (wParam == VK_TAB || isTyping)
+		//	{
+		//		if (!isTyping)
+		//		{
+		//			isTyping = true;
+		//			break;
+		//		}
+		//		// While Typing...
+		//		// "Enter" to send strIB to string processor
+		//		if (wParam == VK_RETURN)
+		//		{
+		//			if ((strIB = ToolBox::CommandProcesser(strIB)) != "")
+		//			{
+		//				if (strIB == "cls")
+		//				{
+		//					PostQuitMessage(0);
+		//					isTyping = false;
+		//				}
+		//				//else if (strIB.substr(0,6) == "alight")
+		//				else if (strIB.substr(0, 6) == "dlight")
+		//				{
+		//					DirLight_ComProc(strIB);
+		//					isTyping = false;
+		//				}
+		//			}
+		//			strIB = "";
+		//			SetWindowText(hWnd, winTitle.c_str());
+		//			break;
+		//		}
+		//		strIB.push_back((char)wParam);
+		//		SetWindowText(hWnd, strIB.c_str());
+		//	}
+		//
+		//}
+		//break;
 	case WM_LBUTTONDOWN: // Left Click to get coordinate of raster where (0,0) is top left.
 	{
 		POINTS pt = MAKEPOINTS(lParam);
@@ -131,44 +148,70 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		XMVECTOR rotateAxis = { 1.0f,0.0f,0.0f };
 		float angle = GET_WHEEL_DELTA_WPARAM(wParam) * 0.001f;
-		Gfx->CameraRotate(rotateAxis,angle);
+		Gfx->CameraRotate(rotateAxis, angle);
 	}
 	break;
-	//case WM_CHAR:
-	//{
-	//	if ((char)wParam == 'w')
-	//	{
-	//		XMVECTOR velocity = XMVectorSet(0.0f, 0.0f, 0.1f, 0.0f);
-	//		Gfx->CameraMove(velocity,Gfx->z);
-	//	}
-	//	else if ((char)wParam == 'a')
-	//	{
-	//		XMVECTOR velocity = XMVectorSet(-0.1f, 0.0f, 0.0f, 0.0f);
-	//		Gfx->CameraMove(velocity, Gfx->x);
-	//	}
-	//	else if ((char)wParam == 's')
-	//	{
-	//		XMVECTOR velocity = XMVectorSet(0.0f, 0.0f, -0.1f, 0.0f);
-	//		Gfx->CameraMove(velocity, Gfx->z);
-	//	}
-	//	else if ((char)wParam == 'd')
-	//	{
-	//		XMVECTOR velocity = XMVectorSet(0.1f, 0.0f, 0.0f, 0.0f);
-	//		Gfx->CameraMove(velocity, Gfx->x);
-	//	}
-	//}
-	case VK_SPACE:
+	case WM_CHAR:
 	{
-		XMVECTOR velocity = XMVectorSet(0.0f, 0.1f, 0.0f, 0.0f);
-		Gfx->CameraMove(velocity, Gfx->y);
+		if (wParam == VK_SPACE)
+		{
+			// CYCLE MODELS
+			//currModel++;
+			//ModelSwitched = TRUE;
+		}
+		if ((char)wParam == 'w')
+		{
+			XMVECTOR velocity = XMVectorSet(0.0f, 0.0f, 0.1f, 0.0f);
+			Gfx->CameraMove(velocity, Gfx->z);
+		}
+		else if ((char)wParam == 'a')
+		{
+			XMVECTOR velocity = XMVectorSet(-0.1f, 0.0f, 0.0f, 0.0f);
+			Gfx->CameraMove(velocity, Gfx->x);
+		}
+		else if ((char)wParam == 's')
+		{
+			XMVECTOR velocity = XMVectorSet(0.0f, 0.0f, -0.1f, 0.0f);
+			Gfx->CameraMove(velocity, Gfx->z);
+		}
+		else if ((char)wParam == 'd')
+		{
+			XMVECTOR velocity = XMVectorSet(0.1f, 0.0f, 0.0f, 0.0f);
+			Gfx->CameraMove(velocity, Gfx->x);
+		}
+
+		if ((char)wParam == 'r')
+		{
+			XMVECTOR velocity = XMVectorSet(0.0f, 0.1f, 0.0f, 0.0f);
+			Gfx->CameraMove(velocity, Gfx->y);
+		}
+		else if ((char)wParam == 'f')
+		{
+			XMVECTOR velocity = XMVectorSet(0.0f, -0.1f, 0.0f, 0.0f);
+			Gfx->CameraMove(velocity, Gfx->y);
+		}
+		else if ((char)wParam == 'q')
+		{
+			XMMATRIX rotation = XMMatrixRotationZ(1.0f*(g_XMPi[0]/180.0f));
+			//XMMATRIX tmpM = {Gfx->Eye},{Gfx->At},{Gfx->Up};
+			Gfx->globalView = XMMatrixMultiply(Gfx->globalView, rotation);
+		}
+		else if ((char)wParam == 'e')
+		{
+			XMMATRIX rotation = XMMatrixRotationZ(Gfx->deltaT / 15);
+			Gfx->globalView = XMMatrixMultiply(Gfx->globalView, rotation);
+		}
+		else if ((char)wParam == '=')
+		{
+			if (Gfx->FoV_angle < 120)
+				Gfx->globalProj = XMMatrixPerspectiveFovLH(((Gfx->FoV_angle += 5) * (3.1415f / 180.0f)), 1280.0f / 720.0f, 0.001f, 1000.0f);
+		}
+		else if ((char)wParam == '-')
+		{
+			if (Gfx->FoV_angle > 30)
+				Gfx->globalProj = XMMatrixPerspectiveFovLH(((Gfx->FoV_angle -= 5) * (3.1415f / 180.0f)), 1280.0f / 720.0f, 0.001f, 1000.0f);
+		}
 	}
-	break;
-	case VK_CONTROL:
-	{
-		XMVECTOR velocity = XMVectorSet(0.0f,-0.1f, 0.0f, 0.0f);
-		Gfx->CameraMove(velocity, Gfx->y);
-	}
-	break;
 	}
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
@@ -249,4 +292,28 @@ bool DirLight_ComProc(std::string s)
 		rtn = false;
 	}
 	return rtn;
+}
+
+void ModelDraw_Switch(int modelToDraw)
+{
+	if (modelToDraw == 0)
+	{
+		Gfx->LoadMesh("Cube.fbx", 50.0f, Gfx->gppMesh, 0);
+		OutputDebugString("CUBE.FBX");
+	}
+	else if (modelToDraw == 1)
+	{
+		Gfx->LoadMesh("Cube.fbx", 100.0f, Gfx->gppMesh, 1);
+		OutputDebugString("CUBE.FBX BUT BIGGER");
+	}
+	else if (modelToDraw == 2)
+	{
+		Gfx->LoadMesh("Cube.fbx", 10.0f, Gfx->gppMesh, 2);
+		OutputDebugString("CUBE.FBX BUT smaller");
+	}
+	else
+	{
+		if (modelToDraw < 0) currModel = MODEL_COUNT;
+		else if (modelToDraw > MODEL_COUNT) currModel = 0;
+	}
 }

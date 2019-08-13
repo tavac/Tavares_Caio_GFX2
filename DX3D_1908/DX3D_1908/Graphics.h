@@ -33,7 +33,8 @@ public:
 		int numIndices = 0;
 		float scale = 1.0f;
 	};
-	gMesh* gpMesh = new gMesh();
+	gMesh* gppMesh[2] = { nullptr };
+	int numOfMeshs;
 	struct gConstantBuff
 	{
 		XMMATRIX world;
@@ -47,6 +48,11 @@ public:
 		XMFLOAT4 dir[2];
 		XMFLOAT4 color[2];
 	};
+	struct gPntLightBuff
+	{
+		XMFLOAT4 pos[1];
+		XMFLOAT4 color[1];
+	};
 
 	Graphics(HWND hWnd);
 	Graphics(const Graphics&) = delete;
@@ -54,7 +60,7 @@ public:
 	~Graphics();
 	HRESULT InitDevice();
 	void Render();
-	void LoadMesh(std::string fileName, float mesh_scale, gMesh* mesh);
+	void LoadMesh(std::string fileName, float mesh_scale, gMesh** meshArr, UINT meshIndex);
 	void ProcessFBXMesh(FbxNode* Node, gMesh* mesh);
 	void LoadUVFromFBX(FbxMesh* pMesh, std::vector<XMFLOAT2>* pVecUV);
 	void TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode);
@@ -63,10 +69,13 @@ private:
 	wrl::ComPtr<IDXGISwapChain> gSwap = nullptr;
 	wrl::ComPtr<ID3D11DeviceContext> gCon = nullptr;
 	wrl::ComPtr<ID3D11RenderTargetView> gRtv = nullptr;
-	wrl::ComPtr<ID3D11InputLayout> gInputLayout = nullptr;
+	wrl::ComPtr<ID3D11DepthStencilView> gDsv = nullptr;
+	wrl::ComPtr< ID3D11Texture2D> gDepthStencil = nullptr;
 	wrl::ComPtr<ID3D11Buffer> gConstantBuffer = nullptr;
-	wrl::ComPtr<ID3D11Buffer> gLightBuffer = nullptr;
+	wrl::ComPtr<ID3D11Buffer> gDLightBuffer = nullptr;
+	wrl::ComPtr<ID3D11Buffer> gPLightBuffer = nullptr;
 	wrl::ComPtr<ID3D11Buffer> gIndexBuffer = nullptr;
+	wrl::ComPtr<ID3D11InputLayout> gInputLayout = nullptr;
 	wrl::ComPtr<ID3D11VertexShader> gVertexShader = nullptr;
 	wrl::ComPtr<ID3D11Buffer> gVertBuffer = nullptr;
 	wrl::ComPtr<ID3D11PixelShader> gPixelShader = nullptr;
@@ -75,17 +84,19 @@ private:
 	wrl::ComPtr<ID3D11SamplerState> smplrState = nullptr;
 public:
 #pragma region Lights
-	gDirLightBuff gDirectional_1 = {};
+	gDirLightBuff gDirectional = {};
+	gPntLightBuff gPointLight = {};
 #pragma endregion
 	// Setting up Matrices
 	XMMATRIX globalWorld = XMMatrixIdentity();
-	XMVECTOR Eye = XMVectorSet(0.0f, 2.0f, -10.0f, 0.0f);
-	XMVECTOR At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	XMVECTOR Eye = XMVectorSet(0.0f, 0.0f, -10.0f, 0.0f);
+	XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	XMMATRIX tmpVw = XMMatrixLookAtLH(Eye, At, Up);
 	XMVECTOR detVw = XMMatrixDeterminant(tmpVw);
 	XMMATRIX globalView = XMMatrixInverse(&detVw, tmpVw);
-	XMMATRIX globalProj = XMMatrixPerspectiveFovLH((90.0f * (3.1415f / 180.0f)), 1280.0f / 720.0f, 0.01f, 1000.0f);
+	float FoV_angle = 90.0f;
+	XMMATRIX globalProj = XMMatrixPerspectiveFovLH((FoV_angle * (3.1415f / 180.0f)), 1280.0f / 720.0f, 0.001f, 1000.0f);
 
 	// Win32 + DirectX = gobeldegooks
 	enum Axis

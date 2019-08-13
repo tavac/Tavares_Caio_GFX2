@@ -14,6 +14,12 @@ cbuffer Dir_LightBuff : register(b1)
 	float4 DL_color[2];
 }
 
+cbuffer Pnt_LightBuff : register(b2)
+{
+    float4 PL_pos[1];
+    float4 PL_color[1];
+}
+
 struct VS_Input
 {
 	float4 pos : POSITION;
