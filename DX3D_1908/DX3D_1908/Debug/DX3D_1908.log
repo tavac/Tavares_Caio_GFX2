@@ -1,2 +1,12 @@
 ﻿  WinMain.cpp
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(142,41): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(149,41): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(202,53): warning C4305:  'argument': truncation from 'double' to 'float'
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(207,54): warning C4305:  'argument': truncation from 'double' to 'float'
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(215,48): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(223,48): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(231,48): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(239,48): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(247,48): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(255,48): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
   DX3D_1908.vcxproj -> C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\Debug\DX3D_1908.exe

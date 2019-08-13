@@ -146,6 +146,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DDSTextureLoader.h" />
+    <ClInclude Include="Grail.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="ToolBox.h" />
   </ItemGroup>

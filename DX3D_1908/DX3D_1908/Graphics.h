@@ -6,6 +6,10 @@
 #include <vector>
 #include "DDSTextureLoader.h"
 
+#pragma region OBJ headers
+#include "Grail.h"
+#pragma endregion
+
 #pragma region Colors
 #define gRED	XMFLOAT4(1.0f,0.1f,0.1f,1.0f)
 #define gGREEN	XMFLOAT4(0.1f,1.0f,0.1f,1.0f)
@@ -64,23 +68,24 @@ public:
 	void ProcessFBXMesh(FbxNode* Node, gMesh* mesh);
 	void LoadUVFromFBX(FbxMesh* pMesh, std::vector<XMFLOAT2>* pVecUV);
 	void TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode);
+	void ProcessObj(_OBJ_VERT_ ov[], int size);
 private:
 	wrl::ComPtr<ID3D11Device> gDev = nullptr;
 	wrl::ComPtr<IDXGISwapChain> gSwap = nullptr;
 	wrl::ComPtr<ID3D11DeviceContext> gCon = nullptr;
 	wrl::ComPtr<ID3D11RenderTargetView> gRtv = nullptr;
 	wrl::ComPtr<ID3D11DepthStencilView> gDsv = nullptr;
-	wrl::ComPtr< ID3D11Texture2D> gDepthStencil = nullptr;
+	wrl::ComPtr<ID3D11Texture2D> gDepthStencil = nullptr;
 	wrl::ComPtr<ID3D11Buffer> gConstantBuffer = nullptr;
 	wrl::ComPtr<ID3D11Buffer> gDLightBuffer = nullptr;
-	wrl::ComPtr<ID3D11Buffer> gPLightBuffer = nullptr;
-	wrl::ComPtr<ID3D11Buffer> gIndexBuffer = nullptr;
+	wrl::ComPtr<ID3D11Buffer> gPLightBuffer = nullptr; 
+	wrl::ComPtr<ID3D11Buffer> gIndexBuffer = nullptr; //
 	wrl::ComPtr<ID3D11InputLayout> gInputLayout = nullptr;
 	wrl::ComPtr<ID3D11VertexShader> gVertexShader = nullptr;
-	wrl::ComPtr<ID3D11Buffer> gVertBuffer = nullptr;
+	wrl::ComPtr<ID3D11Buffer> gVertBuffer = nullptr; //
 	wrl::ComPtr<ID3D11PixelShader> gPixelShader = nullptr;
 	wrl::ComPtr<ID3DBlob> gBlob = nullptr;
-	wrl::ComPtr<ID3D11ShaderResourceView> shaderRV = nullptr;
+	wrl::ComPtr<ID3D11ShaderResourceView> shaderRV = nullptr; //
 	wrl::ComPtr<ID3D11SamplerState> smplrState = nullptr;
 public:
 #pragma region Lights
@@ -96,14 +101,17 @@ public:
 	XMVECTOR detVw = XMMatrixDeterminant(tmpVw);
 	XMMATRIX globalView = XMMatrixInverse(&detVw, tmpVw);
 	float FoV_angle = 90.0f;
-	XMMATRIX globalProj = XMMatrixPerspectiveFovLH((FoV_angle * (3.1415f / 180.0f)), 1280.0f / 720.0f, 0.001f, 1000.0f);
+	float nearPlane = 0.001f;
+	float farPlane = 1000.0f;
+	XMMATRIX globalProj = XMMatrixPerspectiveFovLH((FoV_angle * (3.1415f / 180.0f)), 1280.0f / 720.0f, nearPlane, farPlane);
 
 	// Win32 + DirectX = gobeldegooks
 	enum Axis
 	{
 		x,y,z,w,u,v
 	};
-	void CameraMove(XMVECTOR E, Axis axi);
+	void LocalTranslate(XMVECTOR tV);
+	void GlobalTranslate(XMVECTOR tV);
 	void CameraRotate(XMVECTOR axis, float angle);
 	enum DirLightComs
 	{

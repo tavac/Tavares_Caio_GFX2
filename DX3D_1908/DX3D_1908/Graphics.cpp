@@ -235,8 +235,8 @@ HRESULT Graphics::InitDevice()
 	//hr = gDev->CreateDepthStencilView(gDepthStencil.Get(), &descDSV, gDsv.GetAddressOf());
 	//if (FAILED(hr))
 	//	return hr;
-
-	// bind render target
+	//
+	//// bind render target
 	//gCon->OMSetRenderTargets(1, gRtv.GetAddressOf(), gDsv.Get());
 	gCon->OMSetRenderTargets(1, gRtv.GetAddressOf(), nullptr);
 
@@ -273,7 +273,7 @@ void Graphics::Render()
 	gConstantBuff gCB;
 	gCB.dTime = deltaT;
 	gCB.world = XMMatrixTranslation(0.0f, 0.0f, 10.0f);
-	gCB.world = XMMatrixRotationAxis({ 0,1,0 }, deltaT);
+	//gCB.world = XMMatrixRotationAxis({ 0,1,0 }, deltaT);
 	gCB.world = XMMatrixTranspose(gCB.world);
 	XMVECTOR tV = XMMatrixDeterminant(globalView);
 	XMMATRIX tM = XMMatrixInverse(&tV, globalView);
@@ -293,7 +293,7 @@ void Graphics::Render()
 	gCon->UpdateSubresource(gDLightBuffer.Get(), 0, nullptr, &gDirectional, 0, 0);
 
 	// PLight Buffer Setup
-	gPointLight.pos[0] = (XMFLOAT4(0.0f, 0.0f, 7.5f, 0.0f));
+	gPointLight.pos[0] = (XMFLOAT4(0.0f, 0.0f, 8.5f, 0.0f));
 	gPointLight.color[0] = gGREEN;
 	gCon->UpdateSubresource(gPLightBuffer.Get(), 0, nullptr, &gPointLight, 0, 0);
 
@@ -616,6 +616,20 @@ void Graphics::TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode)
 		}
 	}
 }
+void Graphics::ProcessObj(_OBJ_VERT_ ov[],int size = 0)
+{
+	// push S elements into gMesh Vector
+	//gMesh* nMesh = nullptr;
+	//nMesh->verts = new gVertex[size];
+	//for (int p = 0; p < size; p++)
+	//{
+	//	nMesh->verts[p].pos = (XMFLOAT4)ov[p].pos;
+	//	nMesh->verts[p].norm = (XMFLOAT4)ov[p].nrm;
+	//	nMesh->verts[p].uv = (XMFLOAT2)ov[p].uvw;
+	//}
+	// make gMesh of size Vector
+	// set gMesh elements = gMesh Vector
+}
 void Graphics::LoadMesh(std::string fileName, float mesh_scale, gMesh** meshArr, UINT meshIndex)
 {
 		if (meshArr[meshIndex] == nullptr) // If empty, fill.
@@ -659,7 +673,8 @@ void Graphics::LoadMesh(std::string fileName, float mesh_scale, gMesh** meshArr,
 		}
 }
 
-void Graphics::CameraMove(XMVECTOR E, Graphics::Axis axi)
+// Use this for X and Z
+void Graphics::LocalTranslate(XMVECTOR tV)
 {
 	// Take dot of each axis to identity
 	//XMVECTOR dAngle = XMVector4Dot(globalView.r[3], E);
@@ -700,7 +715,6 @@ void Graphics::CameraMove(XMVECTOR E, Graphics::Axis axi)
 	// mult dot to inputVector E
 	// inputVector E into globalView
 
-
 	//globalView += XMMatrixTranslationFromVector(E);
 	//XMVECTOR currEye = globalView.r[2];
 	//XMVECTOR currAt = At + E;
@@ -708,8 +722,6 @@ void Graphics::CameraMove(XMVECTOR E, Graphics::Axis axi)
 	//XMMATRIX nMtx = XMMatrixLookAtLH(currEye, currAt, Up);
 	//XMVECTOR detmnt = XMMatrixDeterminant(nMtx);
 	//globalView = XMMatrixInverse(&detmnt, nMtx);
-
-
 
 	//XMMATRIX nMtx = XMMatrixLookAtLH(Eye, At, Up);
 	//detmnt = XMMatrixDeterminant(globalView);
@@ -719,28 +731,34 @@ void Graphics::CameraMove(XMVECTOR E, Graphics::Axis axi)
 	////XMVECTOR tmpDet = XMMatrixDeterminant(tmpp);
 	//globalView = XMMatrixInverse(&detmnt, nMtx);
 
+	//MMATRIX nMtx = XMMatrixLookAtLH(Eye, At, Up);
+	//XMVECTOR detmnt = XMMatrixDeterminant(globalView);
+	//globalView = XMMatrixInverse(&detmnt, globalView);
 
-	Eye += E;
-	At += E;
-	XMMATRIX nMtx = XMMatrixLookAtLH(Eye, At, Up);
-	XMVECTOR detmnt = XMMatrixDeterminant(nMtx);
+	//XMVECTOR detmnt = XMMatrixDeterminant(globalView);
+	//globalView = XMMatrixInverse(&detmnt, globalView);
 	//XMVECTOR tmpEye = (XMVECTOR)globalView.r[3];
 	//tmpEye += XMVectorSet(0.0f, 0.0f, loc_z, 0.0f);
 	//XMMATRIX tmpp = XMMatrixLookAtLH(tmpEye, At, Up);
 	//XMVECTOR tmpDet = XMMatrixDeterminant(tmpp);
-	globalView = XMMatrixInverse(&detmnt, nMtx);
+}
+// Use this for Y
+void Graphics::GlobalTranslate(XMVECTOR tV)
+{
+	
 }
 void Graphics::CameraRotate(XMVECTOR axis, float angle)
 {
-
-	At += (axis * angle);
-	XMMATRIX nMtx = XMMatrixLookAtLH(Eye, At, Up);
-	XMVECTOR detmnt = XMMatrixDeterminant(nMtx);
+	//XMMATRIX rotation = XMMatrixRotationZ(angle);
+	//globalView = XMMatrixMultiply(rotation, globalView);
+	//At += (axis * angle);
+	//XMMATRIX nMtx = XMMatrixLookAtLH(Eye, At, Up);
+	//XMVECTOR detmnt = XMMatrixDeterminant(nMtx);
 	//XMVECTOR tmpEye = (XMVECTOR)globalView.r[3];
 	//tmpEye += XMVectorSet(0.0f, 0.0f, loc_z, 0.0f);
 	//XMMATRIX tmpp = XMMatrixLookAtLH(tmpEye, At, Up);
 	//XMVECTOR tmpDet = XMMatrixDeterminant(tmpp);
-	globalView = XMMatrixInverse(&detmnt, nMtx);
+	//globalView = XMMatrixInverse(&detmnt, nMtx);
 	//globalView *= XMMatrixRotationAxis(axis, angle);
 }
 
