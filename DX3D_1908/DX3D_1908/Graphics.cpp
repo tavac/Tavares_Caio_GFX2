@@ -173,9 +173,11 @@ HRESULT Graphics::InitDevice()
 		{"POSITION",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 		{"NORMAL",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 		{"TEXCOORD",0,DXGI_FORMAT_R32G32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
+		{"COLOR",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 	};
 
-	HRESULT res = CreateDDSTextureFromFile(gDev.Get(), L"crate.dds", nullptr, &shaderRV);
+	//HRESULT res = CreateDDSTextureFromFile(gDev.Get(), L"crate.dds", nullptr, &shaderRV);
+	HRESULT res = CreateDDSTextureFromFile(gDev.Get(), L"carbonfiber.dds", nullptr, &shaderRV);
 	//HRESULT res = CreateDDSTextureFromFile(g_pd3dDevice, (const wchar_t*)textName, nullptr,&shadRes);
 	if (FAILED(res))
 		return res;
@@ -214,7 +216,7 @@ HRESULT Graphics::InitDevice()
 	D3D11_TEXTURE2D_DESC descDepth = {};
 	descDepth.Width = hWndWidth;
 	descDepth.Height = hWndHeight;
-	descDepth.MipLevels = 1;
+	descDepth.MipLevels = 0;
 	descDepth.ArraySize = 1;
 	descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	descDepth.SampleDesc.Count = 1;
@@ -227,27 +229,27 @@ HRESULT Graphics::InitDevice()
 	if (FAILED(hr))
 		return hr;
 
-	//// Create the depth stencil view
-	//D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
-	//descDSV.Format = descDepth.Format;
-	//descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	//descDSV.Texture2D.MipSlice = 0;
-	//hr = gDev->CreateDepthStencilView(gDepthStencil.Get(), &descDSV, gDsv.GetAddressOf());
-	//if (FAILED(hr))
-	//	return hr;
-	//
-	//// bind render target
-	//gCon->OMSetRenderTargets(1, gRtv.GetAddressOf(), gDsv.Get());
-	gCon->OMSetRenderTargets(1, gRtv.GetAddressOf(), nullptr);
+	// Create the depth stencil view
+	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
+	descDSV.Format = descDepth.Format;
+	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	descDSV.Texture2D.MipSlice = 0;
+	hr = gDev->CreateDepthStencilView(gDepthStencil.Get(), &descDSV, gDsv.GetAddressOf());
+	if (FAILED(hr))
+		return hr;
+	
+	// bind render target
+	gCon->OMSetRenderTargets(1, gRtv.GetAddressOf(), gDsv.Get());
+	//gCon->OMSetRenderTargets(1, gRtv.GetAddressOf(), nullptr);
 
 	// configer viewport
 	D3D11_VIEWPORT vp;
-	vp.Width = 1280;
-	vp.Height = 720;
-	vp.MinDepth = 0;
-	vp.MaxDepth = 1;
-	vp.TopLeftX = 0;
-	vp.TopLeftY = 0;
+	vp.Width = 1280.0f;
+	vp.Height = 720.0f;
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
+	vp.TopLeftX = 0.0f;
+	vp.TopLeftY = 0.0f;
 	gCon->RSSetViewports(1u, &vp);
 #pragma endregion
 
@@ -267,6 +269,7 @@ void Graphics::Render()
 
 	// Clear Buffers
 	gCon->ClearRenderTargetView(gRtv.Get(), DirectX::Colors::Black);
+	gCon->ClearDepthStencilView(gDsv.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
 
 	// from here
 	// Setup Constant buffers to be used in shaders.
@@ -275,30 +278,29 @@ void Graphics::Render()
 	gCB.world = XMMatrixTranslation(0.0f, 0.0f, 10.0f);
 	//gCB.world = XMMatrixRotationAxis({ 0,1,0 }, deltaT);
 	gCB.world = XMMatrixTranspose(gCB.world);
-	XMVECTOR tV = XMMatrixDeterminant(globalView);
-	XMMATRIX tM = XMMatrixInverse(&tV, globalView);
-	gCB.view = XMMatrixTranspose(tM);
+	gCB.view = XMMatrixTranspose(globalView);
 	gCB.proj = XMMatrixTranspose(globalProj);
-	gCB.ambientLight = XMFLOAT4(1, 1, 1, 1.0f);
+	gCB.ambientLight = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
 	gCon->UpdateSubresource(gConstantBuffer.Get(), 0, nullptr, &gCB, 0, 0);
 
 	// DLight Buffer Setup
-	gDirectional.dir[0] = (XMFLOAT4(-1.0f, -2.0f, 1.0f, 0.0f));
+	gDirectional.dir[0] = XMFLOAT4(-1.0f, 0.0f, 0.0f, 0.0f);
 	gDirectional.color[0] = gRED;
 	gCon->UpdateSubresource(gDLightBuffer.Get(), 0, nullptr, &gDirectional, 0, 0);
 
 	// DLight Buffer Setup
-	gDirectional.dir[1] = (XMFLOAT4(1.0f, 2.0f, 1.0f, 0.0f));
-	gDirectional.color[1] = gBLUE;
+	gDirectional.dir[1] = XMFLOAT4(1.0f, 0.0f, 0.0f, 0.0f);
+	gDirectional.color[1] = gGREEN;
 	gCon->UpdateSubresource(gDLightBuffer.Get(), 0, nullptr, &gDirectional, 0, 0);
 
 	// PLight Buffer Setup
-	gPointLight.pos[0] = (XMFLOAT4(0.0f, 0.0f, 8.5f, 0.0f));
-	gPointLight.color[0] = gGREEN;
+	//float ypos = (int)cosf(deltaT) % 10;
+	gPointLight.pos = XMFLOAT4(0.0f, 3.0f, 10.0f, 0.0f);
+	gPointLight.color = gBLUE;
 	gCon->UpdateSubresource(gPLightBuffer.Get(), 0, nullptr, &gPointLight, 0, 0);
 
 	// Set Shaders and Constant Buffer to Shader and Draw
-	ID3D11Buffer* buffs[] = { *gConstantBuffer.GetAddressOf(), *gDLightBuffer.GetAddressOf() };
+	ID3D11Buffer* buffs[] = { *gConstantBuffer.GetAddressOf(), *gDLightBuffer.GetAddressOf(), *gPLightBuffer.GetAddressOf() };
 	gCon->VSSetShader(gVertexShader.Get(), nullptr, 0u);
 	gCon->VSSetConstantBuffers(0u, (UINT)ARRAYSIZE(buffs), buffs);
 	gCon->PSSetShader(gPixelShader.Get(), nullptr, 0u);

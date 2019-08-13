@@ -14,6 +14,7 @@ bool isTyping = false;
 #define MODEL_COUNT 3
 int currModel = 0;
 bool ModelSwitched = FALSE;
+#define MoveSpeed 0.5f
 #pragma endregion
 
 #pragma region ForwardDeclarations
@@ -36,8 +37,8 @@ int CALLBACK WinMain(
 #pragma region LOAD MODELS
 	//ModelDraw_Switch(currModel); // Default Model set to draw, SPACE BAR to cycle.
 	//std::string modelName[MODEL_COUNT] = { "Tester.fbx","NewDragon.fbx","Cube.fbx" }; // convert to array or vector of strings to store multiple mesh directories.
-	//Gfx->LoadMesh("Tester.fbx", 1.0f, Gfx->gppMesh, 0);
-	Gfx->LoadMesh("NewDragon.fbx",10.0f, Gfx->gppMesh, 0);
+	Gfx->LoadMesh("Tester.fbx", 1.0f, Gfx->gppMesh, 0);
+	//Gfx->LoadMesh("NewDragon.fbx",10.0f, Gfx->gppMesh, 0);
 	//Gfx->LoadMesh("Cube.fbx", 50.0f, Gfx->gppMesh, 0);
 	//Gfx->LoadMesh("Cube.fbx", 50.0f, Gfx->gppMesh, 1);
 #pragma endregion
@@ -139,21 +140,37 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_MOUSEWHEEL:
 	{
 		float angle = GET_WHEEL_DELTA_WPARAM(wParam) * 0.01f;
+		//XMMATRIX rotation = XMMatrixRotationX(degToRad(angle));
+		//Gfx->globalView = XMMatrixMultiply(rotation, Gfx->globalView);
 		XMMATRIX rotation = XMMatrixRotationX(degToRad(angle));
-		Gfx->globalView = XMMatrixMultiply(rotation, Gfx->globalView);
+		XMVECTOR saver = Gfx->Camera.r[3];
+		Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
+		Gfx->Camera = XMMatrixMultiply(rotation, Gfx->Camera);
+		Gfx->Camera.r[3] = saver;
 	}
 	break;
 	case WM_MOUSEHWHEEL:
 	{
 		float angle = GET_WHEEL_DELTA_WPARAM(wParam) * 0.01f;
-		XMMATRIX rotation = XMMatrixRotationY(degToRad(angle));
-		Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
-		Gfx->globalView = XMMatrixMultiply(rotation, Gfx->globalView);
-		Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+		//XMMATRIX rotation = XMMatrixRotationY(degToRad(angle));
+		//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+		//Gfx->globalView = XMMatrixMultiply(rotation, Gfx->globalView);
+		//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+		XMMATRIX rotation = XMMatrixRotationY(degToRad(-angle));
+		XMVECTOR saver = Gfx->Camera.r[3];
+		Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
+		Gfx->Camera = XMMatrixMultiply(rotation,Gfx->Camera);
+		Gfx->Camera.r[3] = saver;
 	}
 	break;
 	case WM_CHAR:
 	{
+		if ((char)wParam == 'o') // Go Home Cam youre drunk
+		{
+			Gfx->globalView = XMMatrixLookAtLH(Gfx->Eye, Gfx->At, Gfx->Up);
+			Gfx->Camera = XMMatrixInverse(nullptr, Gfx->globalView);
+			return DefWindowProc(hWnd, msg, wParam, lParam);
+		}
 		if (wParam == VK_SPACE)
 		{
 			// CYCLE MODELS
@@ -162,52 +179,70 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		if ((char)wParam == 'w') // Forward
 		{
-			Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
-			Gfx->globalView.r[2] -= {0.0f, 0.0f, 0.1f};
-			Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+			//Gfx->globalView.r[2] -= {0.0f, 0.0f, 0.1f};
+			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+			XMMATRIX trans = XMMatrixTranslation(0.0f, 0.0f, MoveSpeed);
+			Gfx->Camera = XMMatrixMultiply(trans, Gfx->Camera);
 		}
 		else if ((char)wParam == 's') // Back
 		{
-			Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
-			Gfx->globalView.r[2] += {0.0f, 0.0f, 0.1f};
-			Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+			//Gfx->globalView.r[2] += {0.0f, 0.0f, 0.1f};
+			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+			XMMATRIX trans = XMMatrixTranslation(0.0f, 0.0f, -MoveSpeed);
+			Gfx->Camera = XMMatrixMultiply(trans, Gfx->Camera);
 		}
 		else if ((char)wParam == 'a') // Left
 		{
-			Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
-			Gfx->globalView.r[2] += {0.1f, 0.0f, 0.0f};
-			Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+			//Gfx->globalView.r[2] += {0.1f, 0.0f, 0.0f};
+			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+			XMMATRIX trans = XMMatrixTranslation(-MoveSpeed, 0.0f, 0.0f);
+			Gfx->Camera = XMMatrixMultiply(trans, Gfx->Camera);
 		}
 		else if ((char)wParam == 'd') // Right
 		{
-			Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
-			Gfx->globalView.r[2] -= {0.1f, 0.0f, 0.0f};
-			Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+			//Gfx->globalView.r[2] -= {0.1f, 0.0f, 0.0f};
+			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+			XMMATRIX trans = XMMatrixTranslation(MoveSpeed, 0.0f, 0.0f);
+			Gfx->Camera = XMMatrixMultiply(trans, Gfx->Camera);
 		}
 
 		if ((char)wParam == 'r') // Up
 		{
-			Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
-			Gfx->globalView.r[3] += {0.0f, -0.1f, 0.0f};
-			Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+			//Gfx->globalView.r[3] += {0.0f, -0.1f, 0.0f};
+			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+			XMMATRIX trans = XMMatrixTranslation(0.0f, MoveSpeed, 0.0f);
+			Gfx->Camera = XMMatrixMultiply(trans,Gfx->Camera);
 		}
 		else if ((char)wParam == 'f') // Down
 		{
-			Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
-			Gfx->globalView.r[3] += {0.0f, 0.1f, 0.0f};
-			Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+			//Gfx->globalView.r[3] += {0.0f, 0.1f, 0.0f};
+			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+			XMMATRIX trans = XMMatrixTranslation(0.0f, -MoveSpeed, 0.0f);
+			Gfx->Camera = XMMatrixMultiply(trans,Gfx->Camera);
 		}
 		else if ((char)wParam == 'q') // roll Left
 		{
 			XMMATRIX rotation = XMMatrixRotationZ(degToRad(2));
-			Gfx->globalView = XMMatrixMultiply(rotation, Gfx->globalView);
+			XMVECTOR saver = Gfx->Camera.r[3];
+			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
+			Gfx->Camera = XMMatrixMultiply(rotation, Gfx->Camera);
+			Gfx->Camera.r[3] = saver;
 		}
 		else if ((char)wParam == 'e') // roll right
 		{
 			XMMATRIX rotation = XMMatrixRotationZ(degToRad(-2));
-			Gfx->globalView = XMMatrixMultiply(rotation, Gfx->globalView);
+			XMVECTOR saver = Gfx->Camera.r[3];
+			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
+			Gfx->Camera = XMMatrixMultiply(rotation, Gfx->Camera);
+			Gfx->Camera.r[3] = saver;
 		}
-		else if ((char)wParam == '=') // Fov Wider
+		else if ((char)wParam == '-') // Fov Wider // zoom out
 		{
 			if (Gfx->FoV_angle < 120)
 			{
@@ -215,7 +250,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				Gfx->globalProj = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
 			}
 		}
-		else if ((char)wParam == '-') // Fov narrower
+		else if ((char)wParam == '=') // Fov narrower // zoom in
 		{
 			if (Gfx->FoV_angle > 30)
 			{
@@ -235,7 +270,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			if (Gfx->farPlane < 500.0f)
 			{
-				Gfx->farPlane += 1.0f;
+				Gfx->farPlane += 10.0f;
 				Gfx->globalProj = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
 			}
 		}
@@ -257,6 +292,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 	}
 	}
+	if (Gfx)
+		Gfx->globalView = XMMatrixInverse(nullptr, Gfx->Camera);
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 

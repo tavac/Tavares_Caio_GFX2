@@ -28,6 +28,7 @@ public:
 		XMFLOAT4 pos;
 		XMFLOAT4 norm;
 		XMFLOAT2 uv;
+		XMFLOAT4 color;
 	};
 	struct gMesh
 	{
@@ -54,8 +55,8 @@ public:
 	};
 	struct gPntLightBuff
 	{
-		XMFLOAT4 pos[1];
-		XMFLOAT4 color[1];
+		XMFLOAT4 pos;
+		XMFLOAT4 color;
 	};
 
 	Graphics(HWND hWnd);
@@ -94,12 +95,11 @@ public:
 #pragma endregion
 	// Setting up Matrices
 	XMMATRIX globalWorld = XMMatrixIdentity();
-	XMVECTOR Eye = XMVectorSet(0.0f, 0.0f, -10.0f, 0.0f);
+	XMVECTOR Eye = XMVectorSet(0.0f, 5.0f, -10.0f, 0.0f);
 	XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	XMMATRIX tmpVw = XMMatrixLookAtLH(Eye, At, Up);
-	XMVECTOR detVw = XMMatrixDeterminant(tmpVw);
-	XMMATRIX globalView = XMMatrixInverse(&detVw, tmpVw);
+	XMMATRIX globalView = XMMatrixLookAtLH(Eye, At, Up);
+	XMMATRIX Camera = XMMatrixInverse(nullptr, globalView);
 	float FoV_angle = 90.0f;
 	float nearPlane = 0.001f;
 	float farPlane = 1000.0f;
