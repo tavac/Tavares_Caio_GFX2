@@ -33,6 +33,7 @@ struct PS_Input
 
 float4 main(PS_Input psIn) : SV_Target
 {
+    //psIn.uv.x = cos(psIn.uv.y*vDTime);
     float4 outie = (txDiffuse.Sample(samLinear, psIn.uv)) * psIn.color;
 
     return outie;

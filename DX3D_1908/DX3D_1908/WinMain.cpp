@@ -15,6 +15,12 @@ bool isTyping = false;
 int currModel = 0;
 bool ModelSwitched = FALSE;
 #define MoveSpeed 0.5f
+XMFLOAT2 centerScreen;
+float last_X;
+float last_Y;
+float screenY;
+float screenX;
+float screenRatio;
 #pragma endregion
 
 #pragma region ForwardDeclarations
@@ -30,6 +36,13 @@ int CALLBACK WinMain(
 	_In_ LPSTR lpCmdLine,
 	_In_ int nCmdShow)
 {
+	screenY = GetSystemMetrics(SM_CYSCREEN);
+	screenX = GetSystemMetrics(SM_CXSCREEN);
+	centerScreen = { (screenX * 0.5f) ,(screenY * 0.5f) };
+	last_X = centerScreen.x;
+	last_Y = centerScreen.y;
+	screenRatio = (hWndHeight) * (hWndWidth) / (screenY * screenX);
+	SetCursorPos(centerScreen.x, centerScreen.y);
 
 	WNDCLASSEX wc = Init_WindowClass("WndClassEX", hInstance);
 	hWnd = Init_Window(hWndWidth, hWndHeight, winTitle, &wc);
@@ -37,8 +50,9 @@ int CALLBACK WinMain(
 #pragma region LOAD MODELS
 	//ModelDraw_Switch(currModel); // Default Model set to draw, SPACE BAR to cycle.
 	//std::string modelName[MODEL_COUNT] = { "Tester.fbx","NewDragon.fbx","Cube.fbx" }; // convert to array or vector of strings to store multiple mesh directories.
-	Gfx->LoadMesh("Tester.fbx", 1.0f, Gfx->gppMesh, 0);
+	//Gfx->LoadMesh("Tester.fbx", 1.0f, Gfx->gppMesh, 0);
 	//Gfx->LoadMesh("NewDragon.fbx",10.0f, Gfx->gppMesh, 0);
+	Gfx->LoadMesh("SpaceShip_1.fbx", 1.0f, Gfx->gppMesh, 0);
 	//Gfx->LoadMesh("Cube.fbx", 50.0f, Gfx->gppMesh, 0);
 	//Gfx->LoadMesh("Cube.fbx", 50.0f, Gfx->gppMesh, 1);
 #pragma endregion
@@ -48,12 +62,12 @@ int CALLBACK WinMain(
 	MSG msg = { 0 };
 	while (WM_QUIT != msg.message)
 	{
-		if (ModelSwitched)
-		{
-			ModelSwitched = FALSE;
-			ModelDraw_Switch(currModel);
-			Gfx->InitDevice();
-		}
+		//if (ModelSwitched)
+		//{
+		//	ModelSwitched = FALSE;
+		//	ModelDraw_Switch(currModel);
+		//	Gfx->InitDevice();
+		//}
 
 
 		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
@@ -137,45 +151,85 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	}
 	break;
 	// Camera Controls
-	case WM_MOUSEWHEEL:
+	//case WM_MOUSEMOVE:
+	case WM_KEYDOWN:
 	{
-		float angle = GET_WHEEL_DELTA_WPARAM(wParam) * 0.01f;
-		//XMMATRIX rotation = XMMatrixRotationX(degToRad(angle));
-		//Gfx->globalView = XMMatrixMultiply(rotation, Gfx->globalView);
-		XMMATRIX rotation = XMMatrixRotationX(degToRad(angle));
-		XMVECTOR saver = Gfx->Camera.r[3];
-		Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-		Gfx->Camera = XMMatrixMultiply(rotation, Gfx->Camera);
-		Gfx->Camera.r[3] = saver;
-	}
-	break;
-	case WM_MOUSEHWHEEL:
-	{
-		float angle = GET_WHEEL_DELTA_WPARAM(wParam) * 0.01f;
-		//XMMATRIX rotation = XMMatrixRotationY(degToRad(angle));
-		//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
-		//Gfx->globalView = XMMatrixMultiply(rotation, Gfx->globalView);
-		//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
-		XMMATRIX rotation = XMMatrixRotationY(degToRad(-angle));
-		XMVECTOR saver = Gfx->Camera.r[3];
-		Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-		Gfx->Camera = XMMatrixMultiply(rotation,Gfx->Camera);
-		Gfx->Camera.r[3] = saver;
-	}
-	break;
+		if (wParam == VK_UP)
+		{
+			//float xPos = GET_X_LPARAM(lParam);
+			//float yPos = GET_Y_LPARAM(lParam);
+			//if (xPos > 0 && xPos < hWndWidth && yPos > 0 && yPos < hWndHeight)
+			//{
+			//if (xPos != last_X)
+			//{
+				//float Yangle = xPos - last_X;
+				//XMMATRIX rotationY = XMMatrixRotationY(degToRad(Yangle * screenRatio));
+				//XMVECTOR saver = Gfx->Camera.r[3];
+				//Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
+				//Gfx->Camera = XMMatrixMultiply(Gfx->Camera, rotationY);
+				//Gfx->Camera.r[3] = saver;
+			//}
+			//if (yPos != last_Y)
+			//{
+				//float Xangle = yPos - last_Y;
+				//XMMATRIX rotationX = XMMatrixRotationX(degToRad(Xangle * 0.5f));
+			XMVECTOR saver = Gfx->Camera.r[3];
+			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
+			Gfx->Camera = XMMatrixMultiply(XMMatrixRotationX(degToRad(-Gfx->deltaT)), Gfx->Camera);
+			Gfx->Camera.r[3] = saver;
+			//}
+			//}
+			//last_X = xPos;
+			//last_Y = yPos;
+		}
+		else if (wParam == VK_DOWN)
+		{
+			XMVECTOR saver = Gfx->Camera.r[3];
+			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
+			Gfx->Camera = XMMatrixMultiply(XMMatrixRotationX(degToRad(Gfx->deltaT)), Gfx->Camera);
+			Gfx->Camera.r[3] = saver;
+		}
+		else if (wParam == VK_LEFT)
+		{
+			XMVECTOR saver = Gfx->Camera.r[3];
+			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
+			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, XMMatrixRotationY(degToRad(-Gfx->deltaT)));
+			Gfx->Camera.r[3] = saver;
+		}
+		else if (wParam == VK_RIGHT)
+		{
+			XMVECTOR saver = Gfx->Camera.r[3];
+			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
+			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, XMMatrixRotationY(degToRad(Gfx->deltaT)));
+			Gfx->Camera.r[3] = saver;
+		}
+
+		// Up
+		if (GetAsyncKeyState(VK_SPACE))
+		{
+			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+			//Gfx->globalView.r[3] += {0.0f, -0.1f, 0.0f};
+			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+			XMMATRIX trans = XMMatrixTranslation(0.0f, MoveSpeed, 0.0f);
+			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, trans);
+		}
+		// Down
+		if (GetAsyncKeyState(VK_LSHIFT))
+		{
+			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+			//Gfx->globalView.r[3] += {0.0f, 0.1f, 0.0f};
+			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
+			XMMATRIX trans = XMMatrixTranslation(0.0f, -MoveSpeed, 0.0f);
+			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, trans);
+		}
+	}break;
 	case WM_CHAR:
 	{
-		if ((char)wParam == 'o') // Go Home Cam youre drunk
+		if ((char)wParam == 'o' || (char)wParam == '0') // Go Home Cam youre drunk
 		{
 			Gfx->globalView = XMMatrixLookAtLH(Gfx->Eye, Gfx->At, Gfx->Up);
 			Gfx->Camera = XMMatrixInverse(nullptr, Gfx->globalView);
 			return DefWindowProc(hWnd, msg, wParam, lParam);
-		}
-		if (wParam == VK_SPACE)
-		{
-			// CYCLE MODELS
-			//currModel++;
-			//ModelSwitched = TRUE;
 		}
 		if ((char)wParam == 'w') // Forward
 		{
@@ -210,39 +264,25 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			Gfx->Camera = XMMatrixMultiply(trans, Gfx->Camera);
 		}
 
-		if ((char)wParam == 'r') // Up
-		{
-			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
-			//Gfx->globalView.r[3] += {0.0f, -0.1f, 0.0f};
-			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
-			XMMATRIX trans = XMMatrixTranslation(0.0f, MoveSpeed, 0.0f);
-			Gfx->Camera = XMMatrixMultiply(trans,Gfx->Camera);
-		}
-		else if ((char)wParam == 'f') // Down
-		{
-			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
-			//Gfx->globalView.r[3] += {0.0f, 0.1f, 0.0f};
-			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
-			XMMATRIX trans = XMMatrixTranslation(0.0f, -MoveSpeed, 0.0f);
-			Gfx->Camera = XMMatrixMultiply(trans,Gfx->Camera);
-		}
-		else if ((char)wParam == 'q') // roll Left
-		{
-			XMMATRIX rotation = XMMatrixRotationZ(degToRad(2));
-			XMVECTOR saver = Gfx->Camera.r[3];
-			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-			Gfx->Camera = XMMatrixMultiply(rotation, Gfx->Camera);
-			Gfx->Camera.r[3] = saver;
-		}
-		else if ((char)wParam == 'e') // roll right
-		{
-			XMMATRIX rotation = XMMatrixRotationZ(degToRad(-2));
-			XMVECTOR saver = Gfx->Camera.r[3];
-			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-			Gfx->Camera = XMMatrixMultiply(rotation, Gfx->Camera);
-			Gfx->Camera.r[3] = saver;
-		}
-		else if ((char)wParam == '-') // Fov Wider // zoom out
+		//// roll left
+		//if ((char)wParam == 'q')
+		//{
+		//	XMMATRIX rotation = XMMatrixRotationZ(degToRad(2));
+		//	XMVECTOR saver = Gfx->Camera.r[3];
+		//	Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
+		//	Gfx->Camera = XMMatrixMultiply(rotation, Gfx->Camera);
+		//	Gfx->Camera.r[3] = saver;
+		//}
+		//// roll right
+		//else if ((char)wParam == 'e')
+		//{
+		//	XMMATRIX rotation = XMMatrixRotationZ(degToRad(-2));
+		//	XMVECTOR saver = Gfx->Camera.r[3];
+		//	Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
+		//	Gfx->Camera = XMMatrixMultiply(rotation, Gfx->Camera);
+		//	Gfx->Camera.r[3] = saver;
+		//}
+		if ((char)wParam == 'f') // Fov Wider // zoom out
 		{
 			if (Gfx->FoV_angle < 120)
 			{
@@ -250,7 +290,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				Gfx->globalProj = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
 			}
 		}
-		else if ((char)wParam == '=') // Fov narrower // zoom in
+		else if ((char)wParam == 'r') // Fov narrower // zoom in
 		{
 			if (Gfx->FoV_angle > 30)
 			{
@@ -258,7 +298,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				Gfx->globalProj = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
 			}
 		}
-		else if ((char)wParam == '[') // Far plane closer
+		else if ((char)wParam == '=') // Far plane closer
 		{
 			if (Gfx->farPlane > 100.0f)
 			{
@@ -266,7 +306,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				Gfx->globalProj = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
 			}
 		}
-		else if ((char)wParam == ']') // Far plane further
+		else if ((char)wParam == '-') // Far plane further
 		{
 			if (Gfx->farPlane < 500.0f)
 			{
@@ -274,7 +314,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				Gfx->globalProj = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
 			}
 		}
-		else if ((char)wParam == ',') // Near plane closer
+		else if ((char)wParam == '[') // Near plane closer
 		{
 			if (Gfx->nearPlane > 0.001)
 			{
@@ -282,7 +322,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				Gfx->globalProj = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
 			}
 		}
-		else if ((char)wParam == '.') // Near plane further
+		else if ((char)wParam == ']') // Near plane further
 		{
 			if (Gfx->nearPlane < 1.0f)
 			{
@@ -324,15 +364,15 @@ HWND Init_Window(int _width, int _height, std::string _title, WNDCLASSEX* _WndCl
 
 	// Create window.
 	RECT ClientRect;
-	ClientRect.left = 100;
+	ClientRect.left = fabs(centerScreen.x - (_width * 0.5f));
 	ClientRect.right = ClientRect.left + _width;
-	ClientRect.top = 100;
+	ClientRect.top = fabs(centerScreen.y - (_height * 0.5f));
 	ClientRect.bottom = ClientRect.top + _height;
 	AdjustWindowRect(&ClientRect, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE);
 	HWND hWnd = CreateWindowEx(
 		0, _WndClass->lpszClassName, _title.c_str(),
 		WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU,
-		200, 200, ClientRect.right - ClientRect.left, ClientRect.bottom - ClientRect.top,
+		ClientRect.left, ClientRect.top, ClientRect.right - ClientRect.left, ClientRect.bottom - ClientRect.top,
 		nullptr, nullptr, _WndClass->hInstance, nullptr);
 
 	if (hWnd == nullptr)

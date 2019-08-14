@@ -1,0 +1,18 @@
+++CAMERA CONTROLS
+
+'o' or '0' = Reset Camera Position
+
+TRANSLATION:
+--- 'WASD' ========= X,Z Locals
+--- Space/LShift === Up/Down
+--- 'R'/'F' ======== ZoomIN/ZoomOut (FoV)
+--- '-' ============ -FarPlane
+--- '=' ============ +FarPlane
+--- '[' ============ -NearPlane
+--- ']' ============ +NearPlane
+
+ROTATION:
+--- UP arrow ======= Look up
+--- Down arrow ===== Look down
+--- Left arrow ===== Look Left
+--- Right arrow ==== Look Right
