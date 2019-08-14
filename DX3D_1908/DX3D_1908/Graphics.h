@@ -39,7 +39,7 @@ public:
 		int numIndices = 0;
 		float scale = 1.0f;
 	};
-	gMesh* gppMesh[2] = { nullptr };
+	gMesh* gppMesh = nullptr;
 	int numOfMeshs;
 	struct gConstantBuff
 	{

@@ -52,7 +52,7 @@ int CALLBACK WinMain(
 	//Gfx->LoadMesh("Tester.fbx", 1.0f, Gfx->gppMesh, 0);
 	//Gfx->LoadMesh("NewDragon.fbx",10.0f, Gfx->gppMesh, 0);
 	//Gfx->LoadMesh("SpaceShip_1.fbx", 1.0f, Gfx->gppMesh, 0);
-	Gfx->LoadMesh("SpaceShip_2.fbx", 0.5f, Gfx->gppMesh, 0);
+	Gfx->LoadMesh("SpaceShip_3.fbx", 0.5f, &Gfx->gppMesh, 0);
 	//Gfx->LoadMesh("Cube.fbx", 50.0f, Gfx->gppMesh, 0);
 	//Gfx->LoadMesh("Cube.fbx", 50.0f, Gfx->gppMesh, 1);
 #pragma endregion
@@ -431,26 +431,26 @@ bool DirLight_ComProc(std::string s)
 	return rtn;
 }
 
-void ModelDraw_Switch(int modelToDraw)
-{
-	if (modelToDraw == 0)
-	{
-		Gfx->LoadMesh("Cube.fbx", 50.0f, Gfx->gppMesh, 0);
-		OutputDebugString("CUBE.FBX");
-	}
-	else if (modelToDraw == 1)
-	{
-		Gfx->LoadMesh("Cube.fbx", 100.0f, Gfx->gppMesh, 1);
-		OutputDebugString("CUBE.FBX BUT BIGGER");
-	}
-	else if (modelToDraw == 2)
-	{
-		Gfx->LoadMesh("Cube.fbx", 10.0f, Gfx->gppMesh, 2);
-		OutputDebugString("CUBE.FBX BUT smaller");
-	}
-	else
-	{
-		if (modelToDraw < 0) currModel = MODEL_COUNT;
-		else if (modelToDraw > MODEL_COUNT) currModel = 0;
-	}
-}
+//void ModelDraw_Switch(int modelToDraw)
+//{
+//	if (modelToDraw == 0)
+//	{
+//		Gfx->LoadMesh("Cube.fbx", 50.0f, Gfx->gppMesh, 0);
+//		OutputDebugString("CUBE.FBX");
+//	}
+//	else if (modelToDraw == 1)
+//	{
+//		Gfx->LoadMesh("Cube.fbx", 100.0f, Gfx->gppMesh, 1);
+//		OutputDebugString("CUBE.FBX BUT BIGGER");
+//	}
+//	else if (modelToDraw == 2)
+//	{
+//		Gfx->LoadMesh("Cube.fbx", 10.0f, Gfx->gppMesh, 2);
+//		OutputDebugString("CUBE.FBX BUT smaller");
+//	}
+//	else
+//	{
+//		if (modelToDraw < 0) currModel = MODEL_COUNT;
+//		else if (modelToDraw > MODEL_COUNT) currModel = 0;
+//	}
+//}
