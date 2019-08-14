@@ -1,5 +1,26 @@
-﻿  Graphics.cpp
+﻿  compilation object save succeeded; see C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\PixelShader.cso
+  compilation object save succeeded; see C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\VertexShader.cso
+  DDSTextureLoader.cpp
+  Graphics.cpp
+  ToolBox.cpp
+  WinMain.cpp
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(38,28): warning C4244:  '=': conversion from 'int' to 'float', possible loss of data
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(39,28): warning C4244:  '=': conversion from 'int' to 'float', possible loss of data
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(44,43): warning C4244:  'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(44,27): warning C4244:  'argument': conversion from 'float' to 'int', possible loss of data
 C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\Graphics.cpp(145,9): warning C4068:  unknown pragma
 C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\Graphics.cpp(280,63): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
 C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\Graphics.cpp(302,88): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(178,53): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(189,53): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(196,66): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(203,66): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(306,48): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(314,48): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(322,48): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(330,48): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(338,48): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(346,48): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(383,24): warning C4244:  '=': conversion from 'float' to 'LONG', possible loss of data
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(385,23): warning C4244:  '=': conversion from 'float' to 'LONG', possible loss of data
   DX3D_1908.vcxproj -> C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\Debug\DX3D_1908.exe

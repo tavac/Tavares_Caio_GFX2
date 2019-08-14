@@ -1,6 +1,5 @@
 //#include <Windows.h>
 #include "Graphics.h"
-#include <string>
 #include <sstream> // for ostringstream
 #include <time.h>
 
