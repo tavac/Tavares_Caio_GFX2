@@ -34,8 +34,11 @@ struct PS_Input
 float4 main(PS_Input psIn) : SV_Target
 {
     if (PL_color.w < 1.0f)
-        psIn.uv.x = cos(psIn.uv.y * vDTime) * 0.01f;
-    float4 outie = (txDiffuse.Sample(samLinear, psIn.uv)) * psIn.color * 5.0f;
+    {
+        psIn.uv.x += sin(vDTime) * cos(vDTime) * (3.1415f / 180);
+        psIn.uv.y += (sin(vDTime) * 0.1f);
+    }
+        float4 outie = (txDiffuse.Sample(samLinear, psIn.uv)) * psIn.color * 5.0f;
 
-    return outie;
-}
+        return outie;
+    }
