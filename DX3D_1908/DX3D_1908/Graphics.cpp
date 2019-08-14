@@ -184,9 +184,9 @@ HRESULT Graphics::InitDevice()
 
 	// Creating sample state
 	D3D11_SAMPLER_DESC texDes;
-	texDes.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-	texDes.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-	texDes.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	texDes.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	texDes.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	texDes.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 	texDes.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	texDes.MaxAnisotropy = 0;
 	texDes.MipLODBias = 0;
@@ -275,28 +275,34 @@ void Graphics::Render()
 	// Setup Constant buffers to be used in shaders.
 	gConstantBuff gCB;
 	gCB.dTime = deltaT;
-	gCB.world = XMMatrixTranslation(0.0f, 0.0f, 10.0f);
-	//gCB.world = XMMatrixRotationAxis({ 0,1,0 }, deltaT);
+	gCB.world = XMMatrixTranslation(0.0f, -10.0f, 50.0f);
+	//gCB.world = XMMatrixMultiply(XMMatrixRotationAxis({ 0,1,0 }, degToRad(170)), gCB.world);
+	gCB.world = XMMatrixMultiply(XMMatrixRotationAxis({ 0,1,0 }, degToRad(deltaT * 15.0f)), gCB.world);
 	gCB.world = XMMatrixTranspose(gCB.world);
 	gCB.view = XMMatrixTranspose(globalView);
 	gCB.proj = XMMatrixTranspose(globalProj);
-	gCB.ambientLight = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	gCB.ambientLight = XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f);
 	gCon->UpdateSubresource(gConstantBuffer.Get(), 0, nullptr, &gCB, 0, 0);
 
 	// DLight Buffer Setup
 	gDirectional.dir[0] = XMFLOAT4(-1.0f, 0.0f, 0.0f, 0.0f);
-	gDirectional.color[0] = gRED;
+	gDirectional.color[0] = XMFLOAT4(0.2f,0.1f,0.75f,1.0f);
 	gCon->UpdateSubresource(gDLightBuffer.Get(), 0, nullptr, &gDirectional, 0, 0);
 
 	// DLight Buffer Setup
 	gDirectional.dir[1] = XMFLOAT4(1.0f, 0.0f, 0.0f, 0.0f);
-	gDirectional.color[1] = gGREEN;
+	gDirectional.color[1] = XMFLOAT4(0.8f,0.4f,0.2f,1.0f);
 	gCon->UpdateSubresource(gDLightBuffer.Get(), 0, nullptr, &gDirectional, 0, 0);
 
 	// PLight Buffer Setup
 	//float ypos = (int)cosf(deltaT) % 10;
-	gPointLight.pos = XMFLOAT4(0.0f, 3.0f, 10.0f, 0.0f);
-	gPointLight.color = gBLUE;
+	/*XMVECTOR v = XMVector4Transform(XMVectorSet(10.0f, -20.0, -5.0f, 0.0f), XMMatrixRotationY(degToRad(deltaT)));*/
+	///*gPointLight.pos = */XMStoreFloat4(&gPointLight.pos, v);
+	//XMMATRIX mx = XMMatrixRotationY(degToRad(deltaT*10.0f));
+	XMVECTOR nx = XMVectorSet(sin(deltaT*3)*50,/* cos(deltaT) * */10, (sin(deltaT*1.5)*50)+10, 0.0f);
+	//XMVECTOR nx = XMVector4Transform(vx, mx);
+	XMStoreFloat4(&gPointLight.pos, nx);
+	gPointLight.color = XMFLOAT4(0.0f,0.0f,1.0f,PointLight_A);
 	gCon->UpdateSubresource(gPLightBuffer.Get(), 0, nullptr, &gPointLight, 0, 0);
 
 	// Set Shaders and Constant Buffer to Shader and Draw

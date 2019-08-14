@@ -1,7 +1,7 @@
 ++CAMERA CONTROLS
 
 'o' or '0' = Reset Camera Position
-
+'l' = Toggle translating UVs
 TRANSLATION:
 --- 'WASD' ========= X,Z Locals
 --- Space/LShift === Up/Down

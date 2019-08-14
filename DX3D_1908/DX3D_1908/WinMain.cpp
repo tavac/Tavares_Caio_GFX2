@@ -14,7 +14,7 @@ bool isTyping = false;
 #define MODEL_COUNT 3
 int currModel = 0;
 bool ModelSwitched = FALSE;
-#define MoveSpeed 0.5f
+#define MoveSpeed 5.0f
 XMFLOAT2 centerScreen;
 float last_X;
 float last_Y;
@@ -52,7 +52,8 @@ int CALLBACK WinMain(
 	//std::string modelName[MODEL_COUNT] = { "Tester.fbx","NewDragon.fbx","Cube.fbx" }; // convert to array or vector of strings to store multiple mesh directories.
 	//Gfx->LoadMesh("Tester.fbx", 1.0f, Gfx->gppMesh, 0);
 	//Gfx->LoadMesh("NewDragon.fbx",10.0f, Gfx->gppMesh, 0);
-	Gfx->LoadMesh("SpaceShip_1.fbx", 1.0f, Gfx->gppMesh, 0);
+	//Gfx->LoadMesh("SpaceShip_1.fbx", 1.0f, Gfx->gppMesh, 0);
+	Gfx->LoadMesh("SpaceShip_2.fbx", 0.5f, Gfx->gppMesh, 0);
 	//Gfx->LoadMesh("Cube.fbx", 50.0f, Gfx->gppMesh, 0);
 	//Gfx->LoadMesh("Cube.fbx", 50.0f, Gfx->gppMesh, 1);
 #pragma endregion
@@ -175,7 +176,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				//XMMATRIX rotationX = XMMatrixRotationX(degToRad(Xangle * 0.5f));
 			XMVECTOR saver = Gfx->Camera.r[3];
 			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-			Gfx->Camera = XMMatrixMultiply(XMMatrixRotationX(degToRad(-Gfx->deltaT)), Gfx->Camera);
+			Gfx->Camera = XMMatrixMultiply(XMMatrixRotationX(degToRad(-Gfx->deltaT*0.75f)), Gfx->Camera);
 			Gfx->Camera.r[3] = saver;
 			//}
 			//}
@@ -186,21 +187,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			XMVECTOR saver = Gfx->Camera.r[3];
 			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-			Gfx->Camera = XMMatrixMultiply(XMMatrixRotationX(degToRad(Gfx->deltaT)), Gfx->Camera);
+			Gfx->Camera = XMMatrixMultiply(XMMatrixRotationX(degToRad(Gfx->deltaT * 0.75f)), Gfx->Camera);
 			Gfx->Camera.r[3] = saver;
 		}
 		else if (wParam == VK_LEFT)
 		{
 			XMVECTOR saver = Gfx->Camera.r[3];
 			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, XMMatrixRotationY(degToRad(-Gfx->deltaT)));
+			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, XMMatrixRotationY(degToRad(-Gfx->deltaT * 0.75f)));
 			Gfx->Camera.r[3] = saver;
 		}
 		else if (wParam == VK_RIGHT)
 		{
 			XMVECTOR saver = Gfx->Camera.r[3];
 			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, XMMatrixRotationY(degToRad(Gfx->deltaT)));
+			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, XMMatrixRotationY(degToRad(Gfx->deltaT * 0.75f)));
 			Gfx->Camera.r[3] = saver;
 		}
 
@@ -225,6 +226,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	}break;
 	case WM_CHAR:
 	{
+		if ((char)wParam == 'p')
+		{
+			std::ostringstream oss;
+			XMFLOAT4 currPos;
+			XMStoreFloat4(&currPos, Gfx->Camera.r[3]);
+			oss << "Camera Position: (" << currPos.x << "," << currPos.y << "," << currPos.z << ")" << std::endl;
+			OutputDebugString(oss.str().c_str());
+			oss.clear();
+		}
+		if ((char)wParam == 'l')
+		{
+			if (Gfx->PointLight_A < 1.0f)
+				Gfx->PointLight_A = 1.0f;
+			else
+				Gfx->PointLight_A = 0.0f;
+		}
 		if ((char)wParam == 'o' || (char)wParam == '0') // Go Home Cam youre drunk
 		{
 			Gfx->globalView = XMMatrixLookAtLH(Gfx->Eye, Gfx->At, Gfx->Up);

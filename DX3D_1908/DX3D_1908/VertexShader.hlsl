@@ -50,15 +50,15 @@ VS_Output main(VS_Input vsIn)
     for (int d = 0; d < 2; d++)
     {
         float LR = saturate(dot((-DL_dir[d]), vsOut.norm));
-        vsOut.color += (LR * DL_color[d] * sin(vDTime * 2));
+        vsOut.color += (LR * DL_color[d] /** sin(vDTime * 2)*/);
     }
     //for (int p = 0; p < 1; p++)
     //{
     float4 LightDir = normalize(PL_pos - vsOut.pos);
     float LightRatio = saturate(dot(LightDir, vsOut.norm));
-    float attenutation = 1.0f - saturate((length(PL_pos - vsOut.pos) / 10.0f));
-    LightRatio = (attenutation * attenutation) * LightRatio;
-    vsOut.color += lerp(float4(0, 0, 0, 0), PL_color, LightRatio);
+    float attenutation = 1.0f - saturate((length(PL_pos - vsOut.pos) / 50.0f));
+    LightRatio = (attenutation /** attenutation*/) * LightRatio;
+    vsOut.color += lerp(float4(0, 0, 0, 0), PL_color /** sin(vDTime * 2)*/, LightRatio);
     //}
 
 	vsOut.pos = mul(vsOut.pos, vView);

@@ -22,6 +22,7 @@ namespace wrl = Microsoft::WRL;
 class Graphics
 {
 public:
+	float PointLight_A = 1.0f;
 	float deltaT = 0.0f; // time keeper
 	struct gVertex
 	{
@@ -95,7 +96,7 @@ public:
 #pragma endregion
 	// Setting up Matrices
 	XMMATRIX globalWorld = XMMatrixIdentity();
-	XMVECTOR Eye = XMVectorSet(0.0f, 5.0f, -10.0f, 0.0f);
+	XMVECTOR Eye = XMVectorSet(0.0f, 0.0f, -10.0f, 0.0f);
 	XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	XMMATRIX globalView = XMMatrixLookAtLH(Eye, At, Up);

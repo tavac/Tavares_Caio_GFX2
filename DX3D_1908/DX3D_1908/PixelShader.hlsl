@@ -19,8 +19,8 @@ cbuffer Dir_LightBuff : register(b1)
 
 cbuffer Pnt_LightBuff : register(b2)
 {
-    float4 PL_pos[1];
-    float4 PL_color[1];
+    float4 PL_pos;
+    float4 PL_color;
 }
 
 struct PS_Input
@@ -33,8 +33,9 @@ struct PS_Input
 
 float4 main(PS_Input psIn) : SV_Target
 {
-    //psIn.uv.x = cos(psIn.uv.y*vDTime);
-    float4 outie = (txDiffuse.Sample(samLinear, psIn.uv)) * psIn.color;
+    if (PL_color.w < 1.0f)
+        psIn.uv.x = cos(psIn.uv.y * vDTime) * 0.01f;
+    float4 outie = (txDiffuse.Sample(samLinear, psIn.uv)) * psIn.color * 5.0f;
 
     return outie;
 }
