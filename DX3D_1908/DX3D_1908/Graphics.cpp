@@ -146,7 +146,7 @@ HRESULT Graphics::InitDevice()
 #pragma endregion
 
 #pragma region Vertex/PixelShaders
-	// create pixel shader
+	//////////////////// create pixel shader ////////////////////
 	D3DReadFileToBlob(L"PixelShader.cso", &gBlob);
 	hr = gDev->CreatePixelShader(gBlob->GetBufferPointer(), gBlob->GetBufferSize(), nullptr, &gPixelShader);
 	if (FAILED(hr))
@@ -155,10 +155,10 @@ HRESULT Graphics::InitDevice()
 		return hr;
 	}
 
-	// bind pixel shader
+	///////////////////// bind pixel shader /////////////////////
 	gCon->PSSetShader(gPixelShader.Get(), nullptr, 0u);
 
-	// create vertex shader.
+	/////////////////// create vertex shader ///////////////////
 	D3DReadFileToBlob(L"VertexShader.cso", &gBlob);
 	hr = gDev->CreateVertexShader(gBlob->GetBufferPointer(), gBlob->GetBufferSize(), nullptr, &gVertexShader);
 	if (FAILED(hr))
@@ -167,10 +167,10 @@ HRESULT Graphics::InitDevice()
 		return hr;
 	}
 
-	// bind vertex.
+	/////////////////////// bind vertex ///////////////////////
 	gCon->VSSetShader(gVertexShader.Get(), nullptr, 0u);
 
-	// input vertex layout
+	/////////////////// input vertex layout ///////////////////
 	const D3D11_INPUT_ELEMENT_DESC ildes[] =
 	{
 		{"POSITION",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},

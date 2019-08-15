@@ -13,7 +13,7 @@ bool isTyping = false;
 #define MODEL_COUNT 3
 int currModel = 0;
 bool ModelSwitched = FALSE;
-#define MoveSpeed 5.0f
+#define MoveSpeed 1.0f
 XMFLOAT2 centerScreen;
 float last_X;
 float last_Y;
@@ -175,7 +175,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				//XMMATRIX rotationX = XMMatrixRotationX(degToRad(Xangle * 0.5f));
 			XMVECTOR saver = Gfx->Camera.r[3];
 			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-			Gfx->Camera = XMMatrixMultiply(XMMatrixRotationX(degToRad(-Gfx->deltaT*0.75f)), Gfx->Camera);
+			Gfx->Camera = XMMatrixMultiply(XMMatrixRotationX(degToRad(-Gfx->deltaT * 0.3f)), Gfx->Camera);
 			Gfx->Camera.r[3] = saver;
 			//}
 			//}
@@ -186,21 +186,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			XMVECTOR saver = Gfx->Camera.r[3];
 			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-			Gfx->Camera = XMMatrixMultiply(XMMatrixRotationX(degToRad(Gfx->deltaT * 0.75f)), Gfx->Camera);
+			Gfx->Camera = XMMatrixMultiply(XMMatrixRotationX(degToRad(Gfx->deltaT * 0.3f)), Gfx->Camera);
 			Gfx->Camera.r[3] = saver;
 		}
 		else if (wParam == VK_LEFT)
 		{
 			XMVECTOR saver = Gfx->Camera.r[3];
 			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, XMMatrixRotationY(degToRad(-Gfx->deltaT * 0.75f)));
+			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, XMMatrixRotationY(degToRad(-Gfx->deltaT * 0.3f)));
 			Gfx->Camera.r[3] = saver;
 		}
 		else if (wParam == VK_RIGHT)
 		{
 			XMVECTOR saver = Gfx->Camera.r[3];
 			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, XMMatrixRotationY(degToRad(Gfx->deltaT * 0.75f)));
+			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, XMMatrixRotationY(degToRad(Gfx->deltaT * 0.3f)));
 			Gfx->Camera.r[3] = saver;
 		}
 
@@ -222,7 +222,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			XMMATRIX trans = XMMatrixTranslation(0.0f, -MoveSpeed, 0.0f);
 			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, trans);
 		}
-	}break;
+	}
+	break;
 	case WM_CHAR:
 	{
 		if ((char)wParam == 'p')

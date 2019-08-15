@@ -56,8 +56,8 @@ VS_Output main(VS_Input vsIn)
     //{
     float4 LightDir = normalize(PL_pos - vsOut.pos);
     float LightRatio = saturate(dot(LightDir, vsOut.norm));
-    float attenutation = 1.0f - saturate((length(PL_pos - vsOut.pos) / 50.0f));
-    LightRatio = (attenutation /** attenutation*/) * LightRatio;
+    float attenutation = 1.0f - saturate((length(PL_pos - vsOut.pos) / 100.0f));
+    LightRatio = (attenutation * attenutation) * LightRatio;
     vsOut.color += lerp(float4(0, 0, 0, 0), PL_color /** sin(vDTime * 2)*/, LightRatio);
     //}
 
