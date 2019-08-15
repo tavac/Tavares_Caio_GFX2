@@ -10,11 +10,6 @@
 #include "Grail.h"
 #pragma endregion
 
-#pragma region Colors
-#define gRED	XMFLOAT4(1.0f,0.1f,0.1f,1.0f)
-#define gGREEN	XMFLOAT4(0.1f,1.0f,0.1f,1.0f)
-#define gBLUE	XMFLOAT4(0.1f,0.1f,1.0f,1.0f)
-#pragma endregion
 
 using namespace DirectX;
 
@@ -59,6 +54,14 @@ public:
 		XMFLOAT4 pos;
 		XMFLOAT4 color;
 	};
+	float SpotLightWidth = 0.9f;
+	struct gSptLightBuff
+	{
+		XMFLOAT4 pos;
+		XMFLOAT4 coneDir;
+		XMFLOAT4 color;
+		XMFLOAT4 coneWidth_R;
+	};
 
 	Graphics(HWND hWnd);
 	Graphics(const Graphics&) = delete;
@@ -81,6 +84,7 @@ private:
 	wrl::ComPtr<ID3D11Buffer> gConstantBuffer = nullptr;
 	wrl::ComPtr<ID3D11Buffer> gDLightBuffer = nullptr;
 	wrl::ComPtr<ID3D11Buffer> gPLightBuffer = nullptr; 
+	wrl::ComPtr<ID3D11Buffer> gSLightBuffer = nullptr; 
 	wrl::ComPtr<ID3D11Buffer> gIndexBuffer = nullptr; //
 	wrl::ComPtr<ID3D11InputLayout> gInputLayout = nullptr;
 	wrl::ComPtr<ID3D11VertexShader> gVertexShader = nullptr;
@@ -93,6 +97,7 @@ public:
 #pragma region Lights
 	gDirLightBuff gDirectional = {};
 	gPntLightBuff gPointLight = {};
+	gSptLightBuff gSpotLight = {};
 #pragma endregion
 	// Setting up Matrices
 	XMMATRIX globalWorld = XMMatrixIdentity();

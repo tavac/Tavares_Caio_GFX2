@@ -35,13 +35,13 @@ int CALLBACK WinMain(
 	_In_ LPSTR lpCmdLine,
 	_In_ int nCmdShow)
 {
-	screenY = GetSystemMetrics(SM_CYSCREEN);
-	screenX = GetSystemMetrics(SM_CXSCREEN);
+	screenY = static_cast<float>(GetSystemMetrics(SM_CYSCREEN));
+	screenX = static_cast<float>(GetSystemMetrics(SM_CXSCREEN));
 	centerScreen = { (screenX * 0.5f) ,(screenY * 0.5f) };
 	last_X = centerScreen.x;
 	last_Y = centerScreen.y;
 	screenRatio = (hWndHeight) * (hWndWidth) / (screenY * screenX);
-	SetCursorPos(centerScreen.x, centerScreen.y);
+	SetCursorPos(static_cast<int>(centerScreen.x), static_cast<int>(centerScreen.y));
 
 	WNDCLASSEX wc = Init_WindowClass("WndClassEX", hInstance);
 	hWnd = Init_Window(hWndWidth, hWndHeight, winTitle, &wc);
@@ -175,7 +175,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				//XMMATRIX rotationX = XMMatrixRotationX(degToRad(Xangle * 0.5f));
 			XMVECTOR saver = Gfx->Camera.r[3];
 			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-			Gfx->Camera = XMMatrixMultiply(XMMatrixRotationX(degToRad(-Gfx->deltaT * 0.3f)), Gfx->Camera);
+			Gfx->Camera = XMMatrixMultiply(XMMatrixRotationX(degToRad(-Gfx->deltaT * 0.4f)), Gfx->Camera);
 			Gfx->Camera.r[3] = saver;
 			//}
 			//}
@@ -186,21 +186,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			XMVECTOR saver = Gfx->Camera.r[3];
 			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-			Gfx->Camera = XMMatrixMultiply(XMMatrixRotationX(degToRad(Gfx->deltaT * 0.3f)), Gfx->Camera);
+			Gfx->Camera = XMMatrixMultiply(XMMatrixRotationX(degToRad(Gfx->deltaT * 0.4f)), Gfx->Camera);
 			Gfx->Camera.r[3] = saver;
 		}
 		else if (wParam == VK_LEFT)
 		{
 			XMVECTOR saver = Gfx->Camera.r[3];
 			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, XMMatrixRotationY(degToRad(-Gfx->deltaT * 0.3f)));
+			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, XMMatrixRotationY(degToRad(-Gfx->deltaT * 0.4f)));
 			Gfx->Camera.r[3] = saver;
 		}
 		else if (wParam == VK_RIGHT)
 		{
 			XMVECTOR saver = Gfx->Camera.r[3];
 			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, XMMatrixRotationY(degToRad(Gfx->deltaT * 0.3f)));
+			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, XMMatrixRotationY(degToRad(Gfx->deltaT * 0.4f)));
 			Gfx->Camera.r[3] = saver;
 		}
 
@@ -223,7 +223,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, trans);
 		}
 	}
-	break;
 	case WM_CHAR:
 	{
 		if ((char)wParam == 'p')
@@ -346,6 +345,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				Gfx->nearPlane *= 10.0f;
 				Gfx->globalProj = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
 			}
+		}
+		if ((char)wParam == ',')
+		{
+			if (Gfx->SpotLightWidth > 0.1f)
+				Gfx->SpotLightWidth -= 0.01f;
+		}
+		else if ((char)wParam == '.')
+		{
+			if (Gfx->SpotLightWidth < 1.0f)
+				Gfx->SpotLightWidth += 0.01f;
 		}
 	}
 	}

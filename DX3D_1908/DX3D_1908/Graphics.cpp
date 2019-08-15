@@ -103,6 +103,16 @@ HRESULT Graphics::InitDevice()
 	if (FAILED(hr))
 		return hr;
 
+	////////////////// Spot Light Buffer //////////////////
+	buffdesc = {};
+	buffdesc.Usage = D3D11_USAGE_DEFAULT;
+	buffdesc.ByteWidth = sizeof(gSptLightBuff);
+	buffdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	buffdesc.CPUAccessFlags = 0;
+	hr = gDev->CreateBuffer(&buffdesc, nullptr, &gSLightBuffer);
+	if (FAILED(hr))
+		return hr;
+
 
 	//////////////////// Vertex Buffer ////////////////////
 	buffdesc = {};
@@ -299,9 +309,24 @@ void Graphics::Render()
 	gPointLight.color = XMFLOAT4(0.0f, 0.0f, 1.0f, PointLight_A);
 	gCon->UpdateSubresource(gPLightBuffer.Get(), 0, nullptr, &gPointLight, 0, 0);
 
+	/////////////////// Point Light Buffer Setup /////////////////////
+	//XMVECTOR nx = XMVectorSet(sin(deltaT * 3) * 50, 10, (sin(deltaT * 1.5) * 50) + 10, 0.0f);
+	XMStoreFloat4(&gSpotLight.pos, Camera.r[3]);
+	//gSpotLight.pos = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+	gSpotLight.pos.y += 10.0f;
+	XMVECTOR tmp = XMVectorSet(0.0f, 0.0f, -1.0f, 0.0f);
+	tmp = XMVector4Transform(tmp, Camera);
+	XMStoreFloat4(&gSpotLight.coneDir, tmp);
+	gSpotLight.coneWidth_R = XMFLOAT4(0.0f,0.0f,0.0f,SpotLightWidth);
+	gSpotLight.color = XMFLOAT4(1.0f, 0.33f, 0.25f, 1.0f);
+	gCon->UpdateSubresource(gSLightBuffer.Get(), 0, nullptr, &gSpotLight, 0, 0);
+
 	//////////////////////// Bind Shaders ////////////////////////
 	// Bind buffers to pipeline so the Drawcall can access the information from setup.
-	ID3D11Buffer* buffs[] = { *gConstantBuffer.GetAddressOf(), *gDLightBuffer.GetAddressOf(), *gPLightBuffer.GetAddressOf() };
+	ID3D11Buffer* buffs[] = { *gConstantBuffer.GetAddressOf(),
+							  *gDLightBuffer.GetAddressOf(),
+							  *gPLightBuffer.GetAddressOf(),
+							  *gSLightBuffer.GetAddressOf() };
 	gCon->VSSetShader(gVertexShader.Get(), nullptr, 0u);
 	gCon->VSSetConstantBuffers(0u, (UINT)ARRAYSIZE(buffs), buffs);
 	gCon->PSSetShader(gPixelShader.Get(), nullptr, 0u);
