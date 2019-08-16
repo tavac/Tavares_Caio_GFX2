@@ -175,7 +175,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				//XMMATRIX rotationX = XMMatrixRotationX(degToRad(Xangle * 0.5f));
 			XMVECTOR saver = Gfx->Camera.r[3];
 			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-			Gfx->Camera = XMMatrixMultiply(XMMatrixRotationX(degToRad(-Gfx->deltaT * 0.4f)), Gfx->Camera);
+			Gfx->Camera = XMMatrixMultiply(XMMatrixRotationX(degToRad(-2.5f)), Gfx->Camera);
 			Gfx->Camera.r[3] = saver;
 			//}
 			//}
@@ -186,21 +186,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			XMVECTOR saver = Gfx->Camera.r[3];
 			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-			Gfx->Camera = XMMatrixMultiply(XMMatrixRotationX(degToRad(Gfx->deltaT * 0.4f)), Gfx->Camera);
+			Gfx->Camera = XMMatrixMultiply(XMMatrixRotationX(degToRad(2.5f)), Gfx->Camera);
 			Gfx->Camera.r[3] = saver;
 		}
 		else if (wParam == VK_LEFT)
 		{
 			XMVECTOR saver = Gfx->Camera.r[3];
 			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, XMMatrixRotationY(degToRad(-Gfx->deltaT * 0.4f)));
+			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, XMMatrixRotationY(degToRad(-2.5f)));
 			Gfx->Camera.r[3] = saver;
 		}
 		else if (wParam == VK_RIGHT)
 		{
 			XMVECTOR saver = Gfx->Camera.r[3];
 			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, XMMatrixRotationY(degToRad(Gfx->deltaT * 0.4f)));
+			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, XMMatrixRotationY(degToRad(2.5f)));
 			Gfx->Camera.r[3] = saver;
 		}
 
@@ -316,9 +316,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		else if ((char)wParam == '=') // Far plane closer
 		{
-			if (Gfx->farPlane > 100.0f)
+			if (Gfx->farPlane > 50.0f)
 			{
-				Gfx->farPlane -= 10.0f;
+				Gfx->farPlane -= 50.0f;
 				Gfx->globalProj = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
 			}
 		}
@@ -326,7 +326,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			if (Gfx->farPlane < 500.0f)
 			{
-				Gfx->farPlane += 10.0f;
+				Gfx->farPlane += 50.0f;
 				Gfx->globalProj = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
 			}
 		}
@@ -340,7 +340,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		else if ((char)wParam == ']') // Near plane further
 		{
-			if (Gfx->nearPlane < 1.0f)
+			if (Gfx->nearPlane < 25.0f)
 			{
 				Gfx->nearPlane *= 10.0f;
 				Gfx->globalProj = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
@@ -390,9 +390,9 @@ HWND Init_Window(int _width, int _height, std::string _title, WNDCLASSEX* _WndCl
 
 	// Create window.
 	RECT ClientRect;
-	ClientRect.left = fabs(centerScreen.x - (_width * 0.5f));
+	ClientRect.left = labs(centerScreen.x - (_width * 0.5f));
 	ClientRect.right = ClientRect.left + _width;
-	ClientRect.top = fabs(centerScreen.y - (_height * 0.5f));
+	ClientRect.top = labs(centerScreen.y - (_height * 0.5f));
 	ClientRect.bottom = ClientRect.top + _height;
 	AdjustWindowRect(&ClientRect, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE);
 	HWND hWnd = CreateWindowEx(

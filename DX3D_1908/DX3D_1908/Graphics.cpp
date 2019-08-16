@@ -295,7 +295,7 @@ void Graphics::Render()
 
 	///////////////// Directional Light Buffer Setup /////////////////
 	gDirectional.dir[0] = XMFLOAT4(-1.0f, 0.0f, 0.0f, 0.0f);
-	gDirectional.color[0] = XMFLOAT4(0.2f, 0.1f, 0.75f, 1.0f);
+	gDirectional.color[0] = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
 	gCon->UpdateSubresource(gDLightBuffer.Get(), 0, nullptr, &gDirectional, 0, 0);
 
 	///////////////// Directional Light Buffer Setup /////////////////
@@ -304,9 +304,9 @@ void Graphics::Render()
 	gCon->UpdateSubresource(gDLightBuffer.Get(), 0, nullptr, &gDirectional, 0, 0);
 
 	/////////////////// Point Light Buffer Setup /////////////////////
-	XMVECTOR nx = XMVectorSet(sin(deltaT * 3) * 50, 10, (sin(deltaT * 1.5) * 50) + 10, 0.0f);
+	XMVECTOR nx = XMVectorSet(sin(deltaT * 3.0f) * 50.0f, 10.0f, (sin(deltaT * 1.5f) * 50.0f) + 10.0f, 0.0f);
 	XMStoreFloat4(&gPointLight.pos, nx);
-	gPointLight.color = XMFLOAT4(0.0f, 0.0f, 1.0f, PointLight_A);
+	gPointLight.color = XMFLOAT4(0.0f, 0.5f, 0.0f, PointLight_A);
 	gCon->UpdateSubresource(gPLightBuffer.Get(), 0, nullptr, &gPointLight, 0, 0);
 
 	/////////////////// Point Light Buffer Setup /////////////////////
@@ -318,7 +318,7 @@ void Graphics::Render()
 	tmp = XMVector4Transform(tmp, Camera);
 	XMStoreFloat4(&gSpotLight.coneDir, tmp);
 	gSpotLight.coneWidth_R = XMFLOAT4(0.0f,0.0f,0.0f,SpotLightWidth);
-	gSpotLight.color = XMFLOAT4(1.0f, 0.33f, 0.25f, 1.0f);
+	gSpotLight.color = XMFLOAT4(5.0f, 0.33f, 0.25f, 1.0f);
 	gCon->UpdateSubresource(gSLightBuffer.Get(), 0, nullptr, &gSpotLight, 0, 0);
 
 	//////////////////////// Bind Shaders ////////////////////////
