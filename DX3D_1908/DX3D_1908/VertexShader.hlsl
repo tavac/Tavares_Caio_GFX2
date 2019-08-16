@@ -26,9 +26,9 @@ cbuffer Pnt_LightBuff : register(b2)
 cbuffer gSptLightBuff : register(b3)
 {
     float4 SL_pos;
-    float4 SL_coneDir;
+    float3 SL_coneDir;
     float4 SL_color;
-    float4 SL_coneWidth;
+    float SL_coneWidth;
 };
 
 struct VS_Input
@@ -54,10 +54,11 @@ VS_Output main(VS_Input vsIn)
 	vsOut.pos = mul(vsIn.pos, vWorld);
 	vsOut.wPos = mul(vsIn.pos, vWorld);
 
-	vsOut.norm = mul(vsIn.norm, vWorld);
+    vsOut.norm = normalize(mul(vsIn.norm, vWorld));
    
     vsOut.pos = mul(vsOut.pos, vView);
 	vsOut.pos = mul(vsOut.pos, vProj);
+    vsOut.color = vsIn.color;
 	vsOut.uv = vsIn.uv;
 	return vsOut;
 }

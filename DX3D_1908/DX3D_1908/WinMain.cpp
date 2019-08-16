@@ -52,7 +52,8 @@ int CALLBACK WinMain(
 	//Gfx->LoadMesh("Tester.fbx", 1.0f, Gfx->gppMesh, 0);
 	//Gfx->LoadMesh("NewDragon.fbx",10.0f, Gfx->gppMesh, 0);
 	//Gfx->LoadMesh("SpaceShip_1.fbx", 1.0f, Gfx->gppMesh, 0);
-	Gfx->LoadMesh("SpaceShip_3.fbx", 0.5f, &Gfx->gppMesh, 0);
+	//Gfx->LoadMesh("SpaceShip_3.fbx", 0.5f, &Gfx->gppMesh, 0);
+	Gfx->LoadMesh("Desk_0.fbx", 0.5f, &Gfx->gppMesh, 0);
 	//Gfx->LoadMesh("Cube.fbx", 50.0f, Gfx->gppMesh, 0);
 	//Gfx->LoadMesh("Cube.fbx", 50.0f, Gfx->gppMesh, 1);
 #pragma endregion
@@ -349,12 +350,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		if ((char)wParam == ',')
 		{
 			if (Gfx->SpotLightWidth > 0.1f)
-				Gfx->SpotLightWidth -= 0.01f;
+				Gfx->SpotLightWidth -= 0.1f;
+			std::ostringstream oss;
+			oss << Gfx->SpotLightWidth << std::endl;
+			OutputDebugString(oss.str().c_str());
+			oss.clear();
 		}
 		else if ((char)wParam == '.')
 		{
-			if (Gfx->SpotLightWidth < 1.0f)
-				Gfx->SpotLightWidth += 0.01f;
+			if (Gfx->SpotLightWidth < 5.0f)
+				Gfx->SpotLightWidth += 0.1f;
+			std::ostringstream oss;
+			oss << Gfx->SpotLightWidth << std::endl;
+			OutputDebugString(oss.str().c_str());
+			oss.clear();
 		}
 	}
 	}
@@ -390,10 +399,10 @@ HWND Init_Window(int _width, int _height, std::string _title, WNDCLASSEX* _WndCl
 
 	// Create window.
 	RECT ClientRect;
-	ClientRect.left = labs(centerScreen.x - (_width * 0.5f));
-	ClientRect.right = ClientRect.left + _width;
-	ClientRect.top = labs(centerScreen.y - (_height * 0.5f));
-	ClientRect.bottom = ClientRect.top + _height;
+	ClientRect.left = labs(static_cast<long>(centerScreen.x) - (static_cast<long>(_width) * static_cast<long>(0.5f)));
+	ClientRect.right = ClientRect.left + static_cast<long>(_width);
+	ClientRect.top = labs(static_cast<long>(centerScreen.y) - (static_cast<long>(_height) * static_cast<long>(0.5f)));
+	ClientRect.bottom = ClientRect.top + static_cast<long>(_height);
 	AdjustWindowRect(&ClientRect, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE);
 	HWND hWnd = CreateWindowEx(
 		0, _WndClass->lpszClassName, _title.c_str(),

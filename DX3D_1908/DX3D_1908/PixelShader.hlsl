@@ -42,19 +42,20 @@ struct PS_Input
 
 float4 main(PS_Input psIn) : SV_Target
 {
+    float4 outie = { 0, 0, 0, 0 };
     if (PL_color.w < 1.0f)
     {
         psIn.uv.x += sin(vDTime) * cos(vDTime) * (3.1415f / 180);
         psIn.uv.y += (sin(vDTime) * 0.1f);
     }
 
-    psIn.color = vAmbLight;
+    outie += vAmbLight;
 
    /////////////// Direction Light /////////////
    // for (int d = 0; d < 2; d++)
    // {
    //     float LR = saturate(dot((-DL_dir[d]), psIn.norm));
-   //     psIn.color += (LR * DL_color[d] /** sin(vDTime * 2)*/);
+   //     outie += (LR * DL_color[d] /** sin(vDTime * 2)*/);
    // }
    /////////////////////////////////////////////
    //
@@ -65,28 +66,37 @@ float4 main(PS_Input psIn) : SV_Target
    // float LightRatio = saturate(dot(ptLightDir, psIn.norm));
    // float attenutation = 1.0f - saturate((length(PL_pos - psIn.wPos) / 100.0f));
    // LightRatio = (attenutation * attenutation) * LightRatio;
-   // psIn.color += lerp(float4(0, 0, 0, 0), PL_color /** sin(vDTime * 2)*/, LightRatio);
+   // outie += lerp(float4(0, 0, 0, 0), PL_color /** sin(vDTime * 2)*/, LightRatio);
    ////}
-   ///////////////////////////////////////////
+   ////////////////////////////////////////////
 
-    //////////////// Spot Light ////////////////
+    ////////////// Spot Light ////////////////
     //float4 spLightDir = normalize(SL_pos - psIn.wPos);
     //float surfaceRatio = saturate(dot(spLightDir, SL_coneDir));
-    //float intensity = (surfaceRatio > SL_coneWidth.w) ? 1 : 0;
+    //float intensity = (surfaceRatio > SL_coneWidth.x) ? 1 : 0;
     //float lightRatio = saturate(dot(spLightDir, psIn.norm));
     //psIn.color += intensity * lightRatio * SL_color * psIn.color;
-    ////////////////////////////////////////////
-    ////////////////// Spot Light ////////////////
-    float4 toLight = SL_pos - psIn.wPos; // vector from pixel to Light
+    //outie += intensity * lightRatio * SL_color * psIn.color;
+    //////////////////////////////////////////
+    //////////////////// Spot Light ////////////////
+    //float4 toLight = SL_pos - psIn.wPos; // vector from pixel to Light
+    //float distance = length(toLight); // length of vector
+    //toLight = (toLight / distance); // normalizing 'toLight'
+    //float AngAtten = saturate(dot(toLight, psIn.norm));
+    //float spotDot = saturate(dot(-toLight, -SL_coneDir));
+    ////--------------------------(spotdot - outer) / (innner - outer)
+    //float spotAtten = saturate((spotDot - (SL_coneWidth.x*.25f)) / ((SL_coneWidth.x*.28f) / (SL_coneWidth.x*.25f)));
+    //outie += (spotAtten * AngAtten * SL_color * psIn.color) * 2.0f;
+    ////////////////////////////////////////////////
+    float3 toLight = SL_pos.xyz - psIn.wPos.xyz; // vector from pixel to Light
     float distance = length(toLight); // length of vector
-    toLight = (toLight / distance); // 
-    float AngAtten = saturate(dot(toLight, psIn.norm));
-    float spotDot = saturate(dot(-toLight, -SL_coneDir));
-    float spotAtten = saturate((spotDot - (SL_coneWidth.w - 0.1f)) / ((SL_coneWidth.w - 0.1f) / (SL_coneWidth.w - 0.15f)));
-    psIn.color += spotAtten * AngAtten * SL_color * psIn.color;
-    //////////////////////////////////////////////
+    toLight = (toLight / distance); // normalizing the toLight vector
+    float AngAtten = saturate(dot(toLight, psIn.norm.xyz));
+    float spotDot = saturate(dot(-toLight, -SL_coneDir.xyz));
+    float spotAtten = saturate((SL_coneWidth.x - 0.1f) - (spotDot) / ((SL_coneWidth.x - 0.12f) / (SL_coneWidth.x - 0.1f)));
+    outie += (spotAtten * AngAtten * SL_color * outie) * 5.0f;
 
-    float4 outie = (txDiffuse.Sample(samLinear, psIn.uv)) * psIn.color * 5.0f;
+    outie = (txDiffuse.Sample(samLinear, psIn.uv)) * outie ;
 
     return outie;
 }

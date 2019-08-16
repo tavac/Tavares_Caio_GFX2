@@ -278,7 +278,7 @@ void Graphics::Render()
 	deltaT = (timeCur - timeStart) / 1000.0f;
 
 	/////////////////////////// Clear Buffers ///////////////////////////
-	gCon->ClearRenderTargetView(gRtv.Get(), DirectX::Colors::Black);
+	gCon->ClearRenderTargetView(gRtv.Get(), DirectX::Colors::DarkGray);
 	gCon->ClearDepthStencilView(gDsv.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
 
 	///////////////////// Constant Buffer Setup /////////////////////
@@ -309,16 +309,16 @@ void Graphics::Render()
 	gPointLight.color = XMFLOAT4(0.0f, 0.5f, 0.0f, PointLight_A);
 	gCon->UpdateSubresource(gPLightBuffer.Get(), 0, nullptr, &gPointLight, 0, 0);
 
-	/////////////////// Point Light Buffer Setup /////////////////////
+	/////////////////// Spot Light Buffer Setup /////////////////////
 	//XMVECTOR nx = XMVectorSet(sin(deltaT * 3) * 50, 10, (sin(deltaT * 1.5) * 50) + 10, 0.0f);
 	XMStoreFloat4(&gSpotLight.pos, Camera.r[3]);
 	//gSpotLight.pos = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
-	gSpotLight.pos.y += 10.0f;
-	XMVECTOR tmp = XMVectorSet(0.0f, 0.0f, -1.0f, 0.0f);
+	//gSpotLight.pos.y -= 5.0f;
+	XMVECTOR tmp = XMVectorSet(0.0f, 0.0f, 1.0f,0.0f);
 	tmp = XMVector4Transform(tmp, Camera);
 	XMStoreFloat4(&gSpotLight.coneDir, tmp);
-	gSpotLight.coneWidth_R = XMFLOAT4(0.0f,0.0f,0.0f,SpotLightWidth);
-	gSpotLight.color = XMFLOAT4(5.0f, 0.33f, 0.25f, 1.0f);
+	gSpotLight.coneWidth_R = XMFLOAT4(SpotLightWidth,0.0f,0.0f,0.0f);
+	gSpotLight.color = XMFLOAT4(1.0f, 0.1f, 0.1f, 1.0f);
 	gCon->UpdateSubresource(gSLightBuffer.Get(), 0, nullptr, &gSpotLight, 0, 0);
 
 	//////////////////////// Bind Shaders ////////////////////////
