@@ -226,11 +226,11 @@ HRESULT Graphics::InitDevice()
 
 	// Create depth stencil texture
 	D3D11_TEXTURE2D_DESC descDepth = {};
-	descDepth.Width = hWndWidth;
+	descDepth.Width = hWndWidth;	
 	descDepth.Height = hWndHeight;
 	descDepth.MipLevels = 0;
 	descDepth.ArraySize = 1;
-	descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	descDepth.Format = DXGI_FORMAT_D32_FLOAT;
 	descDepth.SampleDesc.Count = 1;
 	descDepth.SampleDesc.Quality = 0;
 	descDepth.Usage = D3D11_USAGE_DEFAULT;
@@ -277,7 +277,7 @@ void Graphics::Render()
 	deltaT = (timeCur - timeStart) / 1000.0f;
 
 	/////////////////////////// Clear Buffers ///////////////////////////
-	gCon->ClearRenderTargetView(gRtv.Get(), DirectX::Colors::DarkGray);
+	gCon->ClearRenderTargetView(gRtv.Get(), DirectX::Colors::Silver);
 	gCon->ClearDepthStencilView(gDsv.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
 
 	///////////////////// Constant Buffer Setup /////////////////////
@@ -286,6 +286,7 @@ void Graphics::Render()
 	gCB.dTime = deltaT;
 	gCB.world = XMMatrixTranslation(0.0f, -10.0f, 50.0f);
 	//gCB.world = XMMatrixMultiply(XMMatrixRotationAxis({ 0,1,0 }, degToRad(deltaT * 15.0f)), gCB.world);
+	gCB.world = XMMatrixMultiply(XMMatrixRotationAxis({ 0,1,0 }, degToRad(-90.0f)), gCB.world);
 	gCB.world = XMMatrixTranspose(gCB.world);
 	gCB.view = XMMatrixTranspose(globalView);
 	gCB.proj = XMMatrixTranspose(globalProj);
@@ -293,32 +294,29 @@ void Graphics::Render()
 	gCon->UpdateSubresource(gConstantBuffer.Get(), 0, nullptr, &gCB, 0, 0);
 #pragma region LIGHTS
 	///////////////// Directional Light Buffer Setup /////////////////
-	gDirectional.dir[0] = XMFLOAT4(-1.0f, 0.0f, 0.0f, 0.0f);
-	gDirectional.color[0] = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
+	gDirectional.dir[0] = XMFLOAT4(-.85f, 0.0f, 0.8f, 0.0f);
+	gDirectional.color[0] = XMFLOAT4(0.0f, 0.0f, 0.25f, 1.0f);
 	gCon->UpdateSubresource(gDLightBuffer.Get(), 0, nullptr, &gDirectional, 0, 0);
 
 	///////////////// Directional Light Buffer Setup /////////////////
-	gDirectional.dir[1] = XMFLOAT4(1.0f, 0.0f, 0.0f, 0.0f);
-	gDirectional.color[1] = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
+	gDirectional.dir[1] = XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f);
+	gDirectional.color[1] = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	gCon->UpdateSubresource(gDLightBuffer.Get(), 0, nullptr, &gDirectional, 0, 0);
 
 	/////////////////// Point Light Buffer Setup /////////////////////
-	XMVECTOR nx = XMVectorSet(sin(deltaT * 3.0f) * 50.0f, 10.0f, (sin(deltaT * 1.5f) * 50.0f) + 10.0f, 0.0f);
+	XMVECTOR nx = XMVectorSet(sin(degToRad(deltaT) + 10), 35.0f, sin(degToRad(deltaT*50.0f) + 10), 0.0f);
 	XMStoreFloat4(&gPointLight.pos, nx);
-	gPointLight.color = XMFLOAT4(0.0f, 0.5f, 0.0f, PointLight_A);
+	gPointLight.color = XMFLOAT4(0.0f, 1.0f, 0.0f, PointLight_A);
 	gCon->UpdateSubresource(gPLightBuffer.Get(), 0, nullptr, &gPointLight, 0, 0);
 
 	/////////////////// Spot Light Buffer Setup /////////////////////
-	//XMVECTOR nx = XMVectorSet(sin(deltaT * 3) * 50, 10, (sin(deltaT * 1.5) * 50) + 10, 0.0f);
 	XMStoreFloat4(&gSpotLight.pos, Camera.r[3]);
-	//gSpotLight.pos = XMFLOAT4(0.0f, 70.0f, 40.0f, 0.0f);
-	//gSpotLight.pos.y += 5.0f;
 	gSpotLight.pos.z += 5.0f;
 	XMVECTOR tmp = XMVectorSet(0.0f, 0.0f, 1.0f,0.0f);
 	tmp = XMVector4Transform(tmp, Camera);
 	XMStoreFloat4(&gSpotLight.coneDir, tmp);
 	gSpotLight.coneWidth_R = XMFLOAT4(SpotLightWidth,0.0f,0.0f,0.0f);
-	gSpotLight.color = XMFLOAT4(.75f, .75f, .75f, 1.0f);
+	gSpotLight.color = XMFLOAT4(.25f * SpotLightWidth, .25f * SpotLightWidth, .25f * SpotLightWidth, 1.0f);
 	gCon->UpdateSubresource(gSLightBuffer.Get(), 0, nullptr, &gSpotLight, 0, 0);
 #pragma endregion
 
