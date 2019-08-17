@@ -286,7 +286,7 @@ void Graphics::Render()
 	gConstantBuff gCB;
 	gCB.dTime = deltaT;
 	gCB.world = XMMatrixTranslation(0.0f, -10.0f, 50.0f);
-	gCB.world = XMMatrixMultiply(XMMatrixRotationAxis({ 0,1,0 }, degToRad(deltaT * 15.0f)), gCB.world);
+	//gCB.world = XMMatrixMultiply(XMMatrixRotationAxis({ 0,1,0 }, degToRad(deltaT * 15.0f)), gCB.world);
 	gCB.world = XMMatrixTranspose(gCB.world);
 	gCB.view = XMMatrixTranspose(globalView);
 	gCB.proj = XMMatrixTranspose(globalProj);
@@ -314,7 +314,7 @@ void Graphics::Render()
 	XMStoreFloat4(&gSpotLight.pos, Camera.r[3]);
 	//gSpotLight.pos = XMFLOAT4(0.0f, 70.0f, 40.0f, 0.0f);
 	//gSpotLight.pos.y += 5.0f;
-	gSpotLight.pos.z += 10.0f;
+	gSpotLight.pos.z += 5.0f;
 	XMVECTOR tmp = XMVectorSet(0.0f, 0.0f, 1.0f,0.0f);
 	tmp = XMVector4Transform(tmp, Camera);
 	XMStoreFloat4(&gSpotLight.coneDir, tmp);

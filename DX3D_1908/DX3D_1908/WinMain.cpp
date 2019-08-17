@@ -355,8 +355,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		if ((char)wParam == ',')
 		{
-			if (Gfx->SpotLightWidth > 0.1f)
-				Gfx->SpotLightWidth -= 0.1f;
+			if (Gfx->SpotLightWidth > 0.02f)
+				Gfx->SpotLightWidth -= 0.01f;
 			std::ostringstream oss;
 			oss << Gfx->SpotLightWidth << std::endl;
 			OutputDebugString(oss.str().c_str());
@@ -364,8 +364,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		else if ((char)wParam == '.')
 		{
-			if (Gfx->SpotLightWidth < 1.0f)
-				Gfx->SpotLightWidth += 0.1f;
+			if (Gfx->SpotLightWidth < 0.9f)
+				Gfx->SpotLightWidth += 0.01f;
 			std::ostringstream oss;
 			oss << Gfx->SpotLightWidth << std::endl;
 			OutputDebugString(oss.str().c_str());
