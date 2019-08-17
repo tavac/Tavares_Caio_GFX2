@@ -82,7 +82,7 @@ HRESULT Graphics::InitDevice()
 	hr = gDev->CreateBuffer(&buffdesc, nullptr, &gConstantBuffer);
 	if (FAILED(hr))
 		return hr;
-
+	
 	/////////////// Directional Light Buffer ///////////////
 	buffdesc = {};
 	buffdesc.Usage = D3D11_USAGE_DEFAULT;
@@ -112,7 +112,6 @@ HRESULT Graphics::InitDevice()
 	hr = gDev->CreateBuffer(&buffdesc, nullptr, &gSLightBuffer);
 	if (FAILED(hr))
 		return hr;
-
 
 	//////////////////// Vertex Buffer ////////////////////
 	buffdesc = {};
@@ -292,7 +291,7 @@ void Graphics::Render()
 	gCB.proj = XMMatrixTranspose(globalProj);
 	gCB.ambientLight = XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f);
 	gCon->UpdateSubresource(gConstantBuffer.Get(), 0, nullptr, &gCB, 0, 0);
-
+#pragma region LIGHTS
 	///////////////// Directional Light Buffer Setup /////////////////
 	gDirectional.dir[0] = XMFLOAT4(-1.0f, 0.0f, 0.0f, 0.0f);
 	gDirectional.color[0] = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
@@ -300,7 +299,7 @@ void Graphics::Render()
 
 	///////////////// Directional Light Buffer Setup /////////////////
 	gDirectional.dir[1] = XMFLOAT4(1.0f, 0.0f, 0.0f, 0.0f);
-	gDirectional.color[1] = XMFLOAT4(0.8f, 0.4f, 0.2f, 1.0f);
+	gDirectional.color[1] = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
 	gCon->UpdateSubresource(gDLightBuffer.Get(), 0, nullptr, &gDirectional, 0, 0);
 
 	/////////////////// Point Light Buffer Setup /////////////////////
@@ -319,8 +318,9 @@ void Graphics::Render()
 	tmp = XMVector4Transform(tmp, Camera);
 	XMStoreFloat4(&gSpotLight.coneDir, tmp);
 	gSpotLight.coneWidth_R = XMFLOAT4(SpotLightWidth,0.0f,0.0f,0.0f);
-	gSpotLight.color = XMFLOAT4(1.0f, 0.1f, 0.1f, 1.0f);
+	gSpotLight.color = XMFLOAT4(.75f, .75f, .75f, 1.0f);
 	gCon->UpdateSubresource(gSLightBuffer.Get(), 0, nullptr, &gSpotLight, 0, 0);
+#pragma endregion
 
 	//////////////////////// Bind Shaders ////////////////////////
 	// Bind buffers to pipeline so the Drawcall can access the information from setup.

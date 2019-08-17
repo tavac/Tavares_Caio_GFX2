@@ -364,7 +364,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		else if ((char)wParam == '.')
 		{
-			if (Gfx->SpotLightWidth < 0.9f)
+			if (Gfx->SpotLightWidth < 1.0f)
 				Gfx->SpotLightWidth += 0.01f;
 			std::ostringstream oss;
 			oss << Gfx->SpotLightWidth << std::endl;

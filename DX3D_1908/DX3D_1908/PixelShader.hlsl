@@ -54,17 +54,19 @@ float4 main(PS_Input psIn) : SV_Target
    ///////////// Direction Light /////////////
     for (int d = 0; d < 2; d++)
     {
-        float LR = saturate(dot((-DL_dir[d]), psIn.norm));
-        outie += (LR * DL_color[d] /** sin(vDTime * 2)*/);
+        float3 lightDir = DL_dir[d].xyz;
+        //lightDir.y = clamp(cos(vDTime), -1, 1);
+        float LR = saturate(dot((-lightDir), psIn.norm.xyz));
+        outie += (LR * DL_color[d] * sin(vDTime * 2));
     }
    ///////////////////////////////////////////
    
    ////////////// Point Light //////////////
    //for (int p = 0; p < 1; p++)
    //{
-    float4 ptLightDir = normalize(PL_pos - psIn.wPos);
-    float LightRatio = saturate(dot(ptLightDir, psIn.norm));
-    float attenutation = 1.0f - saturate((length(PL_pos - psIn.wPos) / 100.0f));
+    float3 ptLightDir = normalize(PL_pos.xyz - psIn.wPos.xyz);
+    float LightRatio = saturate(dot(ptLightDir, psIn.norm.xyz));
+    float attenutation = 1.0f - saturate((length(PL_pos.xyz - psIn.wPos.xyz) / 100.0f));
     LightRatio = (attenutation * attenutation) * LightRatio;
     outie += lerp(float4(0, 0, 0, 0), PL_color /** sin(vDTime * 2)*/, LightRatio);
    //}
