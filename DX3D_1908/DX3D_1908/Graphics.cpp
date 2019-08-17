@@ -312,8 +312,9 @@ void Graphics::Render()
 	/////////////////// Spot Light Buffer Setup /////////////////////
 	//XMVECTOR nx = XMVectorSet(sin(deltaT * 3) * 50, 10, (sin(deltaT * 1.5) * 50) + 10, 0.0f);
 	XMStoreFloat4(&gSpotLight.pos, Camera.r[3]);
-	//gSpotLight.pos = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
-	//gSpotLight.pos.y -= 5.0f;
+	//gSpotLight.pos = XMFLOAT4(0.0f, 70.0f, 40.0f, 0.0f);
+	//gSpotLight.pos.y += 5.0f;
+	gSpotLight.pos.z += 10.0f;
 	XMVECTOR tmp = XMVectorSet(0.0f, 0.0f, 1.0f,0.0f);
 	tmp = XMVector4Transform(tmp, Camera);
 	XMStoreFloat4(&gSpotLight.coneDir, tmp);

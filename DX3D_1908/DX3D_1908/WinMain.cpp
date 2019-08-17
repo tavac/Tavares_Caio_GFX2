@@ -152,7 +152,28 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	}
 	break;
 	// Camera Controls
-	//case WM_MOUSEMOVE:
+	case WM_MOUSEWHEEL:
+	{
+		//if (/*direction > 0 && */)
+		//	//if ((char)wParam == 'f') // Fov Wider // zoom out
+		//{
+		//	Gfx->FoV_angle += direction;
+		//	Gfx->globalProj = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
+		//}
+		//else if ((char)wParam == 'r') // Fov narrower // zoom in
+		if (Gfx->FoV_angle <= 120 && Gfx->FoV_angle >= 30)
+		{
+			float direction = GET_WHEEL_DELTA_WPARAM(wParam) * 0.01f;
+			Gfx->FoV_angle += direction;
+			Gfx->globalProj = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
+		}
+		else
+		{
+			if (Gfx->FoV_angle > 120) Gfx->FoV_angle -= 0.01f;
+			else if (Gfx->FoV_angle < 30) Gfx->FoV_angle += 0.01f;
+		}
+	}
+	break;
 	case WM_KEYDOWN:
 	{
 		if (wParam == VK_UP)
@@ -299,23 +320,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		//	Gfx->Camera = XMMatrixMultiply(rotation, Gfx->Camera);
 		//	Gfx->Camera.r[3] = saver;
 		//}
-		if ((char)wParam == 'f') // Fov Wider // zoom out
-		{
-			if (Gfx->FoV_angle < 120)
-			{
-				Gfx->FoV_angle++;
-				Gfx->globalProj = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
-			}
-		}
-		else if ((char)wParam == 'r') // Fov narrower // zoom in
-		{
-			if (Gfx->FoV_angle > 30)
-			{
-				Gfx->FoV_angle--;
-				Gfx->globalProj = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
-			}
-		}
-		else if ((char)wParam == '=') // Far plane closer
+
+		if ((char)wParam == '=') // Far plane closer
 		{
 			if (Gfx->farPlane > 50.0f)
 			{
@@ -358,7 +364,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		else if ((char)wParam == '.')
 		{
-			if (Gfx->SpotLightWidth < 5.0f)
+			if (Gfx->SpotLightWidth < 1.0f)
 				Gfx->SpotLightWidth += 0.1f;
 			std::ostringstream oss;
 			oss << Gfx->SpotLightWidth << std::endl;
@@ -399,9 +405,9 @@ HWND Init_Window(int _width, int _height, std::string _title, WNDCLASSEX* _WndCl
 
 	// Create window.
 	RECT ClientRect;
-	ClientRect.left = labs(static_cast<long>(centerScreen.x) - (static_cast<long>(_width) * static_cast<long>(0.5f)));
-	ClientRect.right = ClientRect.left + static_cast<long>(_width);
-	ClientRect.top = labs(static_cast<long>(centerScreen.y) - (static_cast<long>(_height) * static_cast<long>(0.5f)));
+	ClientRect.left = labs(centerScreen.x - (_width * 0.5f));
+	ClientRect.right = ClientRect.left + _width;
+	ClientRect.top = labs(centerScreen.y - (_height * 0.5f));
 	ClientRect.bottom = ClientRect.top + static_cast<long>(_height);
 	AdjustWindowRect(&ClientRect, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE);
 	HWND hWnd = CreateWindowEx(
