@@ -37,21 +37,20 @@ std::string ToolBox::CommandProcesser(std::string command)
 	//call/do function
 }
 
-//// Initializes the timer.
-//float ToolBox::StartTimer()
-//{
-//	init_time_stamp = std::chrono::
-//	return 0.0f;
-//}
-//// Delta time since last call of TimerTick() or since StartTimer() if first time calling TimerTick().
-//float ToolBox::TimerTick(std::chrono::steady_clock::time_point tp)
-//{
-//	std::chrono::duration<float> t_span = std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::steady_clock::now() - tp);
-//	tp = std::chrono::steady_clock::now();
-//	return t_span.count();
-//}
-//// Time since timer started.
-//float ToolBox::TimerDelta()
-//{
-//	return (std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::steady_clock::now() - init_time_stamp)).count();
-//}
+void Timer::StartTimer(Timer* t)
+{
+	t->timeStart = static_cast<float>(GetTickCount64());
+	t->timeCur = static_cast<float>(GetTickCount64());
+}
+
+float Timer::TimeSinceStart(Timer* t)
+{
+	return t->timeCur - t->timeStart;
+}
+
+float Timer::TimeSinceTick(Timer* t)
+{
+	t->timeCur = static_cast<float>(GetTickCount64());
+	t->deltaTime = (t->timeCur - t->timeStart) / 1000;
+	return t->deltaTime;
+}

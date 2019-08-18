@@ -67,6 +67,7 @@ Graphics::~Graphics()
 #pragma region DeviceSetup/RenderPipeline
 HRESULT Graphics::InitDevice()
 {
+	gTimer->StartTimer(gTimer);
 	HRESULT hr;
 
 #pragma region Create_Buffers
@@ -82,7 +83,7 @@ HRESULT Graphics::InitDevice()
 	hr = gDev->CreateBuffer(&buffdesc, nullptr, &gConstantBuffer);
 	if (FAILED(hr))
 		return hr;
-	
+
 	/////////////// Directional Light Buffer ///////////////
 	buffdesc = {};
 	buffdesc.Usage = D3D11_USAGE_DEFAULT;
@@ -229,7 +230,7 @@ HRESULT Graphics::InitDevice()
 
 	// Create depth stencil texture
 	D3D11_TEXTURE2D_DESC descDepth = {};
-	descDepth.Width = hWndWidth;	
+	descDepth.Width = hWndWidth;
 	descDepth.Height = hWndHeight;
 	descDepth.MipLevels = 0;
 	descDepth.ArraySize = 1;
@@ -272,29 +273,16 @@ HRESULT Graphics::InitDevice()
 }
 void Graphics::Render()
 {
-	//////////////// TIMER ////////////////
-	static ULONGLONG timeStart = 0;
-	ULONGLONG timeCur = GetTickCount64();
-	if (timeStart == 0)
-		timeStart = timeCur;
-	deltaT = (timeCur - timeStart) / 1000.0f;
+	float deltaT = (float)gTimer->TimeSinceTick(gTimer);
 
-	/////////////////////////// Clear Buffers ///////////////////////////
-	gCon->ClearRenderTargetView(gRtv.Get(), DirectX::Colors::Silver);
-	gCon->ClearDepthStencilView(gDsv.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
+	CleanFrameBuffers();
 
-	///////////////////// Constant Buffer Setup /////////////////////
-	// This sends World,View,Proj,AmbientLight through the shaders.
-	gConstantBuff gCB;
-	gCB.dTime = deltaT;
-	gCB.world = XMMatrixTranslation(0.0f, -10.0f, 50.0f);
-	//gCB.world = XMMatrixMultiply(XMMatrixRotationAxis({ 0,1,0 }, degToRad(deltaT * 15.0f)), gCB.world);
-	gCB.world = XMMatrixMultiply(XMMatrixRotationAxis({ 0,1,0 }, degToRad(-90.0f)), gCB.world);
-	gCB.world = XMMatrixTranspose(gCB.world);
-	gCB.view = XMMatrixTranspose(globalView);
-	gCB.proj = XMMatrixTranspose(globalProj);
-	gCB.ambientLight = XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f);
-	gCon->UpdateSubresource(gConstantBuffer.Get(), 0, nullptr, &gCB, 0, 0);
+#pragma region Update Constant Buffer
+	float move[] = {0.0f, 0.0f, 50.0f};
+	float rotate[] = { 0.0f, -90.0f, 0.0f };
+	UpdateConstantBuffer(move,rotate);
+#pragma endregion
+
 #pragma region LIGHTS
 	///////////////// Directional Light Buffer Setup /////////////////
 	gDirectional.dir[0] = XMFLOAT4(-.85f, 0.0f, 0.8f, 0.0f);
@@ -307,7 +295,7 @@ void Graphics::Render()
 	gCon->UpdateSubresource(gDLightBuffer.Get(), 0, nullptr, &gDirectional, 0, 0);
 
 	/////////////////// Point Light Buffer Setup /////////////////////
-	XMVECTOR nx = XMVectorSet(sin(degToRad(deltaT) + 10), 35.0f, sin(degToRad(deltaT*50.0f) + 10), 0.0f);
+	XMVECTOR nx = XMVectorSet(sin(degToRad(deltaT) + 10), 35.0f, sin(degToRad(deltaT * 50.0f) + 10), 0.0f);
 	XMStoreFloat4(&gPointLight.pos, nx);
 	gPointLight.color = XMFLOAT4(0.0f, 1.0f, 0.0f, PointLight_A);
 	gCon->UpdateSubresource(gPLightBuffer.Get(), 0, nullptr, &gPointLight, 0, 0);
@@ -315,14 +303,15 @@ void Graphics::Render()
 	/////////////////// Spot Light Buffer Setup /////////////////////
 	XMStoreFloat4(&gSpotLight.pos, Camera.r[3]);
 	gSpotLight.pos.z += 5.0f;
-	XMVECTOR tmp = XMVectorSet(0.0f, 0.0f, 1.0f,0.0f);
+	XMVECTOR tmp = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
 	tmp = XMVector4Transform(tmp, Camera);
 	XMStoreFloat4(&gSpotLight.coneDir, tmp);
-	gSpotLight.coneWidth_R = XMFLOAT4(SpotLightWidth,0.0f,0.0f,0.0f);
+	gSpotLight.coneWidth_R = XMFLOAT4(SpotLightWidth, 0.0f, 0.0f, 0.0f);
 	gSpotLight.color = XMFLOAT4(.25f * SpotLightWidth, .25f * SpotLightWidth, .25f * SpotLightWidth, 1.0f);
 	gCon->UpdateSubresource(gSLightBuffer.Get(), 0, nullptr, &gSpotLight, 0, 0);
 #pragma endregion
 
+#pragma region Bind Shaders
 	//////////////////////// Bind Shaders ////////////////////////
 	// Bind buffers to pipeline so the Drawcall can access the information from setup.
 	ID3D11Buffer* buffs[] = { *gConstantBuffer.GetAddressOf(),
@@ -335,6 +324,7 @@ void Graphics::Render()
 	gCon->PSSetConstantBuffers(0u, (UINT)ARRAYSIZE(buffs), buffs);
 	gCon->PSSetShaderResources(0, 1, shaderRV.GetAddressOf());
 	gCon->PSSetSamplers(0, 1, smplrState.GetAddressOf());
+#pragma endregion
 
 	gCon->DrawIndexed((UINT)gppMesh->numVertices, 0u, 0);
 
@@ -684,5 +674,33 @@ void Graphics::LoadMesh(std::string fileName, float mesh_scale, gMesh** meshArr,
 	{
 		ToolBox::ThrowErrorMsg("LoadMesh() failed::meshArr was not nullptr.\nWe do not overwrite memory in this house!");
 	}
+}
+#pragma endregion
+
+#pragma region RenderCalls
+void Graphics::CleanFrameBuffers(XMVECTORF32 DXCOLOR)
+{
+	gCon->ClearRenderTargetView(gRtv.Get(), DXCOLOR);
+	gCon->ClearDepthStencilView(gDsv.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
+}
+void Graphics::UpdateConstantBuffer(float cbTranslate[3], float cbRotate[3])
+{
+	///////////////////// Constant Buffer Setup /////////////////////
+// This sends World,View,Proj,AmbientLight through the shaders.
+	gConstantBuff gCB;
+	gCB.world = XMMatrixTranslation(cbTranslate[0], cbTranslate[1], cbTranslate[2]);
+	if (cbRotate[0] != 0)
+		gCB.world = XMMatrixMultiply(XMMatrixRotationAxis({ 1,0,0 }, degToRad(cbRotate[0])), gCB.world);
+	if (cbRotate[1] != 0)
+		gCB.world = XMMatrixMultiply(XMMatrixRotationAxis({ 0,1,0 }, degToRad(cbRotate[1])), gCB.world);
+	if (cbRotate[2] != 0)
+		gCB.world = XMMatrixMultiply(XMMatrixRotationAxis({ 0,0,1 }, degToRad(cbRotate[2])), gCB.world);
+
+	gCB.world = XMMatrixTranspose(gCB.world);
+	gCB.view = XMMatrixTranspose(globalView);
+	gCB.proj = XMMatrixTranspose(globalProj);
+	gCB.dTime = (float)gTimer->deltaTime;
+	gCB.ambientLight = XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f);
+	gCon->UpdateSubresource(gConstantBuffer.Get(), 0, nullptr, &gCB, 0, 0);
 }
 #pragma endregion

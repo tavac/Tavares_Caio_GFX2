@@ -1,15 +1,4 @@
 #include "ToolBox.h"
-#include <d3d11.h>
-#include <d3dcompiler.h>
-#include <DirectXColors.h>
-#include <fbxsdk.h>
-#include <vector>
-#include "DDSTextureLoader.h"
-
-#pragma region OBJ headers
-#include "Grail.h"
-#pragma endregion
-
 
 using namespace DirectX;
 
@@ -17,8 +6,8 @@ namespace wrl = Microsoft::WRL;
 class Graphics
 {
 public:
+	Timer* gTimer = new Timer();
 	float PointLight_A = 1.0f;
-	float deltaT = 0.0f; // time keeper
 	struct gVertex
 	{
 		XMFLOAT4 pos;
@@ -70,11 +59,15 @@ public:
 	HRESULT InitDevice();
 	void Render();
 	void LoadMesh(std::string fileName, float mesh_scale, gMesh** meshArr, UINT meshIndex);
-	void ProcessFBXMesh(FbxNode* Node, gMesh* mesh);
+	void ProcessFBXMesh(FbxNode* Node, gMesh* mesh); // Join with ProcessOBJMesh to make a template type mesh loader
 	void LoadUVFromFBX(FbxMesh* pMesh, std::vector<XMFLOAT2>* pVecUV);
-	void TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode);
-	void ProcessObj(_OBJ_VERT_ ov[], int size);
+	void TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode); // This requires the model to have been made with a .dds file
+	void ProcessOBJMesh(_OBJ_VERT_ ov[], int size); // Join with ProcessFBXMesh
+	////
+	void UpdateConstantBuffer(float cbTranslate[3], float cbRotate[3]);
+	void CleanFrameBuffers(XMVECTORF32 DXCOLOR = Colors::Silver);
 private:
+#pragma region Hointer Pell
 	wrl::ComPtr<ID3D11Device> gDev = nullptr;
 	wrl::ComPtr<IDXGISwapChain> gSwap = nullptr;
 	wrl::ComPtr<ID3D11DeviceContext> gCon = nullptr;
@@ -93,13 +86,16 @@ private:
 	wrl::ComPtr<ID3DBlob> gBlob = nullptr;
 	wrl::ComPtr<ID3D11ShaderResourceView> shaderRV = nullptr; //
 	wrl::ComPtr<ID3D11SamplerState> smplrState = nullptr;
+
+#pragma endregion
 public:
 #pragma region Lights
 	gDirLightBuff gDirectional = {};
 	gPntLightBuff gPointLight = {};
 	gSptLightBuff gSpotLight = {};
 #pragma endregion
-	// Setting up Matrices
+
+#pragma region WorldViewProjection
 	XMMATRIX globalWorld = XMMatrixIdentity();
 	XMVECTOR Eye = XMVectorSet(0.0f, 0.0f, -10.0f, 0.0f);
 	XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
@@ -110,23 +106,5 @@ public:
 	float nearPlane = 0.001f;
 	float farPlane = 1000.0f;
 	XMMATRIX globalProj = XMMatrixPerspectiveFovLH((FoV_angle * (3.1415f / 180.0f)), 1280.0f / 720.0f, nearPlane, farPlane);
-
-	// Win32 + DirectX = gobeldegooks
-	enum Axis
-	{
-		x,y,z,w,u,v
-	};
-	void LocalTranslate(XMVECTOR tV);
-	void GlobalTranslate(XMVECTOR tV);
-	void CameraRotate(XMVECTOR axis, float angle);
-	enum DirLightComs
-	{
-		DirectionLight_Default,
-		DirectionLight_Red,
-		DirectionLight_Green,
-		DirectionLight_Blue,
-		DirectionLight_Off,
-	};
-	DirLightComs LightState = DirectionLight_Default;
-	bool DirectionLightSwitch(DirLightComs cmd);
+#pragma endregion
 };

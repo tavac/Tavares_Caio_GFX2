@@ -1,7 +1,6 @@
 //#include <Windows.h>
-#include "Graphics.h"
-#include <sstream> // for ostringstream
-#include <time.h>
+#include "ModelFactory.h"
+
 
 #pragma region Variables
 WNDCLASSEX WndCls;
@@ -405,10 +404,10 @@ HWND Init_Window(int _width, int _height, std::string _title, WNDCLASSEX* _WndCl
 
 	// Create window.
 	RECT ClientRect;
-	ClientRect.left = labs(centerScreen.x - (_width * 0.5f));
-	ClientRect.right = ClientRect.left + _width;
-	ClientRect.top = labs(centerScreen.y - (_height * 0.5f));
-	ClientRect.bottom = ClientRect.top + static_cast<long>(_height);
+	ClientRect.left = labs((long)(centerScreen.x - (_width * 0.5f)));
+	ClientRect.right = (long)(ClientRect.left + _width);
+	ClientRect.top = labs((long)(centerScreen.y - (_height * 0.5f)));
+	ClientRect.bottom = (long)(ClientRect.top + static_cast<long>(_height));
 	AdjustWindowRect(&ClientRect, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE);
 	HWND hWnd = CreateWindowEx(
 		0, _WndClass->lpszClassName, _title.c_str(),
@@ -422,38 +421,6 @@ HWND Init_Window(int _width, int _height, std::string _title, WNDCLASSEX* _WndCl
 	// Draw hWnd.
 	ShowWindow(hWnd, SW_SHOW);
 	return hWnd;
-}
-
-bool DirLight_ComProc(std::string s)
-{
-	bool rtn;
-	if (strIB == "dlight red")
-	{
-		Gfx->LightState = Graphics::DirectionLight_Red;
-		rtn = true;
-	}
-	else if (strIB == "dlight green")
-	{
-		Gfx->LightState = Graphics::DirectionLight_Green;
-		rtn = true;
-	}
-	else if (strIB == "dlight blue")
-	{
-		Gfx->LightState = Graphics::DirectionLight_Blue;
-		rtn = true;
-	}
-	else if (strIB == "dlight reset")
-	{
-		Gfx->LightState = Graphics::DirectionLight_Default;
-		rtn = true;
-	}
-	else
-	{
-		strIB = "";
-		OutputDebugString("Invalid Command");
-		rtn = false;
-	}
-	return rtn;
 }
 
 //void ModelDraw_Switch(int modelToDraw)
