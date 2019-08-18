@@ -278,9 +278,9 @@ void Graphics::Render()
 	CleanFrameBuffers();
 
 #pragma region Update Constant Buffer
-	float move[] = {0.0f, 0.0f, 50.0f};
+	float move[] = { 0.0f, 0.0f, 50.0f };
 	float rotate[] = { 0.0f, -90.0f, 0.0f };
-	UpdateConstantBuffer(move,rotate);
+	UpdateConstantBuffer(move, rotate);
 #pragma endregion
 
 #pragma region LIGHTS
@@ -685,8 +685,7 @@ void Graphics::CleanFrameBuffers(XMVECTORF32 DXCOLOR)
 }
 void Graphics::UpdateConstantBuffer(float cbTranslate[3], float cbRotate[3])
 {
-	///////////////////// Constant Buffer Setup /////////////////////
-// This sends World,View,Proj,AmbientLight through the shaders.
+	// This sends World,View,Proj,AmbientLight through the shaders.
 	gConstantBuff gCB;
 	gCB.world = XMMatrixTranslation(cbTranslate[0], cbTranslate[1], cbTranslate[2]);
 	if (cbRotate[0] != 0)
@@ -702,5 +701,9 @@ void Graphics::UpdateConstantBuffer(float cbTranslate[3], float cbRotate[3])
 	gCB.dTime = (float)gTimer->deltaTime;
 	gCB.ambientLight = XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f);
 	gCon->UpdateSubresource(gConstantBuffer.Get(), 0, nullptr, &gCB, 0, 0);
+}
+void Graphics::AppendLight(LightType lType, XMVECTOR pos, XMVECTOR dir, XMFLOAT4A color)
+{
+
 }
 #pragma endregion

@@ -64,8 +64,10 @@ public:
 	void TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode); // This requires the model to have been made with a .dds file
 	void ProcessOBJMesh(_OBJ_VERT_ ov[], int size); // Join with ProcessFBXMesh
 	////
-	void UpdateConstantBuffer(float cbTranslate[3], float cbRotate[3]);
 	void CleanFrameBuffers(XMVECTORF32 DXCOLOR = Colors::Silver);
+	void UpdateConstantBuffer(float cbTranslate[3], float cbRotate[3]);
+	enum LightType { Directional,Point,Spot };
+	void AppendLight(LightType lType, XMVECTOR pos, XMVECTOR dir, XMFLOAT4A color);
 private:
 #pragma region Hointer Pell
 	wrl::ComPtr<ID3D11Device> gDev = nullptr;
