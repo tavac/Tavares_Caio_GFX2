@@ -1,6 +1,6 @@
 struct GSOutput
 {
-	float4 pos : SV_POSITION;
+	float4 pos : SV_POSITION; // this gets picked up by the shaders
 };
 
 [maxvertexcount(3)]

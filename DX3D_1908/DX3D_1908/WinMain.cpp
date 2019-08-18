@@ -53,8 +53,8 @@ int CALLBACK WinMain(
 	//Gfx->LoadMesh("NewDragon.fbx",10.0f, Gfx->gppMesh, 0);
 	//Gfx->LoadMesh("SpaceShip_1.fbx", 1.0f, Gfx->gppMesh, 0);
 	//Gfx->LoadMesh("SpaceShip_3.fbx", 0.5f, &Gfx->gppMesh, 0);
-	Gfx->LoadMesh("Desk_0.fbx", 0.5f, &Gfx->gppMesh, 0);
-	//Gfx->LoadMesh("Cube.fbx", 50.0f, Gfx->gppMesh, 0);
+	//Gfx->LoadMesh("Desk_0.fbx", 0.5f, &Gfx->gppMesh, 0);
+	Gfx->LoadMesh("Cube.fbx", 50.0f, &Gfx->gppMesh, 0);
 	//Gfx->LoadMesh("Cube.fbx", 50.0f, Gfx->gppMesh, 1);
 #pragma endregion
 	Gfx->InitDevice();

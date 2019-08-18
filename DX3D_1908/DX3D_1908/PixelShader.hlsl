@@ -57,7 +57,7 @@ float4 main(PS_Input psIn) : SV_Target
         float3 lightDir = DL_dir[d].xyz;
         //lightDir.y = clamp(cos(vDTime), -1, 1);
         float LR = saturate(dot((-lightDir), psIn.norm.xyz));
-        outie += (LR * DL_color[d] /** sin(vDTime * 2)*/);
+        outie += (LR * DL_color[d] /** sin(vDTime * 2)*/ * outie);
     }
    ///////////////////////////////////////////
    

@@ -188,6 +188,8 @@ HRESULT Graphics::InitDevice()
 		{"COLOR",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 	};
 
+
+	// TEXTURE LOADING///////////////////////
 	//HRESULT res = CreateDDSTextureFromFile(gDev.Get(), L"crate.dds", nullptr, &shaderRV);
 	HRESULT res = CreateDDSTextureFromFile(gDev.Get(), L"carbonfiber.dds", nullptr, &shaderRV);
 	//HRESULT res = CreateDDSTextureFromFile(g_pd3dDevice, (const wchar_t*)textName, nullptr,&shadRes);
