@@ -209,6 +209,7 @@ HRESULT Graphics::InitDevice()
 	HRESULT sampleResult = gDev->CreateSamplerState(&texDes, &smplrState);
 	if (FAILED(sampleResult))
 		return sampleResult;
+	//////////////////////////////////////////// TEXTURE LOADING
 
 	hr = gDev->CreateInputLayout(ildes, (UINT)ARRAYSIZE(ildes), gBlob->GetBufferPointer(), gBlob->GetBufferSize(), &gInputLayout);
 	if (FAILED(hr))

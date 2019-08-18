@@ -149,6 +149,7 @@
     <ClInclude Include="DDSTextureLoader.h" />
     <ClInclude Include="Grail.h" />
     <ClInclude Include="Graphics.h" />
+    <ClInclude Include="ModelFactory.h" />
     <ClInclude Include="ToolBox.h" />
   </ItemGroup>
   <ItemGroup>

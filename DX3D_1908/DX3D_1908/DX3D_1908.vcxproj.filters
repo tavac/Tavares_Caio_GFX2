@@ -44,6 +44,9 @@
     <ClInclude Include="Grail.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ModelFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="VertexShader.hlsl">
