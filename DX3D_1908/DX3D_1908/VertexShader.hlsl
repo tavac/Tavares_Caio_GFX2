@@ -13,8 +13,8 @@ cbuffer constBuff : register(b0)
 
 cbuffer Dir_LightBuff : register(b1)
 {
-	float4 DL_dir[2];
-	float4 DL_color[2];
+	float4 DL_dir;
+	float4 DL_color;
 }
 
 cbuffer Pnt_LightBuff : register(b2)
@@ -26,7 +26,7 @@ cbuffer Pnt_LightBuff : register(b2)
 cbuffer gSptLightBuff : register(b3)
 {
     float4 SL_pos;
-    float3 SL_coneDir;
+    float4 SL_coneDir;
     float4 SL_color;
     float4 SL_coneWidth;
 };

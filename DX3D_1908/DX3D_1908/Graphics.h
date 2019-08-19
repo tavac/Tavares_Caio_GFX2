@@ -24,34 +24,69 @@ public:
 		float scale = 1.0f;
 	};
 	gMesh* gppMesh = nullptr;
-	int numOfMeshs;
-	struct gConstantBuff
-	{
-		XMMATRIX world;
-		XMMATRIX view;
-		XMMATRIX proj;
-		XMFLOAT4 ambientLight;
-		float dTime;
-	};
-	struct gDirLightBuff
-	{
-		XMFLOAT4 dir[2];
-		XMFLOAT4 color[2];
-	};
-	struct gPntLightBuff
-	{
-		XMFLOAT4 pos;
-		XMFLOAT4 color;
-	};
-	float SpotLightWidth = 0.9f;
-	struct gSptLightBuff
-	{
-		XMFLOAT4 pos;
-		XMFLOAT4 coneDir;
-		XMFLOAT4 color;
-		XMFLOAT4 coneWidth_R;
-	};
+	int numOfMeshs = 0;
 
+#pragma region Lights
+	struct Lights
+	{
+	public:
+		struct gDirLightBuff
+		{
+			std::vector<XMFLOAT4A> dir;
+			std::vector<XMFLOAT4A> color;
+		};
+		struct gPntLightBuff
+		{
+			std::vector<XMFLOAT4A> pos;
+			std::vector<XMFLOAT4A> color;
+		};
+		struct gSptLightBuff
+		{
+			std::vector<XMFLOAT4A> pos;
+			std::vector<XMFLOAT4A> coneDir;
+			std::vector<XMFLOAT4A> color;
+			std::vector<XMFLOAT4A> width_empty3_;
+		};
+
+		gDirLightBuff gDirectional = {};
+		gPntLightBuff gPointLight = {};
+		gSptLightBuff gSpotLight = {};
+
+		enum LightType {
+			Directional,
+			Point,
+			Spot
+		};
+
+		UINT numOfTotalLights = 0;
+		UINT numOfDir_Lights = 0;
+		UINT numOfPointLights = 0;
+		UINT numOfSpotLights = 0;
+
+		HRESULT CreateLightBuffers(ID3D11Device* gpDev, 
+									wrl::ComPtr<ID3D11Buffer>* gpDLightBuffer,
+									wrl::ComPtr<ID3D11Buffer>* gpPLightBuffer,
+									wrl::ComPtr<ID3D11Buffer>* gpSLightBuffer);
+
+		void updateDirectionLight(	ID3D11DeviceContext* gpCon,
+									UINT startIndex, UINT numOfLights,
+									ID3D11Buffer* gDLightBuffer,
+									XMFLOAT4A dir, XMFLOAT4A color);
+
+		void updatePointLight(	ID3D11DeviceContext* gpCon,
+								UINT startIndex, UINT numOfLights,
+								ID3D11Buffer* gPLightBuffer,
+								XMFLOAT4A pos, float radius, XMFLOAT4A color);
+
+		void updateSpotLight(	ID3D11DeviceContext* gpCon,
+								UINT startIndex, UINT numOfLights,
+								ID3D11Buffer* gSLightBuffer,
+								XMFLOAT4A dir, XMFLOAT4A pos, XMFLOAT4A width, XMFLOAT4A color);
+
+	};
+#pragma endregion
+
+	Lights* gLights = new Lights();
 	Graphics(HWND hWnd);
 	Graphics(const Graphics&) = delete;
 	Graphics& operator=(const Graphics&) = delete;
@@ -66,8 +101,6 @@ public:
 	////
 	void CleanFrameBuffers(XMVECTORF32 DXCOLOR = Colors::Silver);
 	void UpdateConstantBuffer(float cbTranslate[3], float cbRotate[3]);
-	enum LightType { Directional,Point,Spot };
-	void AppendLight(LightType lType, XMVECTOR pos, XMVECTOR dir, XMFLOAT4A color);
 private:
 #pragma region Hointer Pell
 	wrl::ComPtr<ID3D11Device> gDev = nullptr;
@@ -78,8 +111,8 @@ private:
 	wrl::ComPtr<ID3D11Texture2D> gDepthStencil = nullptr;
 	wrl::ComPtr<ID3D11Buffer> gConstantBuffer = nullptr;
 	wrl::ComPtr<ID3D11Buffer> gDLightBuffer = nullptr;
-	wrl::ComPtr<ID3D11Buffer> gPLightBuffer = nullptr; 
-	wrl::ComPtr<ID3D11Buffer> gSLightBuffer = nullptr; 
+	wrl::ComPtr<ID3D11Buffer> gPLightBuffer = nullptr;
+	wrl::ComPtr<ID3D11Buffer> gSLightBuffer = nullptr;
 	wrl::ComPtr<ID3D11Buffer> gIndexBuffer = nullptr; //
 	wrl::ComPtr<ID3D11InputLayout> gInputLayout = nullptr;
 	wrl::ComPtr<ID3D11VertexShader> gVertexShader = nullptr;
@@ -91,11 +124,14 @@ private:
 
 #pragma endregion
 public:
-#pragma region Lights
-	gDirLightBuff gDirectional = {};
-	gPntLightBuff gPointLight = {};
-	gSptLightBuff gSpotLight = {};
-#pragma endregion
+	struct gConstantBuff
+	{
+		XMMATRIX world;
+		XMMATRIX view;
+		XMMATRIX proj;
+		XMFLOAT4 ambientLight;
+		float dTime;
+	};
 
 #pragma region WorldViewProjection
 	XMMATRIX globalWorld = XMMatrixIdentity();
@@ -109,18 +145,4 @@ public:
 	float farPlane = 1000.0f;
 	XMMATRIX globalProj = XMMatrixPerspectiveFovLH((FoV_angle * (3.1415f / 180.0f)), 1280.0f / 720.0f, nearPlane, farPlane);
 #pragma endregion
-};
-
-struct Lights
-{
-	enum LightType {
-		Directional,
-		Point,
-		Spot
-	};
-	UINT numOfTotalLights = 0;
-	UINT numOfDir_Lights = 0;
-	UINT numOfPointLights = 0;
-	UINT numOfSpotLights = 0;
-	void setLight(LightType lt);
 };

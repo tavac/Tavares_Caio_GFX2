@@ -84,35 +84,12 @@ HRESULT Graphics::InitDevice()
 	if (FAILED(hr))
 		return hr;
 
-	/////////////// Directional Light Buffer ///////////////
-	buffdesc = {};
-	buffdesc.Usage = D3D11_USAGE_DEFAULT;
-	buffdesc.ByteWidth = sizeof(gDirLightBuff);
-	buffdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	buffdesc.CPUAccessFlags = 0;
-	hr = gDev->CreateBuffer(&buffdesc, nullptr, &gDLightBuffer);
+	hr = gLights->CreateLightBuffers(gDev.Get(), &gDLightBuffer, &gPLightBuffer, &gSLightBuffer);
 	if (FAILED(hr))
+	{
+		ToolBox::ThrowErrorMsg("CreateLightBuffers Failed in InitDevice");
 		return hr;
-
-	////////////////// Point Light Buffer //////////////////
-	buffdesc = {};
-	buffdesc.Usage = D3D11_USAGE_DEFAULT;
-	buffdesc.ByteWidth = sizeof(gPntLightBuff);
-	buffdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	buffdesc.CPUAccessFlags = 0;
-	hr = gDev->CreateBuffer(&buffdesc, nullptr, &gPLightBuffer);
-	if (FAILED(hr))
-		return hr;
-
-	////////////////// Spot Light Buffer //////////////////
-	buffdesc = {};
-	buffdesc.Usage = D3D11_USAGE_DEFAULT;
-	buffdesc.ByteWidth = sizeof(gSptLightBuff);
-	buffdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	buffdesc.CPUAccessFlags = 0;
-	hr = gDev->CreateBuffer(&buffdesc, nullptr, &gSLightBuffer);
-	if (FAILED(hr))
-		return hr;
+	}
 
 	//////////////////// Vertex Buffer ////////////////////
 	buffdesc = {};
@@ -284,7 +261,16 @@ void Graphics::Render()
 #pragma endregion
 
 #pragma region LIGHTS
+	gLights->updateDirectionLight(gCon.Get(), 0, 1, gDLightBuffer.Get(),
+		XMFLOAT4A(1.0f, 0.0f, 0.0f, 0.0f), XMFLOAT4A(0.0f, 0.0f, 1.0f, 0.0f));
 
+	gLights->updatePointLight(gCon.Get(), 0, 1, gPLightBuffer.Get(),
+		XMFLOAT4A(sin(degToRad(deltaT) + 10), 45.0f, sin(degToRad(deltaT * 50.0f) + 10), 0.0f), 100.0f, XMFLOAT4A(0.0f, 1.0f, 0.0f, 1.0f));
+
+	XMFLOAT4A tmp;
+	XMStoreFloat4A(&tmp, Camera.r[3]);
+	gLights->updateSpotLight(gCon.Get(), 0, 1, gSLightBuffer.Get(),
+		tmp, XMFLOAT4A(0.0f, 0.0f, 1.0f, 0.0f), XMFLOAT4A(0.75f, 0.0f, 0.0f, 0.0f), XMFLOAT4A(0.25f, 0.25f, 0.25f, 0.0f));
 #pragma endregion
 
 #pragma region Bind Shaders
@@ -653,6 +639,49 @@ void Graphics::LoadMesh(std::string fileName, float mesh_scale, gMesh** meshArr,
 }
 #pragma endregion
 
+#pragma region InitCalls
+HRESULT Graphics::Lights::CreateLightBuffers(ID3D11Device* gpDev,
+	wrl::ComPtr<ID3D11Buffer>* gpDLightBuffer,
+	wrl::ComPtr<ID3D11Buffer>* gpPLightBuffer,
+	wrl::ComPtr<ID3D11Buffer>* gpSLightBuffer)
+{
+	HRESULT hr;
+	D3D11_BUFFER_DESC buffdesc = {};
+
+	/////////////// Directional Light Buffer ///////////////
+	buffdesc = {};
+	buffdesc.Usage = D3D11_USAGE_DEFAULT;
+	buffdesc.ByteWidth = sizeof(gDirLightBuff);
+	buffdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	buffdesc.CPUAccessFlags = 0;
+	hr = gpDev->CreateBuffer(&buffdesc, nullptr, gpDLightBuffer->GetAddressOf());
+	if (FAILED(hr))
+		return hr;
+
+	////////////////// Point Light Buffer //////////////////
+	buffdesc = {};
+	buffdesc.Usage = D3D11_USAGE_DEFAULT;
+	buffdesc.ByteWidth = sizeof(gPntLightBuff);
+	buffdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	buffdesc.CPUAccessFlags = 0;
+	hr = gpDev->CreateBuffer(&buffdesc, nullptr, gpPLightBuffer->GetAddressOf());
+	if (FAILED(hr))
+		return hr;
+
+	////////////////// Spot Light Buffer //////////////////
+	buffdesc = {};
+	buffdesc.Usage = D3D11_USAGE_DEFAULT;
+	buffdesc.ByteWidth = sizeof(gSptLightBuff);
+	buffdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	buffdesc.CPUAccessFlags = 0;
+	hr = gpDev->CreateBuffer(&buffdesc, nullptr, gpSLightBuffer->GetAddressOf());
+	if (FAILED(hr))
+		return hr;
+
+	return S_OK;
+}
+#pragma endregion
+
 #pragma region RenderCalls
 void Graphics::CleanFrameBuffers(XMVECTORF32 DXCOLOR)
 {
@@ -678,46 +707,73 @@ void Graphics::UpdateConstantBuffer(float cbTranslate[3], float cbRotate[3])
 	gCB.ambientLight = XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f);
 	gCon->UpdateSubresource(gConstantBuffer.Get(), 0, nullptr, &gCB, 0, 0);
 }
-void Lights::setLight(LightType lt)
-{
-	switch (lt)
-	{
-	case Directional:
-	///////////////// Directional Light Buffer Setup /////////////////
-	gDirectional.dir[0] = XMFLOAT4(-.85f, 0.0f, 0.8f, 0.0f);
-	gDirectional.color[0] = XMFLOAT4(0.0f, 0.0f, 0.25f, 1.0f);
-	gCon->UpdateSubresource(gDLightBuffer.Get(), 0, nullptr, &gDirectional, 0, 0);
-	///////////////// Directional Light Buffer Setup /////////////////
-	gDirectional.dir[1] = XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f);
-	gDirectional.color[1] = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
-	gCon->UpdateSubresource(gDLightBuffer.Get(), 0, nullptr, &gDirectional, 0, 0);
-		break;
-	case Point:
-	/////////////////// Point Light Buffer Setup /////////////////////
-	XMVECTOR nx = XMVectorSet(sin(degToRad(deltaT) + 10), 35.0f, sin(degToRad(deltaT * 50.0f) + 10), 0.0f);
-	XMStoreFloat4(&gPointLight.pos, nx);
-	gPointLight.color = XMFLOAT4(0.0f, 1.0f, 0.0f, PointLight_A);
-	gCon->UpdateSubresource(gPLightBuffer.Get(), 0, nullptr, &gPointLight, 0, 0);
-		break;
-	case Spot:
-	/////////////////// Spot Light Buffer Setup /////////////////////
-	XMStoreFloat4(&gSpotLight.pos, Camera.r[3]);
-	//gSpotLight.pos.z += 5.0f;
-	XMVECTOR tmp = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-	tmp = XMVector4Transform(tmp, Camera);
-	XMStoreFloat4(&gSpotLight.coneDir, tmp);
-	gSpotLight.color = XMFLOAT4(.25f * gSpotLight.coneWidth_R.x, .25f * gSpotLight.coneWidth_R.x, .25f * gSpotLight.coneWidth_R.x, 1.0f);
-	gCon->UpdateSubresource(gSLightBuffer.Get(), 0, nullptr, &gSpotLight, 0, 0);
-		break;
 
+void Graphics::Lights::updateDirectionLight(ID3D11DeviceContext* gpCon, UINT startIndex, UINT numOfLights, ID3D11Buffer* gDLightBuffer, XMFLOAT4A dir, XMFLOAT4A color)
+{
+	///////////////// Directional Light Buffer Setup /////////////////
+	if (startIndex > numOfLights || gDirectional.dir.size() == 0)
+	{
+		gDirectional.dir.push_back(dir);
+		gDirectional.color.push_back(color);
+		gpCon->UpdateSubresource(gDLightBuffer, 0, nullptr, &gDirectional, 0, 0);
+		numOfDir_Lights++;
+		numOfTotalLights++;
+		return;
+	}
+	
+	for (UINT i = startIndex; i < numOfLights; i++)
+	{
+		gDirectional.dir[i] = dir;
+		gDirectional.color[i] = color;
+		gpCon->UpdateSubresource(gDLightBuffer, 0, nullptr, &gDirectional, 0, 0);
+	}
+}
+void Graphics::Lights::updatePointLight(ID3D11DeviceContext* gpCon, UINT startIndex, UINT numOfLights, ID3D11Buffer* gPLightBuffer, XMFLOAT4A pos, float radius, XMFLOAT4A color)
+{
+	/////////////////// Point Light Buffer Setup /////////////////////
+	if (startIndex > numOfLights || gPointLight.pos.size() == 0)
+	{
+		gPointLight.pos.push_back({ pos.x,pos.y,pos.z,radius });
+		gPointLight.color.push_back(color);
+		gpCon->UpdateSubresource(gPLightBuffer, 0, nullptr, &gPointLight, 0, 0);
+		numOfPointLights++;
+		numOfTotalLights++;
+		return;
+	}
+
+	for (UINT i = startIndex; i < numOfLights; i++)
+	{
+		gPointLight.pos[i] = { pos.x,pos.y,pos.z,radius };
+		gPointLight.color[i] = color;
+		gpCon->UpdateSubresource(gPLightBuffer, 0, nullptr, &gDirectional, 0, 0);
+	}
+
+}
+void Graphics::Lights::updateSpotLight(ID3D11DeviceContext* gpCon, UINT startIndex, UINT numOfLights, ID3D11Buffer* gSLightBuffer, XMFLOAT4A pos, XMFLOAT4A dir, XMFLOAT4A width, XMFLOAT4A color)
+{
+	/////////////////// Spot Light Buffer Setup /////////////////////
+	if (startIndex > numOfLights || gSpotLight.pos.size() == 0)
+	{
+		gSpotLight.pos.push_back(pos);
+		gSpotLight.coneDir.push_back(dir);
+		gSpotLight.width_empty3_.push_back(width);
+		gSpotLight.color.push_back(color);
+		gpCon->UpdateSubresource(gSLightBuffer, 0, nullptr, &gSpotLight, 0, 0);
+		numOfSpotLights++;
+		numOfTotalLights++;
+		return;
+	}
+
+	for (UINT i = startIndex; i < numOfLights; i++)
+	{
+		gSpotLight.pos[i] = pos;
+		gSpotLight.coneDir[i] = dir;
+		gSpotLight.width_empty3_[i] = width;
+		gSpotLight.color[i] = color;
+		gpCon->UpdateSubresource(gSLightBuffer, 0, nullptr, &gSpotLight, 0, 0);
 	}
 
 
-
-
-}
-void Graphics::AppendLight(LightType lType, XMVECTOR pos, XMVECTOR dir, XMFLOAT4A color)
-{
-
 }
 #pragma endregion
+

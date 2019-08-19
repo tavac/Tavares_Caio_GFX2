@@ -13,8 +13,8 @@ cbuffer constBuff : register(b0)
 
 cbuffer Dir_LightBuff : register(b1)
 {
-    float4 DL_dir[2];
-    float4 DL_color[2];
+    float4 DL_dir;
+    float4 DL_color;
 }
 
 cbuffer Pnt_LightBuff : register(b2)
@@ -52,26 +52,26 @@ float4 main(PS_Input psIn) : SV_Target
     outie += vAmbLight;
 
    ///////////// Direction Light /////////////
-    for (int d = 0; d < 2; d++)
-    {
-        float3 lightDir = DL_dir[d].xyz;
+    //for (int d = 0; d < 2; d++)
+    //{
+    float3 lightDir = DL_dir.xyz;
         //lightDir.y = clamp(cos(vDTime), -1, 1);
-        float LR = saturate(dot((-lightDir), psIn.norm.xyz));
-       // outie += (LR * DL_color[d] /** sin(vDTime * 2)*/ * outie);
-    }
+    float LR = saturate(dot((-lightDir), psIn.norm.xyz));
+    outie += (LR * DL_color /** sin(vDTime * 2)*/ * outie);
+    //}
    ///////////////////////////////////////////
    
-   ////////////// Point Light //////////////
-   //for (int p = 0; p < 1; p++)
-   //{
-   //float3 ptLightDir = normalize(PL_pos.xyz - psIn.wPos.xyz);
-   //float LightRatio = saturate(dot(ptLightDir, psIn.norm.xyz));
-   //float attenutation = 1.0f - saturate((length(PL_pos.xyz - psIn.wPos.xyz) / 50.0f));
-   //LightRatio = (attenutation * attenutation) * LightRatio;
-   ////outie += lerp(float4(0, 0, 0, 0), PL_color /** sin(vDTime * 2)*/, LightRatio);
-   //outie += LightRatio * PL_color * 1.5f;
-   //}
-   //////////////////////////////////////////
+   //////////// Point Light //////////////
+    //for (int p = 0; p < 1; p++)
+    //{
+    float3 ptLightDir = normalize(PL_pos.xyz - psIn.wPos.xyz);
+    float LightRatio = saturate(dot(ptLightDir, psIn.norm.xyz));
+    float attenutation = 1.0f - saturate((length(PL_pos.xyz - psIn.wPos.xyz) / 50.0f));
+    LightRatio = (attenutation * attenutation) * LightRatio;
+   //outie += lerp(float4(0, 0, 0, 0), PL_color /** sin(vDTime * 2)*/, LightRatio);
+    outie += LightRatio * PL_color * 1.5f;
+    //}
+   ////////////////////////////////////////
 
     ////////////// Spot Light ////////////////
     float innerRatio = SL_coneWidth.x;

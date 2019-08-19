@@ -354,22 +354,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		if ((char)wParam == ',')
 		{
-			if (Gfx->gSpotLight.coneWidth_R.x > 0.5f)
-				Gfx->gSpotLight.coneWidth_R.x -= 0.01f;
-			std::ostringstream oss;
-			oss << Gfx->gSpotLight.coneWidth_R.x << std::endl;
-			OutputDebugString(oss.str().c_str());
-			oss.clear();
+			//if (Gfx->gSpotLight.coneWidth_R.x > 0.5f)
+			//	Gfx->gSpotLight.coneWidth_R.x -= 0.01f;
+			//std::ostringstream oss;
+			//oss << Gfx->gSpotLight.coneWidth_R.x << std::endl;
+			//OutputDebugString(oss.str().c_str());
+			//oss.clear();
 		}
 		else if ((char)wParam == '.')
 		{
-			if (Gfx->gSpotLight.coneWidth_R.x < 1.0f)
-				Gfx->gSpotLight.coneWidth_R.x += 0.01f;
-				//Gfx->SpotLightWidth += 0.01f;
-			std::ostringstream oss;
-			oss << Gfx->gSpotLight.coneWidth_R.x << std::endl;
-			OutputDebugString(oss.str().c_str());
-			oss.clear();
+			//if (Gfx->gSpotLight.coneWidth_R.x < 1.0f)
+			//	Gfx->gSpotLight.coneWidth_R.x += 0.01f;
+			//	//Gfx->SpotLightWidth += 0.01f;
+			//std::ostringstream oss;
+			//oss << Gfx->gSpotLight.coneWidth_R.x << std::endl;
+			//OutputDebugString(oss.str().c_str());
+			//oss.clear();
 		}
 	}
 	}
