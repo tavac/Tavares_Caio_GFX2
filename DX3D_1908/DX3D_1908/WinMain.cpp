@@ -52,8 +52,8 @@ int CALLBACK WinMain(
 	//Gfx->LoadMesh("NewDragon.fbx",10.0f, Gfx->gppMesh, 0);
 	//Gfx->LoadMesh("SpaceShip_1.fbx", 1.0f, Gfx->gppMesh, 0);
 	//Gfx->LoadMesh("SpaceShip_3.fbx", 0.5f, &Gfx->gppMesh, 0);
-	//Gfx->LoadMesh("Desk_0.fbx", 0.5f, &Gfx->gppMesh, 0);
-	Gfx->LoadMesh("Cube.fbx", 50.0f, &Gfx->gppMesh, 0);
+	Gfx->LoadMesh("Desk_0.fbx", 1.0f, &Gfx->gppMesh, 0);
+	//Gfx->LoadMesh("Cube.fbx", 50.0f, &Gfx->gppMesh, 0);
 	//Gfx->LoadMesh("Cube.fbx", 50.0f, Gfx->gppMesh, 1);
 #pragma endregion
 	Gfx->InitDevice();
@@ -354,19 +354,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		if ((char)wParam == ',')
 		{
-			if (Gfx->SpotLightWidth > 0.001f)
-				Gfx->SpotLightWidth -= 0.01f;
+			if (Gfx->gSpotLight.coneWidth_R.x > 0.5f)
+				Gfx->gSpotLight.coneWidth_R.x -= 0.01f;
 			std::ostringstream oss;
-			oss << Gfx->SpotLightWidth << std::endl;
+			oss << Gfx->gSpotLight.coneWidth_R.x << std::endl;
 			OutputDebugString(oss.str().c_str());
 			oss.clear();
 		}
 		else if ((char)wParam == '.')
 		{
-			if (Gfx->SpotLightWidth < 1.0f)
-				Gfx->SpotLightWidth += 0.01f;
+			if (Gfx->gSpotLight.coneWidth_R.x < 1.0f)
+				Gfx->gSpotLight.coneWidth_R.x += 0.01f;
+				//Gfx->SpotLightWidth += 0.01f;
 			std::ostringstream oss;
-			oss << Gfx->SpotLightWidth << std::endl;
+			oss << Gfx->gSpotLight.coneWidth_R.x << std::endl;
 			OutputDebugString(oss.str().c_str());
 			oss.clear();
 		}

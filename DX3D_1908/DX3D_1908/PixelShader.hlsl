@@ -57,7 +57,7 @@ float4 main(PS_Input psIn) : SV_Target
         float3 lightDir = DL_dir[d].xyz;
         //lightDir.y = clamp(cos(vDTime), -1, 1);
         float LR = saturate(dot((-lightDir), psIn.norm.xyz));
-        outie += (LR * DL_color[d] /** sin(vDTime * 2)*/ * outie);
+       // outie += (LR * DL_color[d] /** sin(vDTime * 2)*/ * outie);
     }
    ///////////////////////////////////////////
    
@@ -73,18 +73,18 @@ float4 main(PS_Input psIn) : SV_Target
    //}
    //////////////////////////////////////////
 
-    //////////////// Spot Light ////////////////
-    //float innerRatio = SL_coneWidth.x;
-    //float outerRatio = innerRatio - 0.15f;
-    //float3 toLight = SL_pos.xyz - psIn.wPos.xyz; // vector from pixel to Light
-    //float distance = length(toLight); // length of vector
-    //toLight = (toLight / distance); // normalizing the toLight vector
-    //float AngAtten = saturate(dot(toLight, psIn.norm.xyz)); // angle between vector to the light from surface and the normal of the surface where 1.0 is directly at the light
-    //float spotDot = saturate(dot(-toLight, SL_coneDir.xyz)); // 
-    //float spotAtten = saturate(((innerRatio) - (spotDot)) / ((innerRatio) - (outerRatio)));
-    //spotAtten -= 1.0f;
-    //outie += (spotAtten * spotAtten * AngAtten * SL_color) * 5.0f;
-    //////////////////////////////////////////////////
+    ////////////// Spot Light ////////////////
+    float innerRatio = SL_coneWidth.x;
+    float outerRatio = innerRatio - 0.15f;
+    float3 toLight = SL_pos.xyz - psIn.wPos.xyz; // vector from pixel to Light
+    float distance = length(toLight); // length of vector
+    toLight = (toLight / distance); // normalizing the toLight vector
+    float AngAtten = saturate(dot(toLight, psIn.norm.xyz)); // angle between vector to the light from surface and the normal of the surface where 1.0 is directly at the light
+    float spotDot = saturate(dot(-toLight, SL_coneDir.xyz)); // 
+    float spotAtten = saturate(((innerRatio) - (spotDot)) / ((innerRatio) - (outerRatio)));
+    spotAtten -= 1.0f;
+    outie += (spotAtten * spotAtten * AngAtten * SL_color) * 5.0f;
+    ////////////////////////////////////////////////
 
     outie = (txDiffuse.Sample(samLinear, psIn.uv)) * outie;
 

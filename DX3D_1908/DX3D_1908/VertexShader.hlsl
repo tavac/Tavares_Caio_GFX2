@@ -28,7 +28,7 @@ cbuffer gSptLightBuff : register(b3)
     float4 SL_pos;
     float3 SL_coneDir;
     float4 SL_color;
-    float SL_coneWidth;
+    float4 SL_coneWidth;
 };
 
 struct VS_Input

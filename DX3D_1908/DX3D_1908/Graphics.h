@@ -110,3 +110,17 @@ public:
 	XMMATRIX globalProj = XMMatrixPerspectiveFovLH((FoV_angle * (3.1415f / 180.0f)), 1280.0f / 720.0f, nearPlane, farPlane);
 #pragma endregion
 };
+
+struct Lights
+{
+	enum LightType {
+		Directional,
+		Point,
+		Spot
+	};
+	UINT numOfTotalLights = 0;
+	UINT numOfDir_Lights = 0;
+	UINT numOfPointLights = 0;
+	UINT numOfSpotLights = 0;
+	void setLight(LightType lt);
+};
