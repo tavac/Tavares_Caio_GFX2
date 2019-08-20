@@ -27,66 +27,42 @@ public:
 	int numOfMeshs = 0;
 
 #pragma region Lights
-	struct Lights
+
+	UINT numOfTotalLights = 0;
+	UINT numOfDir_Lights = 0;
+	UINT numOfPointLights = 0;
+	UINT numOfSpotLights = 0;
+
+	struct gLightBuff
 	{
-	public:
-		struct gDirLightBuff
-		{
-			std::vector<XMFLOAT4A> dir;
-			std::vector<XMFLOAT4A> color;
-		};
-		struct gPntLightBuff
-		{
-			std::vector<XMFLOAT4A> pos;
-			std::vector<XMFLOAT4A> color;
-		};
-		struct gSptLightBuff
-		{
-			std::vector<XMFLOAT4A> pos;
-			std::vector<XMFLOAT4A> coneDir;
-			std::vector<XMFLOAT4A> color;
-			std::vector<XMFLOAT4A> width_empty3_;
-		};
-
-		gDirLightBuff gDirectional = {};
-		gPntLightBuff gPointLight = {};
-		gSptLightBuff gSpotLight = {};
-
-		enum LightType {
-			Directional,
-			Point,
-			Spot
-		};
-
-		UINT numOfTotalLights = 0;
-		UINT numOfDir_Lights = 0;
-		UINT numOfPointLights = 0;
-		UINT numOfSpotLights = 0;
-
-		HRESULT CreateLightBuffers(ID3D11Device* gpDev, 
-									wrl::ComPtr<ID3D11Buffer>* gpDLightBuffer,
-									wrl::ComPtr<ID3D11Buffer>* gpPLightBuffer,
-									wrl::ComPtr<ID3D11Buffer>* gpSLightBuffer);
-
-		void updateDirectionLight(	ID3D11DeviceContext* gpCon,
-									UINT startIndex, UINT numOfLights,
-									ID3D11Buffer* gDLightBuffer,
-									XMFLOAT4A dir, XMFLOAT4A color);
-
-		void updatePointLight(	ID3D11DeviceContext* gpCon,
-								UINT startIndex, UINT numOfLights,
-								ID3D11Buffer* gPLightBuffer,
-								XMFLOAT4A pos, float radius, XMFLOAT4A color);
-
-		void updateSpotLight(	ID3D11DeviceContext* gpCon,
-								UINT startIndex, UINT numOfLights,
-								ID3D11Buffer* gSLightBuffer,
-								XMFLOAT4A dir, XMFLOAT4A pos, XMFLOAT4A width, XMFLOAT4A color);
-
+		XMFLOAT4A pos;
+		XMFLOAT4A dir;
+		XMFLOAT4A color;
 	};
+	
+	std::vector<gLightBuff*> gDirectionalLights = {};
+	std::vector<gLightBuff*> gPointLights = {};
+	std::vector<gLightBuff*> gSpotLights = {};
+
+	enum LightType {
+		Directional,
+		Point,
+		Spot
+	};
+
+	HRESULT CreateLightBuffers(ID3D11Device& gpDev,
+		wrl::ComPtr<ID3D11Buffer>* gpDLightBuffer,
+		wrl::ComPtr<ID3D11Buffer>* gpPLightBuffer,
+		wrl::ComPtr<ID3D11Buffer>* gpSLightBuffer);
+
+	void updateDirectionLight(ID3D11DeviceContext* gpCon, UINT startIndex, UINT numOfLights, ID3D11Buffer* gDLightBuffer, XMFLOAT4A dir, XMFLOAT4A color);
+
+	void updatePointLight(ID3D11DeviceContext* gpCon, UINT startIndex, UINT numOfLights, ID3D11Buffer* gPLightBuffer, XMFLOAT4A pos, float radius, XMFLOAT4A color);
+
+	void updateSpotLight(ID3D11DeviceContext& gpCon, UINT startIndex, UINT numOfLights, ID3D11Buffer& gSLightBuffer, XMFLOAT4A pos, XMFLOAT4A dir, float width, XMFLOAT4A color);
+
 #pragma endregion
 
-	Lights* gLights = new Lights();
 	Graphics(HWND hWnd);
 	Graphics(const Graphics&) = delete;
 	Graphics& operator=(const Graphics&) = delete;

@@ -13,6 +13,7 @@ cbuffer constBuff : register(b0)
 
 cbuffer Dir_LightBuff : register(b1)
 {
+    float4 DL_pos;
 	float4 DL_dir;
 	float4 DL_color;
 }
@@ -20,15 +21,15 @@ cbuffer Dir_LightBuff : register(b1)
 cbuffer Pnt_LightBuff : register(b2)
 {
     float4 PL_pos;
+    float4 PL_dir;
     float4 PL_color;
 }
 
-cbuffer gSptLightBuff : register(b3)
+cbuffer Spt_LightBuff : register(b3)
 {
     float4 SL_pos;
-    float4 SL_coneDir;
+    float4 SL_dir;
     float4 SL_color;
-    float4 SL_coneWidth;
 };
 
 struct VS_Input
