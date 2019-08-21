@@ -843,7 +843,6 @@ HRESULT Graphics::InitDevice()
 void Graphics::Render()
 {
 	float deltaT = (float)gTimer->TimeSinceTick(gTimer);
-
 	CleanFrameBuffers();
 
 	CreateInputLayout(gppMesh);
@@ -866,7 +865,7 @@ void Graphics::Render()
 	XMFLOAT4A tmp_dir;
 	XMStoreFloat4A(&tmp_dir, XMVector4Transform(XMVectorSet(0, 0, 1, 0), Camera));
 	updateSpotLight(gCon.Get(), 0u, 1u, gSLightBuffer.Get(),
-		tmp_pos, tmp_dir, 1.0f, XMFLOAT4A(0.5f, 0.5f, 0.5f, 1.0f));
+		tmp_pos, tmp_dir, 0.9f, XMFLOAT4A(0.75f, 0.5f, 0.5f, 1.0f));
 #pragma endregion
 
 #pragma region Update Constant Buffer
