@@ -63,153 +63,7 @@ Graphics::~Graphics()
 }
 #pragma endregion
 
-#pragma region DeviceSetup/RenderPipeline
-HRESULT Graphics::InitDevice()
-{
-	gTimer->StartTimer(gTimer);
-	HRESULT hr;
-#pragma region LOAD MODELS
-	//ModelDraw_Switch(currModel); // Default Model set to draw, SPACE BAR to cycle.
-	//std::string modelName[MODEL_COUNT] = { "Tester.fbx","NewDragon.fbx","Cube.fbx" }; // convert to array or vector of strings to store multiple mesh directories.
-	//LoadMesh("Tester.fbx", 1.0f, gppMesh, 0);
-	//LoadMesh("NewDragon.fbx",10.0f, gppMesh, 0);
-	//LoadMesh("SpaceShip_1.fbx", 1.0f, gppMesh, 0);
-	//LoadMesh("SpaceShip_3.fbx", 0.5f, gppMesh, 0);
-	//LoadMesh("Desk_0.fbx", L"carbonfiber.dds", 1.0f, &gppMesh, 0);
-	LoadMesh("Desk_1.fbx", L"carbonfiber.dds", 1.0f, gppMesh, 0);
-	LoadMesh("Cube.fbx", L"Crate.dds", 50.0f, gppMesh, 1);
-#pragma endregion
-
-#pragma region Create_Buffers
-	CreateBuffers(gppMesh,0);
-	CreateBuffers(gppMesh,1);
-
-	//////////////// Light Buffer ///////////////////
-	hr = CreateLightBuffers(*gDev.Get(), &gDLightBuffer, &gPLightBuffer, &gSLightBuffer);
-	if (FAILED(hr))
-	{
-		ToolBox::ThrowErrorMsg("CreateLightBuffers Failed in InitDevice");
-		return hr;
-	}
-#pragma endregion
-
-#pragma region Create Geometry / Vertex / PixelShaders
-
-	CreateShaders(gppMesh);
-
-#pragma endregion
-
-#pragma region Views
-
-
-	// Set primitive topology to triangle list ( group of 3 verts)
-	gCon->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	// Create depth stencil texture
-	D3D11_TEXTURE2D_DESC descDepth = {};
-	descDepth.Width = hWndWidth;
-	descDepth.Height = hWndHeight;
-	descDepth.MipLevels = 0;
-	descDepth.ArraySize = 1;
-	descDepth.Format = DXGI_FORMAT_D32_FLOAT;
-	descDepth.SampleDesc.Count = 1;
-	descDepth.SampleDesc.Quality = 0;
-	descDepth.Usage = D3D11_USAGE_DEFAULT;
-	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	descDepth.CPUAccessFlags = 0;
-	descDepth.MiscFlags = 0;
-	hr = gDev->CreateTexture2D(&descDepth, nullptr, gDepthStencil.GetAddressOf());
-	if (FAILED(hr))
-		return hr;
-
-	// Create the depth stencil view
-	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
-	descDSV.Format = descDepth.Format;
-	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	descDSV.Texture2D.MipSlice = 0;
-	hr = gDev->CreateDepthStencilView(gDepthStencil.Get(), &descDSV, gDsv.GetAddressOf());
-	if (FAILED(hr))
-		return hr;
-
-	// bind render target
-	gCon->OMSetRenderTargets(1, gRtv.GetAddressOf(), gDsv.Get());
-
-	// configer viewport
-	//D3D11_VIEWPORT port_one;
-	//port_one.Width = 640.0f;
-	//port_one.Height = 720.0f;
-	//port_one.MinDepth = 0.0f;
-	//port_one.MaxDepth = 1.0f;
-	//port_one.TopLeftX = 0.0f;
-	//port_one.TopLeftY = 0.0f;
-	//  
-	//D3D11_VIEWPORT port_two;
-	//port_two.Width = 640.0f;
-	//port_two.Height = 720.0f;
-	//port_two.MinDepth = 0.0f;
-	//port_two.MaxDepth = 1.0f;
-	//port_two.TopLeftX = 640.0f;
-	//port_two.TopLeftY = 0.0f;
-
-	//D3D11_VIEWPORT vp[2] = { port_one, port_two };
-	D3D11_VIEWPORT vp;
-	vp.Width = 1280.0f;
-	vp.Height = 720.0f;
-	vp.MinDepth = 0.0f;
-	vp.MaxDepth = 1.0f;
-	vp.TopLeftX = 0.0f;
-	vp.TopLeftY = 0.0f;
-	gCon->RSSetViewports(1u, &vp);
-#pragma endregion
-
-	return hr;
-}
-void Graphics::Render()
-{
-	float deltaT = (float)gTimer->TimeSinceTick(gTimer);
-
-	CleanFrameBuffers();
-
-	CreateInputLayout(gppMesh);
-
-#pragma region Lights
-	// SUN DIRECTIONAL LIGHT
-	updateDirectionLight(gCon.Get(), 0u, 1u, gDLightBuffer.Get(),
-		XMFLOAT4A(0.55f, 0.0f, 0.45f, 0.0f), XMFLOAT4A(0.65f, 0.45f, 0.0f, 1.0f));
-
-	// LAMP POINT LIGHT
-	updatePointLight(gCon.Get(), 0u, 1u, gPLightBuffer.Get(),
-		XMFLOAT4A(7.0f,5.0f,40.0f, 0.0f),
-		10.0f,
-		XMFLOAT4A(0.0f, 1.0f, 0.0f, 1.0f));
-	//XMFLOAT4A(sin(degToRad(deltaT) + 10), 45.0f, sin(degToRad(deltaT * 50.0f) + 10)
-
-	// CAMREA SPOT LIGHT
-	XMFLOAT4A tmp_pos;
-	XMStoreFloat4A(&tmp_pos, Camera.r[3]);
-	XMFLOAT4A tmp_dir;
-	XMStoreFloat4A(&tmp_dir, XMVector4Transform(XMVectorSet(0, 0, 1, 0), Camera));
-	updateSpotLight(gCon.Get(), 0u, 1u, gSLightBuffer.Get(),
-		tmp_pos, tmp_dir, 1.0f, XMFLOAT4A(0.5f, 0.5f, 0.5f, 1.0f));
-#pragma endregion
-	
-#pragma region Update Constant Buffer
-	float move[] = { 10.0f, 0.0f, 0.0f };
-	float rotate[] = { 0.0f, -90.0f, 0.0f };
-	UpdateConstantBuffer(*gppMesh[0], move, rotate);
-	gCon->DrawIndexed((UINT)gppMesh[0]->numVertices, 0u, 0);
-
-	float move1[] = { -10.0f, 0.0f, 0.0f };
-	float rotate1[] = { 0.0f, 0.0f, 0.0f };
-	UpdateConstantBuffer(*gppMesh[1], move1, rotate1);
-	gCon->DrawIndexed((UINT)gppMesh[1]->numVertices, 0u, 0);
-#pragma endregion
-
-	gSwap->Present(1u, 0u);
-}
-#pragma endregion
-
-#pragma region Mesh / Texture / File IO
+#pragma region Mesh/Texture/File IO
 void Graphics::LoadMesh(std::string fileName, const wchar_t* textureFile, float mesh_scale, std::vector<gMesh*>& meshArr, UINT meshIndex)
 {
 	if (meshArr.size() <= meshIndex) // If empty, fill.
@@ -646,6 +500,7 @@ void Graphics::TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode, gMesh* gmes
 }
 #pragma endregion
 
+
 #pragma region InitCalls
 HRESULT Graphics::CreateLightBuffers(ID3D11Device& gpDev,
 	wrl::ComPtr<ID3D11Buffer>* gpDLightBuffer,
@@ -693,9 +548,14 @@ HRESULT Graphics::CreateShaders(std::vector<gMesh*>& meshVec)
 	HRESULT hr;
 	for (UINT i = 0; i < meshVec.size(); i++)
 	{
+		if (meshVec[i]->gBlob != nullptr)
+		{
+			meshVec[i]->gBlob.Reset();
+			meshVec[i]->gBlob = nullptr;
+		}
 		//////////////////// create pixel shader ////////////////////
-		D3DReadFileToBlob(L"PixelShader.cso", gBlob.GetAddressOf());
-		hr = gDev->CreatePixelShader(gBlob->GetBufferPointer(), gBlob->GetBufferSize(), nullptr, gPixelShader.GetAddressOf());
+		D3DReadFileToBlob(L"PixelShader.cso", meshVec[i]->gBlob.GetAddressOf());
+		hr = gDev->CreatePixelShader(meshVec[i]->gBlob->GetBufferPointer(), meshVec[i]->gBlob->GetBufferSize(), nullptr, meshVec[i]->gPixelShader.GetAddressOf());
 		if (FAILED(hr))
 		{
 			ToolBox::ThrowErrorMsg("CreatePixelShader Failed in InitDevice");
@@ -703,11 +563,11 @@ HRESULT Graphics::CreateShaders(std::vector<gMesh*>& meshVec)
 		}
 
 		///////////////////// bind pixel shader /////////////////////
-		gCon->PSSetShader(gPixelShader.Get(), nullptr, 0u);
+		gCon->PSSetShader(meshVec[i]->gPixelShader.Get(), nullptr, 0u);
 
 		/////////////////// create vertex shader ///////////////////
-		D3DReadFileToBlob(L"VertexShader.cso", gBlob.GetAddressOf());
-		hr = gDev->CreateVertexShader(gBlob->GetBufferPointer(), gBlob->GetBufferSize(), nullptr, meshVec[i]->gVertexShader.GetAddressOf());
+		D3DReadFileToBlob(L"VertexShader.cso", meshVec[i]->gBlob.GetAddressOf());
+		hr = gDev->CreateVertexShader(meshVec[i]->gBlob->GetBufferPointer(), meshVec[i]->gBlob->GetBufferSize(), nullptr, meshVec[i]->gVertexShader.GetAddressOf());
 		if (FAILED(hr))
 		{
 			ToolBox::ThrowErrorMsg("CreateVertexShader Failed in InitDevice");
@@ -739,8 +599,21 @@ void Graphics::CleanFrameBuffers(XMVECTORF32 DXCOLOR)
 {
 	gCon->ClearRenderTargetView(gRtv.Get(), DXCOLOR);
 	gCon->ClearDepthStencilView(gDsv.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
+	for (int i = 0; i < gppMesh.size(); i++)
+	{
+		//gppMesh[i]->gConstantBuffer.Reset();
+		gppMesh[i]->gIndexBuffer.Reset();
+		gppMesh[i]->gInputLayout.Reset();
+		gppMesh[i]->gVertBuffer.Reset();
+		//gppMesh[i]->gVertexShader.Reset();
+		//gppMesh[i]->gConstantBuffer = nullptr;
+		gppMesh[i]->gIndexBuffer = nullptr;
+		gppMesh[i]->gInputLayout = nullptr;
+		gppMesh[i]->gVertBuffer = nullptr;
+		//gppMesh[i]->gVertexShader = nullptr;
+	}
 }
-void Graphics::UpdateConstantBuffer(gMesh& mesh, float cbTranslate[3], float cbRotate[3])
+void Graphics::UpdateConstantBuffer(gMesh* mesh, float cbTranslate[3], float cbRotate[3])
 {
 	// This sends World,View,Proj,AmbientLight through the shaders.
 	gConstantBuff gCB;
@@ -757,20 +630,20 @@ void Graphics::UpdateConstantBuffer(gMesh& mesh, float cbTranslate[3], float cbR
 	gCB.proj = XMMatrixTranspose(globalProj);
 	gCB.dTime = (float)gTimer->deltaTime;
 	gCB.ambientLight = XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f);
-	gCon->UpdateSubresource(mesh.gConstantBuffer.Get(), 0, nullptr, &gCB, 0, 0);
+	gCon->UpdateSubresource(mesh->gConstantBuffer.Get(), 0, nullptr, &gCB, 0, 0);
 
 	//////////////////////// Bind Shaders ////////////////////////
 	// Bind buffers to pipeline so the Drawcall can access the information from setup.
-	ID3D11Buffer* buffs[] = { *mesh.gConstantBuffer.GetAddressOf(),
+	ID3D11Buffer* buffs[] = { *mesh->gConstantBuffer.GetAddressOf(),
 							  *gDLightBuffer.GetAddressOf(),
 							  *gPLightBuffer.GetAddressOf(),
 							  *gSLightBuffer.GetAddressOf() };
-	gCon->VSSetShader(mesh.gVertexShader.Get(), nullptr, 0u);
+	gCon->VSSetShader(mesh->gVertexShader.Get(), nullptr, 0u);
 	gCon->VSSetConstantBuffers(0u, (UINT)ARRAYSIZE(buffs), buffs);
-	gCon->PSSetShader(gPixelShader.Get(), nullptr, 0u);
+	gCon->PSSetShader(mesh->gPixelShader.Get(), nullptr, 0u);
 	gCon->PSSetConstantBuffers(0u, (UINT)ARRAYSIZE(buffs), buffs);
-	gCon->PSSetShaderResources(0, 1, mesh.shaderRV.GetAddressOf());
-	gCon->PSSetSamplers(0, 1, mesh.smplrState.GetAddressOf());
+	gCon->PSSetShaderResources(0, 1, mesh->shaderRV.GetAddressOf());
+	gCon->PSSetSamplers(0, 1, mesh->smplrState.GetAddressOf());
 }
 void Graphics::updateDirectionLight(ID3D11DeviceContext* gpCon, UINT startIndex, UINT numOfLights, ID3D11Buffer* gDLightBuffer, XMFLOAT4A dir, XMFLOAT4A color)
 {
@@ -855,11 +728,157 @@ void Graphics::CreateInputLayout(std::vector<gMesh*>& meshVec)
 			{"COLOR",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 		};
 
-		hr = gDev->CreateInputLayout(ildes, (UINT)ARRAYSIZE(ildes), gBlob->GetBufferPointer(), gBlob->GetBufferSize(), &meshVec[i]->gInputLayout);
+		hr = gDev->CreateInputLayout(ildes, (UINT)ARRAYSIZE(ildes), meshVec[i]->gBlob->GetBufferPointer(), meshVec[i]->gBlob->GetBufferSize(), &meshVec[i]->gInputLayout);
 		if (FAILED(hr))
 			ToolBox::ThrowErrorMsg("CreateInputLayout Failed in CreateInputLayout");
 		// bind vertex target
 		gCon->IASetInputLayout(meshVec[i]->gInputLayout.Get());
 	}
+}
+#pragma endregion
+
+#pragma region DeviceSetup/RenderPipeline
+HRESULT Graphics::InitDevice()
+{
+	gTimer->StartTimer(gTimer);
+	HRESULT hr;
+#pragma region LOAD MODELS
+	//ModelDraw_Switch(currModel); // Default Model set to draw, SPACE BAR to cycle.
+	//std::string modelName[MODEL_COUNT] = { "Tester.fbx","NewDragon.fbx","Cube.fbx" }; // convert to array or vector of strings to store multiple mesh directories.
+	//LoadMesh("Tester.fbx", 1.0f, gppMesh, 0);
+	//LoadMesh("NewDragon.fbx",10.0f, gppMesh, 0);
+	//LoadMesh("SpaceShip_1.fbx", 1.0f, gppMesh, 0);
+	//LoadMesh("SpaceShip_3.fbx", 0.5f, gppMesh, 0);
+	//LoadMesh("Desk_0.fbx", L"carbonfiber.dds", 1.0f, &gppMesh, 0);
+	LoadMesh("Desk_1.fbx", L"carbonfiber.dds", 1.0f, gppMesh, 0);
+	LoadMesh("Cube.fbx", L"Crate.dds", 50.0f, gppMesh, 1);
+#pragma endregion
+
+#pragma region Create_Buffers
+	CreateBuffers(gppMesh, 0);
+	CreateBuffers(gppMesh, 1);
+
+	//////////////// Light Buffer ///////////////////
+	hr = CreateLightBuffers(*gDev.Get(), &gDLightBuffer, &gPLightBuffer, &gSLightBuffer);
+	if (FAILED(hr))
+	{
+		ToolBox::ThrowErrorMsg("CreateLightBuffers Failed in InitDevice");
+		return hr;
+	}
+#pragma endregion
+
+#pragma region Create Geometry / Vertex / PixelShaders
+
+	CreateShaders(gppMesh);
+
+#pragma endregion
+
+#pragma region Views
+
+
+	// Set primitive topology to triangle list ( group of 3 verts)
+	gCon->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// Create depth stencil texture
+	D3D11_TEXTURE2D_DESC descDepth = {};
+	descDepth.Width = hWndWidth;
+	descDepth.Height = hWndHeight;
+	descDepth.MipLevels = 0;
+	descDepth.ArraySize = 1;
+	descDepth.Format = DXGI_FORMAT_D32_FLOAT;
+	descDepth.SampleDesc.Count = 1;
+	descDepth.SampleDesc.Quality = 0;
+	descDepth.Usage = D3D11_USAGE_DEFAULT;
+	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	descDepth.CPUAccessFlags = 0;
+	descDepth.MiscFlags = 0;
+	hr = gDev->CreateTexture2D(&descDepth, nullptr, gDepthStencil.GetAddressOf());
+	if (FAILED(hr))
+		return hr;
+
+	// Create the depth stencil view
+	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
+	descDSV.Format = descDepth.Format;
+	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	descDSV.Texture2D.MipSlice = 0;
+	hr = gDev->CreateDepthStencilView(gDepthStencil.Get(), &descDSV, gDsv.GetAddressOf());
+	if (FAILED(hr))
+		return hr;
+
+	// bind render target
+	gCon->OMSetRenderTargets(1, gRtv.GetAddressOf(), gDsv.Get());
+
+	// configer viewport
+	//D3D11_VIEWPORT port_one;
+	//port_one.Width = 640.0f;
+	//port_one.Height = 720.0f;
+	//port_one.MinDepth = 0.0f;
+	//port_one.MaxDepth = 1.0f;
+	//port_one.TopLeftX = 0.0f;
+	//port_one.TopLeftY = 0.0f;
+	//  
+	//D3D11_VIEWPORT port_two;
+	//port_two.Width = 640.0f;
+	//port_two.Height = 720.0f;
+	//port_two.MinDepth = 0.0f;
+	//port_two.MaxDepth = 1.0f;
+	//port_two.TopLeftX = 640.0f;
+	//port_two.TopLeftY = 0.0f;
+
+	//D3D11_VIEWPORT vp[2] = { port_one, port_two };
+	D3D11_VIEWPORT vp;
+	vp.Width = 1280.0f;
+	vp.Height = 720.0f;
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
+	vp.TopLeftX = 0.0f;
+	vp.TopLeftY = 0.0f;
+	gCon->RSSetViewports(1u, &vp);
+#pragma endregion
+
+	return hr;
+}
+void Graphics::Render()
+{
+	float deltaT = (float)gTimer->TimeSinceTick(gTimer);
+
+	CleanFrameBuffers();
+
+	CreateInputLayout(gppMesh);
+
+#pragma region Lights
+	// SUN DIRECTIONAL LIGHT
+	updateDirectionLight(gCon.Get(), 0u, 1u, gDLightBuffer.Get(),
+		XMFLOAT4A(0.55f, 0.0f, 0.45f, 0.0f), XMFLOAT4A(0.65f, 0.45f, 0.0f, 1.0f));
+
+	// LAMP POINT LIGHT
+	updatePointLight(gCon.Get(), 0u, 1u, gPLightBuffer.Get(),
+		XMFLOAT4A(7.0f, 5.0f, 40.0f, 0.0f),
+		10.0f,
+		XMFLOAT4A(0.0f, 1.0f, 0.0f, 1.0f));
+	//XMFLOAT4A(sin(degToRad(deltaT) + 10), 45.0f, sin(degToRad(deltaT * 50.0f) + 10)
+
+	// CAMREA SPOT LIGHT
+	XMFLOAT4A tmp_pos;
+	XMStoreFloat4A(&tmp_pos, Camera.r[3]);
+	XMFLOAT4A tmp_dir;
+	XMStoreFloat4A(&tmp_dir, XMVector4Transform(XMVectorSet(0, 0, 1, 0), Camera));
+	updateSpotLight(gCon.Get(), 0u, 1u, gSLightBuffer.Get(),
+		tmp_pos, tmp_dir, 1.0f, XMFLOAT4A(0.5f, 0.5f, 0.5f, 1.0f));
+#pragma endregion
+
+#pragma region Update Constant Buffer
+	float move[] = { 10.0f, 0.0f, 0.0f };
+	float rotate[] = { 0.0f, -90.0f, 0.0f };
+	UpdateConstantBuffer(gppMesh[0], move, rotate);
+	gCon->DrawIndexed((UINT)gppMesh[0]->numVertices, 0u, 0);
+
+	float move1[] = { -10.0f, 0.0f, 0.0f };
+	float rotate1[] = { 0.0f, 0.0f, 0.0f };
+	UpdateConstantBuffer(gppMesh[1], move1, rotate1);
+	gCon->DrawIndexed((UINT)gppMesh[1]->numVertices, 0u, 0);
+#pragma endregion
+
+	gSwap->Present(1u, 0u);
 }
 #pragma endregion

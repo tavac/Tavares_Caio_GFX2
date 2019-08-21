@@ -19,6 +19,8 @@ public:
 	{
 		wrl::ComPtr<ID3D11VertexShader> gVertexShader = nullptr;
 		//wrl::ComPtr<ID3D11GeometryShader> gGeometryShader = nullptr;
+		wrl::ComPtr<ID3D11PixelShader> gPixelShader = nullptr;
+		wrl::ComPtr<ID3DBlob> gBlob = nullptr;
 
 		wrl::ComPtr<ID3D11Buffer> gConstantBuffer = nullptr;
 		wrl::ComPtr<ID3D11Buffer> gIndexBuffer = nullptr;
@@ -29,6 +31,7 @@ public:
 		wrl::ComPtr<ID3D11SamplerState> smplrState = nullptr;
 
 		wrl::ComPtr<ID3D11InputLayout> gInputLayout = nullptr;
+
 
 
 		gVertex* verts = nullptr;
@@ -88,7 +91,7 @@ public:
 	//void ProcessOBJMesh(_OBJ_VERT_ ov[], int size); // Join with ProcessFBXMesh
 	////
 	void CleanFrameBuffers(XMVECTORF32 DXCOLOR = Colors::Silver);
-	void UpdateConstantBuffer(gMesh& mesh, float cbTranslate[3], float cbRotate[3]);
+	void UpdateConstantBuffer(gMesh* mesh, float cbTranslate[3], float cbRotate[3]);
 
 	void LoadMesh(std::string fileName, const wchar_t* textureFile, float mesh_scale, std::vector<gMesh*>& meshArr, UINT meshIndex);
 	HRESULT CreateShaders(std::vector<gMesh*>& meshVec);
@@ -105,8 +108,7 @@ private:
 	wrl::ComPtr<ID3D11Buffer> gDLightBuffer = nullptr;
 	wrl::ComPtr<ID3D11Buffer> gPLightBuffer = nullptr;
 	wrl::ComPtr<ID3D11Buffer> gSLightBuffer = nullptr;
-	wrl::ComPtr<ID3D11PixelShader> gPixelShader = nullptr;
-	wrl::ComPtr<ID3DBlob> gBlob = nullptr;
+
 
 #pragma endregion
 public:
