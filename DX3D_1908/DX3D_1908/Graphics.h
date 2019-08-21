@@ -17,13 +17,27 @@ public:
 	};
 	struct gMesh
 	{
+		wrl::ComPtr<ID3D11VertexShader> gVertexShader = nullptr;
+		//wrl::ComPtr<ID3D11GeometryShader> gGeometryShader = nullptr;
+
+		wrl::ComPtr<ID3D11Buffer> gConstantBuffer = nullptr;
+		wrl::ComPtr<ID3D11Buffer> gIndexBuffer = nullptr;
+		wrl::ComPtr<ID3D11Buffer> gVertBuffer = nullptr;
+		//wrl::ComPtr<ID3D11Buffer> gGeoBuffer = nullptr;
+
+		wrl::ComPtr<ID3D11ShaderResourceView> shaderRV = nullptr;
+		wrl::ComPtr<ID3D11SamplerState> smplrState = nullptr;
+
+		wrl::ComPtr<ID3D11InputLayout> gInputLayout = nullptr;
+
+
 		gVertex* verts = nullptr;
 		int numVertices = 0;
 		int* indices = nullptr;
 		int numIndices = 0;
 		float scale = 1.0f;
 	};
-	gMesh* gppMesh = nullptr;
+	std::vector<gMesh*> gppMesh;
 	int numOfMeshs = 0;
 
 #pragma region Lights
@@ -59,7 +73,7 @@ public:
 
 	void updatePointLight(ID3D11DeviceContext* gpCon, UINT startIndex, UINT numOfLights, ID3D11Buffer* gPLightBuffer, XMFLOAT4A pos, float radius, XMFLOAT4A color);
 
-	void updateSpotLight(ID3D11DeviceContext& gpCon, UINT startIndex, UINT numOfLights, ID3D11Buffer& gSLightBuffer, XMFLOAT4A pos, XMFLOAT4A dir, float width, XMFLOAT4A color);
+	void updateSpotLight(ID3D11DeviceContext* gpCon, UINT startIndex, UINT numOfLights, ID3D11Buffer* gSLightBuffer, XMFLOAT4A pos, XMFLOAT4A dir, float width, XMFLOAT4A color);
 
 #pragma endregion
 
@@ -69,14 +83,18 @@ public:
 	~Graphics();
 	HRESULT InitDevice();
 	void Render();
-	void LoadMesh(std::string fileName, float mesh_scale, gMesh** meshArr, UINT meshIndex);
 	void ProcessFBXMesh(FbxNode* Node, gMesh* mesh); // Join with ProcessOBJMesh to make a template type mesh loader
 	void LoadUVFromFBX(FbxMesh* pMesh, std::vector<XMFLOAT2>* pVecUV);
-	void TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode); // This requires the model to have been made with a .dds file
-	void ProcessOBJMesh(_OBJ_VERT_ ov[], int size); // Join with ProcessFBXMesh
+	void TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode, gMesh* gmesh); // This requires the model to have been made with a .dds file
+	//void ProcessOBJMesh(_OBJ_VERT_ ov[], int size); // Join with ProcessFBXMesh
 	////
 	void CleanFrameBuffers(XMVECTORF32 DXCOLOR = Colors::Silver);
-	void UpdateConstantBuffer(float cbTranslate[3], float cbRotate[3]);
+	void UpdateConstantBuffer(gMesh* mesh, float cbTranslate[3], float cbRotate[3]);
+
+	void LoadMesh(std::string fileName, const wchar_t* textureFile, float mesh_scale, std::vector<gMesh*>& meshArr, UINT meshIndex);
+	HRESULT CreateShaders(std::vector<gMesh*>& meshVec);
+	HRESULT CreateBuffers(std::vector<gMesh*>& meshVec, UINT indexInBuffArray);
+	void CreateInputLayout(std::vector<gMesh*>& meshVec);
 private:
 #pragma region Hointer Pell
 	wrl::ComPtr<ID3D11Device> gDev = nullptr;
@@ -85,18 +103,11 @@ private:
 	wrl::ComPtr<ID3D11RenderTargetView> gRtv = nullptr;
 	wrl::ComPtr<ID3D11DepthStencilView> gDsv = nullptr;
 	wrl::ComPtr<ID3D11Texture2D> gDepthStencil = nullptr;
-	wrl::ComPtr<ID3D11Buffer> gConstantBuffer = nullptr;
 	wrl::ComPtr<ID3D11Buffer> gDLightBuffer = nullptr;
 	wrl::ComPtr<ID3D11Buffer> gPLightBuffer = nullptr;
 	wrl::ComPtr<ID3D11Buffer> gSLightBuffer = nullptr;
-	wrl::ComPtr<ID3D11Buffer> gIndexBuffer = nullptr; //
-	wrl::ComPtr<ID3D11InputLayout> gInputLayout = nullptr;
-	wrl::ComPtr<ID3D11VertexShader> gVertexShader = nullptr;
-	wrl::ComPtr<ID3D11Buffer> gVertBuffer = nullptr; //
 	wrl::ComPtr<ID3D11PixelShader> gPixelShader = nullptr;
 	wrl::ComPtr<ID3DBlob> gBlob = nullptr;
-	wrl::ComPtr<ID3D11ShaderResourceView> shaderRV = nullptr; //
-	wrl::ComPtr<ID3D11SamplerState> smplrState = nullptr;
 
 #pragma endregion
 public:

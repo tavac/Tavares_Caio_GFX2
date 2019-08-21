@@ -45,18 +45,6 @@ int CALLBACK WinMain(
 	WNDCLASSEX wc = Init_WindowClass("WndClassEX", hInstance);
 	hWnd = Init_Window(hWndWidth, hWndHeight, winTitle, &wc);
 	Gfx = new Graphics(hWnd);
-#pragma region LOAD MODELS
-	//ModelDraw_Switch(currModel); // Default Model set to draw, SPACE BAR to cycle.
-	//std::string modelName[MODEL_COUNT] = { "Tester.fbx","NewDragon.fbx","Cube.fbx" }; // convert to array or vector of strings to store multiple mesh directories.
-	//Gfx->LoadMesh("Tester.fbx", 1.0f, &Gfx->gppMesh, 0);
-	//Gfx->LoadMesh("NewDragon.fbx",10.0f, &Gfx->gppMesh, 0);
-	//Gfx->LoadMesh("SpaceShip_1.fbx", 1.0f, Gfx->gppMesh, 0);
-	//Gfx->LoadMesh("SpaceShip_3.fbx", 0.5f, &Gfx->gppMesh, 0);
-	//Gfx->LoadMesh("Desk_0.fbx", 1.0f, &Gfx->gppMesh, 0);
-	Gfx->LoadMesh("Desk_1.fbx", 1.0f, &Gfx->gppMesh, 0);
-	//Gfx->LoadMesh("Cube.fbx", 50.0f, &Gfx->gppMesh, 0);
-	//Gfx->LoadMesh("Cube.fbx", 50.0f, Gfx->gppMesh, 1);
-#pragma endregion
 	Gfx->InitDevice();
 
 	// Message Loop

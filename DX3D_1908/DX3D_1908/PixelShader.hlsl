@@ -48,7 +48,7 @@ float4 main(PS_Input psIn) : SV_Target
         psIn.uv.y += (sin(vDTime) * 0.1f);
     }
 
-    outie += vAmbLight;
+    //outie += vAmbLight;
 
    ///////////// Direction Light /////////////
     //for (int d = 0; d < 2; d++)
@@ -57,7 +57,7 @@ float4 main(PS_Input psIn) : SV_Target
         //lightDir.y = clamp(cos(vDTime), -1, 1);
     float _dot = dot((lightDir), psIn.norm.xyz);
     float LR = saturate(_dot);
-    outie += (LR * DL_color /** sin(vDTime * 2)*/ * outie);
+    outie += (LR * DL_color /** sin(vDTime * 2)*/);
     //}
    ///////////////////////////////////////////
    
@@ -69,8 +69,14 @@ float4 main(PS_Input psIn) : SV_Target
     float attenutation = 1.0f - saturate((length(PL_pos.xyz - psIn.wPos.xyz) / 50.0f));
     LightRatio = (attenutation * attenutation) * LightRatio;
    //outie += lerp(float4(0, 0, 0, 0), PL_color /** sin(vDTime * 2)*/, LightRatio);
-    outie += LightRatio * PL_color * 1.5f;
+    outie += LightRatio * PL_color;
     //}
+    ///////////////// Specular Formula ///////////////
+    //float3 viewdir = normalize(vView._14_24_34 - psIn.wPos.xyz);
+    //float3 halfVec = normalize((-PL_pos.xyz) + viewdir);
+    //float intensity = max(clamp(psIn.norm.xyz, normalize(halfVec), 2.0f), 0);
+    //outie += PL_color * 2.5f * intensity * LightRatio;
+    //////////////////////////////////////////////////
    ////////////////////////////////////////
 
     ////////////// Spot Light ////////////////
@@ -85,6 +91,7 @@ float4 main(PS_Input psIn) : SV_Target
     spotAtten -= 1.0f;
     outie += (spotAtten * spotAtten * AngAtten * SL_color);
     ////////////////////////////////////////////////
+
 
     outie = (txDiffuse.Sample(samLinear, psIn.uv)) * outie;
 
