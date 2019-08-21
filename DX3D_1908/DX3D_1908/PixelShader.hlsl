@@ -39,7 +39,7 @@ struct PS_Input
     float4 wPos : PosInWorld;
 };
 
-float4 main(PS_Input psIn) : SV_Target
+float4 main(PS_Input psIn) : SV_TARGET
 {
     float4 outie = { 0, 0, 0, 0 };
     if (PL_color.w < 1.0f)

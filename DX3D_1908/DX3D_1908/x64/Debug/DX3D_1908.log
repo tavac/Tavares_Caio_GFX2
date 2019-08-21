@@ -1,1 +1,5 @@
-﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Microsoft.Cpp.Platform.targets(67,5): error MSB8020: The build tools for v142 (Platform Toolset = 'v142') cannot be found. To build using the v142 build tools, please install v142 build tools.  Alternatively, you may upgrade to the current Visual Studio tools by selecting the Project menu or right-click the solution, and then selecting "Retarget solution".
+﻿  compilation object save succeeded; see C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\x64\Debug\GeometryShader.cso
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\PixelShader.hlsl(42,28-38): error X4502: invalid vs_2_0 output semantic 'SV_TARGET'
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\PixelShader.hlsl(39,17-28): error X4502: invalid vs_2_0 input semantic 'PosInWorld'
+  
+  compilation failed; no code produced

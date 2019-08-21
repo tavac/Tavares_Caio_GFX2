@@ -76,7 +76,6 @@ public:
 	void updateSpotLight(ID3D11DeviceContext* gpCon, UINT startIndex, UINT numOfLights, ID3D11Buffer* gSLightBuffer, XMFLOAT4A pos, XMFLOAT4A dir, float width, XMFLOAT4A color);
 
 #pragma endregion
-
 	Graphics(HWND hWnd);
 	Graphics(const Graphics&) = delete;
 	Graphics& operator=(const Graphics&) = delete;
@@ -89,7 +88,7 @@ public:
 	//void ProcessOBJMesh(_OBJ_VERT_ ov[], int size); // Join with ProcessFBXMesh
 	////
 	void CleanFrameBuffers(XMVECTORF32 DXCOLOR = Colors::Silver);
-	void UpdateConstantBuffer(gMesh* mesh, float cbTranslate[3], float cbRotate[3]);
+	void UpdateConstantBuffer(gMesh& mesh, float cbTranslate[3], float cbRotate[3]);
 
 	void LoadMesh(std::string fileName, const wchar_t* textureFile, float mesh_scale, std::vector<gMesh*>& meshArr, UINT meshIndex);
 	HRESULT CreateShaders(std::vector<gMesh*>& meshVec);

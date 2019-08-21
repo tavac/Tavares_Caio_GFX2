@@ -55,10 +55,10 @@ Graphics::Graphics(HWND hWnd)
 }
 Graphics::~Graphics()
 {
-	//for (int i = 0; i < numOfMeshs; i++)
-	//{
-	//	delete gppMesh;
-	//}
+	for (int i = 0; i < numOfMeshs; i++)
+	{
+		delete gppMesh[i];
+	}
 	gppMesh.clear();
 }
 #pragma endregion
@@ -196,12 +196,12 @@ void Graphics::Render()
 #pragma region Update Constant Buffer
 	float move[] = { 10.0f, 0.0f, 0.0f };
 	float rotate[] = { 0.0f, -90.0f, 0.0f };
-	UpdateConstantBuffer(gppMesh[0], move, rotate);
+	UpdateConstantBuffer(*gppMesh[0], move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[0]->numVertices, 0u, 0);
 
 	float move1[] = { -10.0f, 0.0f, 0.0f };
 	float rotate1[] = { 0.0f, 0.0f, 0.0f };
-	UpdateConstantBuffer(gppMesh[1], move1, rotate1);
+	UpdateConstantBuffer(*gppMesh[1], move1, rotate1);
 	gCon->DrawIndexed((UINT)gppMesh[1]->numVertices, 0u, 0);
 #pragma endregion
 
@@ -214,6 +214,7 @@ void Graphics::LoadMesh(std::string fileName, const wchar_t* textureFile, float 
 {
 	if (meshArr.size() <= meshIndex) // If empty, fill.
 	{
+		// LIFE OF A MODEL BEGINS. . .
 		gMesh* tmpMesh = new gMesh();
 		//meshArr[meshIndex] = new gMesh();
 		//meshArr[meshIndex]->scale = mesh_scale;
@@ -282,38 +283,43 @@ HRESULT Graphics::CreateBuffers(std::vector<gMesh*>& meshArr, UINT index)
 		}
 	}
 
-	//////////////////// Vertex Buffer ////////////////////
-	buffdesc = {};
-	buffdesc.Usage = D3D11_USAGE_DEFAULT;
-	buffdesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	buffdesc.CPUAccessFlags = 0u;
-	buffdesc.MiscFlags = 0u;
-	buffdesc.ByteWidth = sizeof(gVertex) * gppMesh[index]->numVertices;
-	buffdesc.StructureByteStride = sizeof(gVertex);
-	D3D11_SUBRESOURCE_DATA subData = {};
-	subData.pSysMem = gppMesh[index]->verts;
-	hr = gDev->CreateBuffer(&buffdesc, &subData, gppMesh[index]->gVertBuffer.GetAddressOf());
-	if (FAILED(hr))
+	if (meshArr[index]->gVertBuffer == nullptr)
 	{
-		ToolBox::ThrowErrorMsg("CreateVertexBuffer Failed in InitDevice");
-		return hr;
+		//////////////////// Vertex Buffer ////////////////////
+		buffdesc = {};
+		buffdesc.Usage = D3D11_USAGE_DEFAULT;
+		buffdesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		buffdesc.CPUAccessFlags = 0u;
+		buffdesc.MiscFlags = 0u;
+		buffdesc.ByteWidth = sizeof(gVertex) * gppMesh[index]->numVertices;
+		buffdesc.StructureByteStride = sizeof(gVertex);
+		D3D11_SUBRESOURCE_DATA subData = {};
+		subData.pSysMem = gppMesh[index]->verts;
+		hr = gDev->CreateBuffer(&buffdesc, &subData, gppMesh[index]->gVertBuffer.GetAddressOf());
+		if (FAILED(hr))
+		{
+			ToolBox::ThrowErrorMsg("CreateVertexBuffer Failed in InitDevice");
+			return hr;
+		}
 	}
 
-	///////////////////// Index Buffer /////////////////////
-	buffdesc = {};
-	buffdesc.Usage = D3D11_USAGE_DEFAULT;
-	buffdesc.ByteWidth = sizeof(UINT32) * gppMesh[index]->numIndices;
-	buffdesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	buffdesc.CPUAccessFlags = 0;
-	subData = {};
-	subData.pSysMem = gppMesh[index]->indices;
-	hr = gDev->CreateBuffer(&buffdesc, &subData, gppMesh[index]->gIndexBuffer.GetAddressOf());
-	if (FAILED(hr))
+	if (meshArr[index]->gIndexBuffer == nullptr)
 	{
-		ToolBox::ThrowErrorMsg("CreateIndexBuffer Failed in InitDevice");
-		return hr;
+		///////////////////// Index Buffer /////////////////////
+		buffdesc = {};
+		buffdesc.Usage = D3D11_USAGE_DEFAULT;
+		buffdesc.ByteWidth = sizeof(UINT32) * gppMesh[index]->numIndices;
+		buffdesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		buffdesc.CPUAccessFlags = 0;
+		D3D11_SUBRESOURCE_DATA subData = {};
+		subData.pSysMem = gppMesh[index]->indices;
+		hr = gDev->CreateBuffer(&buffdesc, &subData, gppMesh[index]->gIndexBuffer.GetAddressOf());
+		if (FAILED(hr))
+		{
+			ToolBox::ThrowErrorMsg("CreateIndexBuffer Failed in InitDevice");
+			return hr;
+		}
 	}
-
 	//////////////////// Bind Index Buffer ////////////////////
 	gCon->IASetIndexBuffer(gppMesh[index]->gIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
@@ -688,7 +694,7 @@ HRESULT Graphics::CreateShaders(std::vector<gMesh*>& meshVec)
 	for (UINT i = 0; i < meshVec.size(); i++)
 	{
 		//////////////////// create pixel shader ////////////////////
-		D3DReadFileToBlob(L"PixelShader.cso", &gBlob);
+		D3DReadFileToBlob(L"PixelShader.cso", gBlob.GetAddressOf());
 		hr = gDev->CreatePixelShader(gBlob->GetBufferPointer(), gBlob->GetBufferSize(), nullptr, gPixelShader.GetAddressOf());
 		if (FAILED(hr))
 		{
@@ -734,7 +740,7 @@ void Graphics::CleanFrameBuffers(XMVECTORF32 DXCOLOR)
 	gCon->ClearRenderTargetView(gRtv.Get(), DXCOLOR);
 	gCon->ClearDepthStencilView(gDsv.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
 }
-void Graphics::UpdateConstantBuffer(gMesh* mesh, float cbTranslate[3], float cbRotate[3])
+void Graphics::UpdateConstantBuffer(gMesh& mesh, float cbTranslate[3], float cbRotate[3])
 {
 	// This sends World,View,Proj,AmbientLight through the shaders.
 	gConstantBuff gCB;
@@ -751,20 +757,20 @@ void Graphics::UpdateConstantBuffer(gMesh* mesh, float cbTranslate[3], float cbR
 	gCB.proj = XMMatrixTranspose(globalProj);
 	gCB.dTime = (float)gTimer->deltaTime;
 	gCB.ambientLight = XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f);
-	gCon->UpdateSubresource(mesh->gConstantBuffer.Get(), 0, nullptr, &gCB, 0, 0);
+	gCon->UpdateSubresource(mesh.gConstantBuffer.Get(), 0, nullptr, &gCB, 0, 0);
 
 	//////////////////////// Bind Shaders ////////////////////////
 	// Bind buffers to pipeline so the Drawcall can access the information from setup.
-	ID3D11Buffer* buffs[] = { *mesh->gConstantBuffer.GetAddressOf(),
+	ID3D11Buffer* buffs[] = { *mesh.gConstantBuffer.GetAddressOf(),
 							  *gDLightBuffer.GetAddressOf(),
 							  *gPLightBuffer.GetAddressOf(),
 							  *gSLightBuffer.GetAddressOf() };
-	gCon->VSSetShader(mesh->gVertexShader.Get(), nullptr, 0u);
+	gCon->VSSetShader(mesh.gVertexShader.Get(), nullptr, 0u);
 	gCon->VSSetConstantBuffers(0u, (UINT)ARRAYSIZE(buffs), buffs);
 	gCon->PSSetShader(gPixelShader.Get(), nullptr, 0u);
 	gCon->PSSetConstantBuffers(0u, (UINT)ARRAYSIZE(buffs), buffs);
-	gCon->PSSetShaderResources(0, 1, mesh->shaderRV.GetAddressOf());
-	gCon->PSSetSamplers(0, 1, mesh->smplrState.GetAddressOf());
+	gCon->PSSetShaderResources(0, 1, mesh.shaderRV.GetAddressOf());
+	gCon->PSSetSamplers(0, 1, mesh.smplrState.GetAddressOf());
 }
 void Graphics::updateDirectionLight(ID3D11DeviceContext* gpCon, UINT startIndex, UINT numOfLights, ID3D11Buffer* gDLightBuffer, XMFLOAT4A dir, XMFLOAT4A color)
 {
