@@ -48,7 +48,7 @@ float4 main(PS_Input psIn) : SV_Target
         psIn.uv.y += (sin(vDTime) * 0.1f);
     }
 
-    //outie += vAmbLight;
+    outie += vAmbLight;
 
    ///////////// Direction Light /////////////
     //for (int d = 0; d < 2; d++)

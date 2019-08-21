@@ -190,7 +190,7 @@ void Graphics::Render()
 	XMFLOAT4A tmp_dir;
 	XMStoreFloat4A(&tmp_dir, XMVector4Transform(XMVectorSet(0, 0, 1, 0), Camera));
 	updateSpotLight(gCon.Get(), 0u, 1u, gSLightBuffer.Get(),
-		tmp_pos, tmp_dir, 1.0f, XMFLOAT4A(0.0f, 0.0f, 0.0f, 1.0f));
+		tmp_pos, tmp_dir, 1.0f, XMFLOAT4A(0.5f, 0.5f, 0.5f, 1.0f));
 #pragma endregion
 	
 #pragma region Update Constant Buffer
@@ -302,7 +302,7 @@ HRESULT Graphics::CreateBuffers(std::vector<gMesh*>& meshArr, UINT index)
 	///////////////////// Index Buffer /////////////////////
 	buffdesc = {};
 	buffdesc.Usage = D3D11_USAGE_DEFAULT;
-	buffdesc.ByteWidth = sizeof(int) * gppMesh[index]->numIndices;
+	buffdesc.ByteWidth = sizeof(UINT32) * gppMesh[index]->numIndices;
 	buffdesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	buffdesc.CPUAccessFlags = 0;
 	subData = {};
@@ -849,7 +849,7 @@ void Graphics::CreateInputLayout(std::vector<gMesh*>& meshVec)
 			{"COLOR",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 		};
 
-		hr = gDev->CreateInputLayout(ildes, (UINT)ARRAYSIZE(ildes), gBlob->GetBufferPointer(), gBlob->GetBufferSize(), meshVec[i]->gInputLayout.GetAddressOf());
+		hr = gDev->CreateInputLayout(ildes, (UINT)ARRAYSIZE(ildes), gBlob->GetBufferPointer(), gBlob->GetBufferSize(), &meshVec[i]->gInputLayout);
 		if (FAILED(hr))
 			ToolBox::ThrowErrorMsg("CreateInputLayout Failed in CreateInputLayout");
 		// bind vertex target
