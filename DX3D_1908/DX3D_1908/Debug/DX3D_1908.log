@@ -1,2 +1,9 @@
-﻿  Graphics.cpp
+﻿  compilation object save succeeded; see C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\PixelShader.cso
+  compilation object save succeeded; see C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\VertexShader.cso
+  Graphics.cpp
+  ToolBox.cpp
+  WinMain.cpp
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(408,40): warning C4244:  'argument': conversion from 'float' to 'long', possible loss of data
+C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\DX3D_1908\WinMain.cpp(410,39): warning C4244:  'argument': conversion from 'float' to 'long', possible loss of data
+  LINK : C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\Debug\DX3D_1908.exe not found or not built by the last incremental link; performing full link
   DX3D_1908.vcxproj -> C:\Users\caiot\OneDrive - Full Sail University\Documents\GFX2Repo\Tavares_Caio_GFX2\DX3D_1908\Debug\DX3D_1908.exe
