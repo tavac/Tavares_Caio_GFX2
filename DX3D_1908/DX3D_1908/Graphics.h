@@ -95,8 +95,8 @@ public:
 
 	void LoadMesh(std::string fileName, const wchar_t* textureFile, float mesh_scale, std::vector<gMesh*>& meshArr, UINT meshIndex);
 	HRESULT CreateShaders(std::vector<gMesh*>& meshVec);
-	HRESULT CreateBuffers(std::vector<gMesh*>& meshVec, UINT sizeOfArray);
-	void CreateInputLayout(std::vector<gMesh*>& meshVec);
+	HRESULT CreateBuffers(std::vector<gMesh*>& meshVec);
+	HRESULT CreateInputLayout(std::vector<gMesh*>& meshVec);
 private:
 #pragma region Hointer Pell
 	wrl::ComPtr<ID3D11Device> gDev = nullptr;

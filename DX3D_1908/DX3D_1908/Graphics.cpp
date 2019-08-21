@@ -63,92 +63,9 @@ Graphics::~Graphics()
 }
 #pragma endregion
 
+
+#pragma region InitCalls
 #pragma region Mesh/Texture/File IO
-HRESULT Graphics::CreateBuffers(std::vector<gMesh*>& meshArr, UINT size)
-{
-	HRESULT hr;
-	// ONE BUFFER DESCRIPTOR TO RULE THEM ALL
-	D3D11_BUFFER_DESC buffdesc = {};
-
-	for (UINT index = 0; index < size; index++)
-	{
-		if (meshArr[index]->gConstantBuffer == nullptr)
-		{
-			//////////////////// Constant Buffer ////////////////////
-			buffdesc = {};
-			buffdesc.Usage = D3D11_USAGE_DEFAULT;
-			buffdesc.ByteWidth = sizeof(gConstantBuff);
-			buffdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-			buffdesc.CPUAccessFlags = 0;
-			hr = gDev->CreateBuffer(&buffdesc, nullptr, meshArr[index]->gConstantBuffer.GetAddressOf());
-			if (FAILED(hr))
-			{
-				ToolBox::ThrowErrorMsg("Create Constant Buffer failed in initdevice.");
-				return hr;
-			}
-		}
-
-		if (meshArr[index]->gVertBuffer == nullptr)
-		{
-			//////////////////// Vertex Buffer ////////////////////
-			buffdesc = {};
-			buffdesc.Usage = D3D11_USAGE_DEFAULT;
-			buffdesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-			buffdesc.CPUAccessFlags = 0u;
-			buffdesc.MiscFlags = 0u;
-			buffdesc.ByteWidth = sizeof(gVertex) * meshArr[index]->numVertices;
-			buffdesc.StructureByteStride = sizeof(gVertex);
-			D3D11_SUBRESOURCE_DATA subData = {};
-			subData.pSysMem = gppMesh[index]->verts;
-			hr = gDev->CreateBuffer(&buffdesc, &subData, meshArr[index]->gVertBuffer.GetAddressOf());
-			if (FAILED(hr))
-			{
-				ToolBox::ThrowErrorMsg("CreateVertexBuffer Failed in InitDevice");
-				return hr;
-			}
-		}
-
-		if (meshArr[index]->gIndexBuffer == nullptr)
-		{
-			///////////////////// Index Buffer /////////////////////
-			buffdesc = {};
-			buffdesc.Usage = D3D11_USAGE_DEFAULT;
-			buffdesc.ByteWidth = sizeof(int) * meshArr[index]->numIndices;
-			buffdesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-			buffdesc.CPUAccessFlags = 0;
-			D3D11_SUBRESOURCE_DATA subData = {};
-			subData.pSysMem = gppMesh[index]->indices;
-			hr = gDev->CreateBuffer(&buffdesc, &subData, meshArr[index]->gIndexBuffer.GetAddressOf());
-			if (FAILED(hr))
-			{
-				ToolBox::ThrowErrorMsg("CreateIndexBuffer Failed in InitDevice");
-				return hr;
-			}
-		}
-		//////////////////// Bind Index Buffer ////////////////////
-		gCon->IASetIndexBuffer(meshArr[index]->gIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-
-		//////////////////// Bind Vertex Buffers ////////////////////
-		const UINT strides = sizeof(gVertex);
-		const UINT offset = 0u;
-		gCon->IASetVertexBuffers(0u, 1u, meshArr[index]->gVertBuffer.GetAddressOf(), &strides, &offset);
-
-		/////////////////// Creating sample state ///////////////////
-		D3D11_SAMPLER_DESC texDes;
-		texDes.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-		texDes.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		texDes.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-		texDes.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-		texDes.MaxAnisotropy = 0;
-		texDes.MipLODBias = 0;
-		texDes.MinLOD = 0;
-		texDes.MaxLOD = 0;
-		HRESULT sampleResult = gDev->CreateSamplerState(&texDes, &meshArr[index]->smplrState);
-		if (FAILED(sampleResult))
-			return sampleResult;
-	}
-	return S_OK;
-}
 void Graphics::LoadMesh(std::string fileName, const wchar_t* textureFile, float mesh_scale, std::vector<gMesh*>& meshArr, UINT meshIndex)
 {
 	if (meshArr.size() <= meshIndex) // If empty, fill.
@@ -501,13 +418,89 @@ void Graphics::TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode, gMesh* gmes
 	}
 }
 #pragma endregion
+HRESULT Graphics::CreateBuffers(std::vector<gMesh*>& meshArr)
+{
+	HRESULT hr;
+	// ONE BUFFER DESCRIPTOR TO RULE THEM ALL
+	D3D11_BUFFER_DESC buffdesc = {};
+
+	for (UINT index = 0; index < meshArr.size(); index++)
+	{
+		if (meshArr[index]->gConstantBuffer == nullptr)
+		{
+			//////////////////// Constant Buffer ////////////////////
+			buffdesc = {};
+			buffdesc.Usage = D3D11_USAGE_DEFAULT;
+			buffdesc.ByteWidth = sizeof(gConstantBuff);
+			buffdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+			buffdesc.CPUAccessFlags = 0;
+			hr = gDev->CreateBuffer(&buffdesc, nullptr, meshArr[index]->gConstantBuffer.GetAddressOf());
+			if (FAILED(hr))
+			{
+				ToolBox::ThrowErrorMsg("Create Constant Buffer failed in initdevice.");
+				return hr;
+			}
+		}
+
+		if (meshArr[index]->gVertBuffer == nullptr)
+		{
+			//////////////////// Vertex Buffer ////////////////////
+			buffdesc = {};
+			buffdesc.Usage = D3D11_USAGE_DEFAULT;
+			buffdesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+			buffdesc.CPUAccessFlags = 0u;
+			buffdesc.MiscFlags = 0u;
+			buffdesc.ByteWidth = sizeof(gVertex) * meshArr[index]->numVertices;
+			buffdesc.StructureByteStride = sizeof(gVertex);
+			D3D11_SUBRESOURCE_DATA subData = {};
+			subData.pSysMem = gppMesh[index]->verts;
+			hr = gDev->CreateBuffer(&buffdesc, &subData, meshArr[index]->gVertBuffer.GetAddressOf());
+			if (FAILED(hr))
+			{
+				ToolBox::ThrowErrorMsg("CreateVertexBuffer Failed in InitDevice");
+				return hr;
+			}
+		}
+
+		if (meshArr[index]->gIndexBuffer == nullptr)
+		{
+			///////////////////// Index Buffer /////////////////////
+			buffdesc = {};
+			buffdesc.Usage = D3D11_USAGE_DEFAULT;
+			buffdesc.ByteWidth = sizeof(int) * meshArr[index]->numIndices;
+			buffdesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+			buffdesc.CPUAccessFlags = 0;
+			D3D11_SUBRESOURCE_DATA subData = {};
+			subData.pSysMem = gppMesh[index]->indices;	
+			hr = gDev->CreateBuffer(&buffdesc, &subData, meshArr[index]->gIndexBuffer.GetAddressOf());
+			if (FAILED(hr))
+			{
+				ToolBox::ThrowErrorMsg("CreateIndexBuffer Failed in InitDevice");
+				return hr;
+			}
+		}
 
 
-#pragma region InitCalls
+		/////////////////// Creating sample state ///////////////////
+		D3D11_SAMPLER_DESC texDes;
+		texDes.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		texDes.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		texDes.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		texDes.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		texDes.MaxAnisotropy = 0;
+		texDes.MipLODBias = 0;
+		texDes.MinLOD = 0;
+		texDes.MaxLOD = 0;
+		HRESULT sampleResult = gDev->CreateSamplerState(&texDes, &meshArr[index]->smplrState);
+		if (FAILED(sampleResult))
+			return sampleResult;
+	}
+	return S_OK;
+}
 HRESULT Graphics::CreateLightBuffers(ID3D11Device& gpDev,
-	wrl::ComPtr<ID3D11Buffer>* gpDLightBuffer,
-	wrl::ComPtr<ID3D11Buffer>* gpPLightBuffer,
-	wrl::ComPtr<ID3D11Buffer>* gpSLightBuffer)
+									 wrl::ComPtr<ID3D11Buffer>* gpDLightBuffer,
+									 wrl::ComPtr<ID3D11Buffer>* gpPLightBuffer,
+									 wrl::ComPtr<ID3D11Buffer>* gpSLightBuffer)
 {
 	HRESULT hr;
 	D3D11_BUFFER_DESC buffdesc = {};
@@ -594,6 +587,31 @@ HRESULT Graphics::CreateShaders(std::vector<gMesh*>& meshVec)
 	}
 	return S_OK;
 }
+HRESULT Graphics::CreateInputLayout(std::vector<gMesh*>& meshVec)
+{
+	HRESULT hr;
+	for (UINT i = 0; i < meshVec.size(); i++)
+	{
+		/////////////////// input vertex layout ///////////////////
+		const D3D11_INPUT_ELEMENT_DESC ildes[] =
+		{
+			{"POSITION",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
+			{"NORMAL",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
+			{"TEXCOORD",0,DXGI_FORMAT_R32G32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
+			{"COLOR",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
+		};
+
+		hr = gDev->CreateInputLayout(ildes, (UINT)ARRAYSIZE(ildes), meshVec[i]->gBlob->GetBufferPointer(), meshVec[i]->gBlob->GetBufferSize(), &meshVec[i]->gInputLayout);
+		if (FAILED(hr))
+		{
+			ToolBox::ThrowErrorMsg("CreateInputLayout Failed in CreateInputLayout");
+			return hr;
+		}
+		// bind vertex target
+		gCon->IASetInputLayout(meshVec[i]->gInputLayout.Get());
+	}
+	return S_OK;
+}
 #pragma endregion
 
 #pragma region RenderCalls
@@ -601,22 +619,30 @@ void Graphics::CleanFrameBuffers(XMVECTORF32 DXCOLOR)
 {
 	gCon->ClearRenderTargetView(gRtv.Get(), DXCOLOR);
 	gCon->ClearDepthStencilView(gDsv.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
-	for (int i = 0; i < gppMesh.size(); i++)
-	{
-		//gppMesh[i]->gConstantBuffer.Reset();
-		gppMesh[i]->gIndexBuffer.Reset();
-		gppMesh[i]->gInputLayout.Reset();
-		gppMesh[i]->gVertBuffer.Reset();
-		//gppMesh[i]->gVertexShader.Reset();
+	//for (int i = 0; i < gppMesh.size(); i++)
+	//{
+	//	//gppMesh[i]->gConstantBuffer.Reset();
+	//	gppMesh[i]->gIndexBuffer.Reset();
+	//	gppMesh[i]->gInputLayout.Reset();
+	//	gppMesh[i]->gVertBuffer.Reset();
+	//	//gppMesh[i]->gVertexShader.Reset();
 		//gppMesh[i]->gConstantBuffer = nullptr;
-		gppMesh[i]->gIndexBuffer = nullptr;
-		gppMesh[i]->gInputLayout = nullptr;
-		gppMesh[i]->gVertBuffer = nullptr;
-		//gppMesh[i]->gVertexShader = nullptr;
-	}
+	//	gppMesh[i]->gIndexBuffer = nullptr;
+	//	gppMesh[i]->gInputLayout = nullptr;
+	//	gppMesh[i]->gVertBuffer = nullptr;
+	//	//gppMesh[i]->gVertexShader = nullptr;
+	//}
 }
 void Graphics::UpdateConstantBuffer(gMesh* mesh, float cbTranslate[3], float cbRotate[3])
 {
+	//////////////////// Bind Index Buffer ////////////////////
+	gCon->IASetIndexBuffer(mesh->gIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+
+	//////////////////// Bind Vertex Buffers ////////////////////
+	const UINT strides = sizeof(gVertex);
+	const UINT offset = 0u;
+	gCon->IASetVertexBuffers(0u, 1u, mesh->gVertBuffer.GetAddressOf(), &strides, &offset);
+
 	// This sends World,View,Proj,AmbientLight through the shaders.
 	gConstantBuff gCB;
 	globalWorld = XMMatrixTranslation(cbTranslate[0], cbTranslate[1], cbTranslate[2]);
@@ -716,27 +742,6 @@ void Graphics::updateSpotLight(ID3D11DeviceContext* gpCon, UINT startIndex, UINT
 
 
 }
-void Graphics::CreateInputLayout(std::vector<gMesh*>& meshVec)
-{
-	HRESULT hr;
-	for (UINT i = 0; i < meshVec.size(); i++)
-	{
-		/////////////////// input vertex layout ///////////////////
-		const D3D11_INPUT_ELEMENT_DESC ildes[] =
-		{
-			{"POSITION",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
-			{"NORMAL",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
-			{"TEXCOORD",0,DXGI_FORMAT_R32G32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
-			{"COLOR",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
-		};
-
-		hr = gDev->CreateInputLayout(ildes, (UINT)ARRAYSIZE(ildes), meshVec[i]->gBlob->GetBufferPointer(), meshVec[i]->gBlob->GetBufferSize(), &meshVec[i]->gInputLayout);
-		if (FAILED(hr))
-			ToolBox::ThrowErrorMsg("CreateInputLayout Failed in CreateInputLayout");
-		// bind vertex target
-		gCon->IASetInputLayout(meshVec[i]->gInputLayout.Get());
-	}
-}
 #pragma endregion
 
 #pragma region DeviceSetup/RenderPipeline
@@ -745,8 +750,6 @@ HRESULT Graphics::InitDevice()
 	gTimer->StartTimer(gTimer);
 	HRESULT hr;
 #pragma region LOAD MODELS
-	//ModelDraw_Switch(currModel); // Default Model set to draw, SPACE BAR to cycle.
-	//std::string modelName[MODEL_COUNT] = { "Tester.fbx","NewDragon.fbx","Cube.fbx" }; // convert to array or vector of strings to store multiple mesh directories.
 	//LoadMesh("Tester.fbx", 1.0f, gppMesh, 0);
 	//LoadMesh("NewDragon.fbx",10.0f, gppMesh, 0);
 	//LoadMesh("SpaceShip_1.fbx", 1.0f, gppMesh, 0);
@@ -757,8 +760,7 @@ HRESULT Graphics::InitDevice()
 #pragma endregion
 
 #pragma region Create_Buffers
-	CreateBuffers(gppMesh, 2);
-	//CreateBuffers(gppMesh, 1);
+	CreateBuffers(gppMesh);
 
 	//////////////// Light Buffer ///////////////////
 	hr = CreateLightBuffers(*gDev.Get(), &gDLightBuffer, &gPLightBuffer, &gSLightBuffer);
@@ -774,10 +776,9 @@ HRESULT Graphics::InitDevice()
 	CreateShaders(gppMesh);
 
 #pragma endregion
+	CreateInputLayout(gppMesh);
 
 #pragma region Views
-
-
 	// Set primitive topology to triangle list ( group of 3 verts)
 	gCon->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -807,10 +808,45 @@ HRESULT Graphics::InitDevice()
 	if (FAILED(hr))
 		return hr;
 
+	//// bind render target
+	//gCon->OMSetRenderTargets(1, gRtv.GetAddressOf(), gDsv.Get());
+
+	//// configer viewport
+	////D3D11_VIEWPORT port_one;
+	////port_one.Width = 640.0f;
+	////port_one.Height = 720.0f;
+	////port_one.MinDepth = 0.0f;
+	////port_one.MaxDepth = 1.0f;
+	////port_one.TopLeftX = 0.0f;
+	////port_one.TopLeftY = 0.0f;
+	////  
+	////D3D11_VIEWPORT port_two;
+	////port_two.Width = 640.0f;
+	////port_two.Height = 720.0f;
+	////port_two.MinDepth = 0.0f;
+	////port_two.MaxDepth = 1.0f;
+	////port_two.TopLeftX = 640.0f;
+	////port_two.TopLeftY = 0.0f;
+
+	////D3D11_VIEWPORT vp[2] = { port_one, port_two };
+	D3D11_VIEWPORT vp;
+	vp.Width = 1280.0f;
+	vp.Height = 720.0f;
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
+	vp.TopLeftX = 0.0f;
+	vp.TopLeftY = 0.0f;
+	gCon->RSSetViewports(1u, &vp);
+#pragma endregion
+
+	return hr;
+}
+void Graphics::Render()
+{
 	// bind render target
 	gCon->OMSetRenderTargets(1, gRtv.GetAddressOf(), gDsv.Get());
 
-	// configer viewport
+	//// configer viewport
 	//D3D11_VIEWPORT port_one;
 	//port_one.Width = 640.0f;
 	//port_one.Height = 720.0f;
@@ -826,26 +862,14 @@ HRESULT Graphics::InitDevice()
 	//port_two.MaxDepth = 1.0f;
 	//port_two.TopLeftX = 640.0f;
 	//port_two.TopLeftY = 0.0f;
-
+	//
 	//D3D11_VIEWPORT vp[2] = { port_one, port_two };
-	D3D11_VIEWPORT vp;
-	vp.Width = 1280.0f;
-	vp.Height = 720.0f;
-	vp.MinDepth = 0.0f;
-	vp.MaxDepth = 1.0f;
-	vp.TopLeftX = 0.0f;
-	vp.TopLeftY = 0.0f;
-	gCon->RSSetViewports(1u, &vp);
-#pragma endregion
+	//
+	//gCon->RSSetViewports(2u, vp);
 
-	return hr;
-}
-void Graphics::Render()
-{
 	float deltaT = (float)gTimer->TimeSinceTick(gTimer);
 	CleanFrameBuffers();
 
-	CreateInputLayout(gppMesh);
 
 #pragma region Lights
 	// SUN DIRECTIONAL LIGHT
