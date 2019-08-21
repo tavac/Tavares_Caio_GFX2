@@ -13,22 +13,23 @@ cbuffer constBuff : register(b0)
 
 cbuffer Dir_LightBuff : register(b1)
 {
-	float4 DL_dir[2];
-	float4 DL_color[2];
+    float4 DL_pos;
+	float4 DL_dir;
+	float4 DL_color;
 }
 
 cbuffer Pnt_LightBuff : register(b2)
 {
     float4 PL_pos;
+    float4 PL_dir;
     float4 PL_color;
 }
 
-cbuffer gSptLightBuff : register(b3)
+cbuffer Spt_LightBuff : register(b3)
 {
     float4 SL_pos;
-    float3 SL_coneDir;
+    float4 SL_dir;
     float4 SL_color;
-    float SL_coneWidth;
 };
 
 struct VS_Input
@@ -55,7 +56,7 @@ VS_Output main(VS_Input vsIn)
 	vsOut.wPos = mul(vsIn.pos, vWorld);
 
     vsOut.norm = normalize(mul(vsIn.pos, vWorld));
-   
+
     vsOut.pos = mul(vsOut.pos, vView);
 	vsOut.pos = mul(vsOut.pos, vProj);
     vsOut.color = vsIn.color;

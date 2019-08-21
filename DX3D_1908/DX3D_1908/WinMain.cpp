@@ -1,7 +1,6 @@
 //#include <Windows.h>
-#include "Graphics.h"
-#include <sstream> // for ostringstream
-#include <time.h>
+#include "ModelFactory.h"
+
 
 #pragma region Variables
 WNDCLASSEX WndCls;
@@ -46,17 +45,6 @@ int CALLBACK WinMain(
 	WNDCLASSEX wc = Init_WindowClass("WndClassEX", hInstance);
 	hWnd = Init_Window(hWndWidth, hWndHeight, winTitle, &wc);
 	Gfx = new Graphics(hWnd);
-#pragma region LOAD MODELS
-	//ModelDraw_Switch(currModel); // Default Model set to draw, SPACE BAR to cycle.
-	//std::string modelName[MODEL_COUNT] = { "Tester.fbx","NewDragon.fbx","Cube.fbx" }; // convert to array or vector of strings to store multiple mesh directories.
-	//Gfx->LoadMesh("Tester.fbx", 1.0f, Gfx->gppMesh, 0);
-	//Gfx->LoadMesh("NewDragon.fbx",10.0f, Gfx->gppMesh, 0);
-	//Gfx->LoadMesh("SpaceShip_1.fbx", 1.0f, Gfx->gppMesh, 0);
-	//Gfx->LoadMesh("SpaceShip_3.fbx", 0.5f, &Gfx->gppMesh, 0);
-	//Gfx->LoadMesh("Desk_0.fbx", 0.5f, &Gfx->gppMesh, 0);
-	Gfx->LoadMesh("Cube.fbx", 50.0f, &Gfx->gppMesh, 0);
-	//Gfx->LoadMesh("Cube.fbx", 50.0f, Gfx->gppMesh, 1);
-#pragma endregion
 	Gfx->InitDevice();
 
 	// Message Loop
@@ -355,21 +343,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		if ((char)wParam == ',')
 		{
-			if (Gfx->SpotLightWidth > 0.001f)
-				Gfx->SpotLightWidth -= 0.01f;
-			std::ostringstream oss;
-			oss << Gfx->SpotLightWidth << std::endl;
-			OutputDebugString(oss.str().c_str());
-			oss.clear();
+			//if (Gfx->gSpotLight.coneWidth_R.x > 0.5f)
+			//	Gfx->gSpotLight.coneWidth_R.x -= 0.01f;
+			//std::ostringstream oss;
+			//oss << Gfx->gSpotLight.coneWidth_R.x << std::endl;
+			//OutputDebugString(oss.str().c_str());
+			//oss.clear();
 		}
 		else if ((char)wParam == '.')
 		{
-			if (Gfx->SpotLightWidth < 1.0f)
-				Gfx->SpotLightWidth += 0.01f;
-			std::ostringstream oss;
-			oss << Gfx->SpotLightWidth << std::endl;
-			OutputDebugString(oss.str().c_str());
-			oss.clear();
+			//if (Gfx->gSpotLight.coneWidth_R.x < 1.0f)
+			//	Gfx->gSpotLight.coneWidth_R.x += 0.01f;
+			//	//Gfx->SpotLightWidth += 0.01f;
+			//std::ostringstream oss;
+			//oss << Gfx->gSpotLight.coneWidth_R.x << std::endl;
+			//OutputDebugString(oss.str().c_str());
+			//oss.clear();
 		}
 	}
 	}
@@ -405,10 +394,10 @@ HWND Init_Window(int _width, int _height, std::string _title, WNDCLASSEX* _WndCl
 
 	// Create window.
 	RECT ClientRect;
-	ClientRect.left = labs(centerScreen.x - (_width * 0.5f));
-	ClientRect.right = ClientRect.left + _width;
-	ClientRect.top = labs(centerScreen.y - (_height * 0.5f));
-	ClientRect.bottom = ClientRect.top + static_cast<long>(_height);
+	ClientRect.left = labs((long)(centerScreen.x - (_width * 0.5f)));
+	ClientRect.right = (long)(ClientRect.left + _width);
+	ClientRect.top = labs((long)(centerScreen.y - (_height * 0.5f)));
+	ClientRect.bottom = (long)(ClientRect.top + static_cast<long>(_height));
 	AdjustWindowRect(&ClientRect, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE);
 	HWND hWnd = CreateWindowEx(
 		0, _WndClass->lpszClassName, _title.c_str(),
@@ -422,38 +411,6 @@ HWND Init_Window(int _width, int _height, std::string _title, WNDCLASSEX* _WndCl
 	// Draw hWnd.
 	ShowWindow(hWnd, SW_SHOW);
 	return hWnd;
-}
-
-bool DirLight_ComProc(std::string s)
-{
-	bool rtn;
-	if (strIB == "dlight red")
-	{
-		Gfx->LightState = Graphics::DirectionLight_Red;
-		rtn = true;
-	}
-	else if (strIB == "dlight green")
-	{
-		Gfx->LightState = Graphics::DirectionLight_Green;
-		rtn = true;
-	}
-	else if (strIB == "dlight blue")
-	{
-		Gfx->LightState = Graphics::DirectionLight_Blue;
-		rtn = true;
-	}
-	else if (strIB == "dlight reset")
-	{
-		Gfx->LightState = Graphics::DirectionLight_Default;
-		rtn = true;
-	}
-	else
-	{
-		strIB = "";
-		OutputDebugString("Invalid Command");
-		rtn = false;
-	}
-	return rtn;
 }
 
 //void ModelDraw_Switch(int modelToDraw)

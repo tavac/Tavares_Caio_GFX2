@@ -1,15 +1,4 @@
 #include "ToolBox.h"
-#include <d3d11.h>
-#include <d3dcompiler.h>
-#include <DirectXColors.h>
-#include <fbxsdk.h>
-#include <vector>
-#include "DDSTextureLoader.h"
-
-#pragma region OBJ headers
-#include "Grail.h"
-#pragma endregion
-
 
 using namespace DirectX;
 
@@ -17,8 +6,8 @@ namespace wrl = Microsoft::WRL;
 class Graphics
 {
 public:
+	Timer* gTimer = new Timer();
 	float PointLight_A = 1.0f;
-	float deltaT = 0.0f; // time keeper
 	struct gVertex
 	{
 		XMFLOAT4 pos;
@@ -28,14 +17,101 @@ public:
 	};
 	struct gMesh
 	{
+		wrl::ComPtr<ID3D11VertexShader> gVertexShader = nullptr;
+		//wrl::ComPtr<ID3D11GeometryShader> gGeometryShader = nullptr;
+		wrl::ComPtr<ID3D11PixelShader> gPixelShader = nullptr;
+		wrl::ComPtr<ID3DBlob> gBlob = nullptr;
+
+		wrl::ComPtr<ID3D11Buffer> gConstantBuffer = nullptr;
+		wrl::ComPtr<ID3D11Buffer> gIndexBuffer = nullptr;
+		wrl::ComPtr<ID3D11Buffer> gVertBuffer = nullptr;
+		//wrl::ComPtr<ID3D11Buffer> gGeoBuffer = nullptr;
+
+		wrl::ComPtr<ID3D11ShaderResourceView> shaderRV = nullptr;
+		wrl::ComPtr<ID3D11SamplerState> smplrState = nullptr;
+
+		wrl::ComPtr<ID3D11InputLayout> gInputLayout = nullptr;
+
+
+
 		gVertex* verts = nullptr;
 		int numVertices = 0;
 		int* indices = nullptr;
 		int numIndices = 0;
 		float scale = 1.0f;
 	};
-	gMesh* gppMesh = nullptr;
-	int numOfMeshs;
+	std::vector<gMesh*> gppMesh;
+	int numOfMeshs = 0;
+
+#pragma region Lights
+
+	UINT numOfTotalLights = 0;
+	UINT numOfDir_Lights = 0;
+	UINT numOfPointLights = 0;
+	UINT numOfSpotLights = 0;
+
+	struct gLightBuff
+	{
+		XMFLOAT4A pos;
+		XMFLOAT4A dir;
+		XMFLOAT4A color;
+	};
+	
+	std::vector<gLightBuff*> gDirectionalLights = {};
+	std::vector<gLightBuff*> gPointLights = {};
+	std::vector<gLightBuff*> gSpotLights = {};
+
+	enum LightType {
+		Directional,
+		Point,
+		Spot
+	};
+
+	HRESULT CreateLightBuffers(ID3D11Device& gpDev,
+		wrl::ComPtr<ID3D11Buffer>* gpDLightBuffer,
+		wrl::ComPtr<ID3D11Buffer>* gpPLightBuffer,
+		wrl::ComPtr<ID3D11Buffer>* gpSLightBuffer);
+
+	void updateDirectionLight(ID3D11DeviceContext* gpCon, UINT startIndex, UINT numOfLights, ID3D11Buffer* gDLightBuffer, XMFLOAT4A dir, XMFLOAT4A color);
+
+	void updatePointLight(ID3D11DeviceContext* gpCon, UINT startIndex, UINT numOfLights, ID3D11Buffer* gPLightBuffer, XMFLOAT4A pos, float radius, XMFLOAT4A color);
+
+	void updateSpotLight(ID3D11DeviceContext* gpCon, UINT startIndex, UINT numOfLights, ID3D11Buffer* gSLightBuffer, XMFLOAT4A pos, XMFLOAT4A dir, float width, XMFLOAT4A color);
+
+#pragma endregion
+	Graphics(HWND hWnd);
+	Graphics(const Graphics&) = delete;
+	Graphics& operator=(const Graphics&) = delete;
+	~Graphics();
+	HRESULT InitDevice();
+	void Render();
+	void ProcessFBXMesh(FbxNode* Node, gMesh* mesh); // Join with ProcessOBJMesh to make a template type mesh loader
+	void LoadUVFromFBX(FbxMesh* pMesh, std::vector<XMFLOAT2>* pVecUV);
+	void TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode, gMesh* gmesh); // This requires the model to have been made with a .dds file
+	//void ProcessOBJMesh(_OBJ_VERT_ ov[], int size); // Join with ProcessFBXMesh
+	////
+	void CleanFrameBuffers(XMVECTORF32 DXCOLOR = Colors::Silver);
+	void UpdateConstantBuffer(gMesh* mesh, float cbTranslate[3], float cbRotate[3]);
+
+	void LoadMesh(std::string fileName, const wchar_t* textureFile, float mesh_scale, std::vector<gMesh*>& meshArr, UINT meshIndex);
+	HRESULT CreateShaders(std::vector<gMesh*>& meshVec);
+	HRESULT CreateBuffers(std::vector<gMesh*>& meshVec, UINT sizeOfArray);
+	void CreateInputLayout(std::vector<gMesh*>& meshVec);
+private:
+#pragma region Hointer Pell
+	wrl::ComPtr<ID3D11Device> gDev = nullptr;
+	wrl::ComPtr<IDXGISwapChain> gSwap = nullptr;
+	wrl::ComPtr<ID3D11DeviceContext> gCon = nullptr;
+	wrl::ComPtr<ID3D11RenderTargetView> gRtv = nullptr;
+	wrl::ComPtr<ID3D11DepthStencilView> gDsv = nullptr;
+	wrl::ComPtr<ID3D11Texture2D> gDepthStencil = nullptr;
+	wrl::ComPtr<ID3D11Buffer> gDLightBuffer = nullptr;
+	wrl::ComPtr<ID3D11Buffer> gPLightBuffer = nullptr;
+	wrl::ComPtr<ID3D11Buffer> gSLightBuffer = nullptr;
+
+
+#pragma endregion
+public:
 	struct gConstantBuff
 	{
 		XMMATRIX world;
@@ -44,62 +120,8 @@ public:
 		XMFLOAT4 ambientLight;
 		float dTime;
 	};
-	struct gDirLightBuff
-	{
-		XMFLOAT4 dir[2];
-		XMFLOAT4 color[2];
-	};
-	struct gPntLightBuff
-	{
-		XMFLOAT4 pos;
-		XMFLOAT4 color;
-	};
-	float SpotLightWidth = 0.9f;
-	struct gSptLightBuff
-	{
-		XMFLOAT4 pos;
-		XMFLOAT4 coneDir;
-		XMFLOAT4 color;
-		XMFLOAT4 coneWidth_R;
-	};
 
-	Graphics(HWND hWnd);
-	Graphics(const Graphics&) = delete;
-	Graphics& operator=(const Graphics&) = delete;
-	~Graphics();
-	HRESULT InitDevice();
-	void Render();
-	void LoadMesh(std::string fileName, float mesh_scale, gMesh** meshArr, UINT meshIndex);
-	void ProcessFBXMesh(FbxNode* Node, gMesh* mesh);
-	void LoadUVFromFBX(FbxMesh* pMesh, std::vector<XMFLOAT2>* pVecUV);
-	void TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode);
-	void ProcessObj(_OBJ_VERT_ ov[], int size);
-private:
-	wrl::ComPtr<ID3D11Device> gDev = nullptr;
-	wrl::ComPtr<IDXGISwapChain> gSwap = nullptr;
-	wrl::ComPtr<ID3D11DeviceContext> gCon = nullptr;
-	wrl::ComPtr<ID3D11RenderTargetView> gRtv = nullptr;
-	wrl::ComPtr<ID3D11DepthStencilView> gDsv = nullptr;
-	wrl::ComPtr<ID3D11Texture2D> gDepthStencil = nullptr;
-	wrl::ComPtr<ID3D11Buffer> gConstantBuffer = nullptr;
-	wrl::ComPtr<ID3D11Buffer> gDLightBuffer = nullptr;
-	wrl::ComPtr<ID3D11Buffer> gPLightBuffer = nullptr; 
-	wrl::ComPtr<ID3D11Buffer> gSLightBuffer = nullptr; 
-	wrl::ComPtr<ID3D11Buffer> gIndexBuffer = nullptr; //
-	wrl::ComPtr<ID3D11InputLayout> gInputLayout = nullptr;
-	wrl::ComPtr<ID3D11VertexShader> gVertexShader = nullptr;
-	wrl::ComPtr<ID3D11Buffer> gVertBuffer = nullptr; //
-	wrl::ComPtr<ID3D11PixelShader> gPixelShader = nullptr;
-	wrl::ComPtr<ID3DBlob> gBlob = nullptr;
-	wrl::ComPtr<ID3D11ShaderResourceView> shaderRV = nullptr; //
-	wrl::ComPtr<ID3D11SamplerState> smplrState = nullptr;
-public:
-#pragma region Lights
-	gDirLightBuff gDirectional = {};
-	gPntLightBuff gPointLight = {};
-	gSptLightBuff gSpotLight = {};
-#pragma endregion
-	// Setting up Matrices
+#pragma region WorldViewProjection
 	XMMATRIX globalWorld = XMMatrixIdentity();
 	XMVECTOR Eye = XMVectorSet(0.0f, 0.0f, -10.0f, 0.0f);
 	XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
@@ -110,23 +132,5 @@ public:
 	float nearPlane = 0.001f;
 	float farPlane = 1000.0f;
 	XMMATRIX globalProj = XMMatrixPerspectiveFovLH((FoV_angle * (3.1415f / 180.0f)), 1280.0f / 720.0f, nearPlane, farPlane);
-
-	// Win32 + DirectX = gobeldegooks
-	enum Axis
-	{
-		x,y,z,w,u,v
-	};
-	void LocalTranslate(XMVECTOR tV);
-	void GlobalTranslate(XMVECTOR tV);
-	void CameraRotate(XMVECTOR axis, float angle);
-	enum DirLightComs
-	{
-		DirectionLight_Default,
-		DirectionLight_Red,
-		DirectionLight_Green,
-		DirectionLight_Blue,
-		DirectionLight_Off,
-	};
-	DirLightComs LightState = DirectionLight_Default;
-	bool DirectionLightSwitch(DirLightComs cmd);
+#pragma endregion
 };
