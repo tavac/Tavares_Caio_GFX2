@@ -17,6 +17,7 @@ public:
 	};
 	struct gMesh
 	{
+		bool isSkybox = false;
 		wrl::ComPtr<ID3D11VertexShader> gVertexShader = nullptr;
 		//wrl::ComPtr<ID3D11GeometryShader> gGeometryShader = nullptr;
 		wrl::ComPtr<ID3D11PixelShader> gPixelShader = nullptr;
@@ -89,14 +90,14 @@ public:
 	void LoadUVFromFBX(FbxMesh* pMesh, std::vector<XMFLOAT2>* pVecUV);
 	void TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode, gMesh* gmesh); // This requires the model to have been made with a .dds file
 
-	void CreateSkyBox(ID3D11Device* gpDev, std::vector<gMesh*>& meshArr);
 	void CleanFrameBuffers(XMVECTORF32 DXCOLOR = Colors::Silver);
 	void UpdateConstantBuffer(gMesh* mesh, XMFLOAT4A cbTranslate, XMFLOAT4A cbRotate);
 
-	void LoadMesh(std::string fileName, const wchar_t* textureFile, float mesh_scale, std::vector<gMesh*>& meshArr, UINT meshIndex);
+	void LoadMesh(std::string fileName, const wchar_t* textureFile, float mesh_scale, std::vector<gMesh*>& meshArr, UINT meshIndex, bool isSkybox);
 	HRESULT CreateShaders(std::vector<gMesh*>& meshVec);
 	HRESULT CreateBuffers(std::vector<gMesh*>& meshVec);
 	HRESULT CreateInputLayout(std::vector<gMesh*>& meshVec);
+	void CreateFloor(std::vector<gMesh*>& meshVec, UINT meshIndex);
 private:
 #pragma region Hointer Pell
 	wrl::ComPtr<ID3D11Device> gDev = nullptr;
@@ -128,7 +129,7 @@ public:
 	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	XMMATRIX globalView = XMMatrixLookAtLH(Eye, At, Up);
 	XMMATRIX Camera = XMMatrixInverse(nullptr, globalView);
-	float FoV_angle = 90.0f;
+	float FoV_angle = 60.0f;
 	float nearPlane = 0.001f;
 	float farPlane = 1000.0f;
 	XMMATRIX globalProj = XMMatrixPerspectiveFovLH(degToRad(FoV_angle), hWndWidth / hWndHeight, nearPlane, farPlane);

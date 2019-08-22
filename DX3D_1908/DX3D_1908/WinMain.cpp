@@ -148,7 +148,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		//	Gfx->globalProj = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
 		//}
 		//else if ((char)wParam == 'r') // Fov narrower // zoom in
-		if (Gfx->FoV_angle <= 120 && Gfx->FoV_angle >= 30)
+		if (Gfx->FoV_angle <= 90 && Gfx->FoV_angle >= 30)
 		{
 			float direction = GET_WHEEL_DELTA_WPARAM(wParam) * 0.01f;
 			Gfx->FoV_angle += direction;
@@ -156,7 +156,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		else
 		{
-			if (Gfx->FoV_angle > 120) Gfx->FoV_angle -= 0.01f;
+			if (Gfx->FoV_angle > 90) Gfx->FoV_angle -= 0.01f;
 			else if (Gfx->FoV_angle < 30) Gfx->FoV_angle += 0.01f;
 		}
 	}

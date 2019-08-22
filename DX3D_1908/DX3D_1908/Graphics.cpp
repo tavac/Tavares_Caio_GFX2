@@ -65,7 +65,11 @@ Graphics::~Graphics()
 
 #pragma region InitCalls
 #pragma region Mesh/Texture/File IO
-void Graphics::LoadMesh(std::string fileName, const wchar_t* textureFile, float mesh_scale, std::vector<gMesh*>& meshArr, UINT meshIndex)
+void Graphics::CreateFloor(std::vector<gMesh*>& meshVec, UINT meshIndex)
+{
+
+}
+void Graphics::LoadMesh(std::string fileName, const wchar_t* textureFile, float mesh_scale, std::vector<gMesh*>& meshArr, UINT meshIndex, bool isSkybox)
 {
 	if (meshArr.size() <= meshIndex) // If empty, fill.
 	{
@@ -104,12 +108,13 @@ void Graphics::LoadMesh(std::string fileName, const wchar_t* textureFile, float 
 		//ProcessFBXMesh(lScene->GetRootNode(), meshArr[meshIndex]);
 		ProcessFBXMesh(lScene->GetRootNode(), tmpMesh);
 		meshArr.push_back(tmpMesh);
-		numOfMeshs++;
+		meshArr[meshIndex]->isSkybox = isSkybox;
 
 		// TEXTURE LOADING///////////////////////
 		HRESULT res = CreateDDSTextureFromFile(gDev.Get(), textureFile, nullptr, &meshArr[meshIndex]->shaderRV);
 		if (FAILED(res))
 			ToolBox::ThrowErrorMsg("CreateDDSTextureFromFile() Failed In LoadMesh!");
+		numOfMeshs++;
 	}
 	else
 	{
@@ -159,9 +164,9 @@ void Graphics::ProcessFBXMesh(FbxNode* Node, gMesh* gmesh)
 			for (int j = 0; j < gmesh->numVertices; j++)
 			{
 				FbxVector4 vert = mesh->GetControlPointAt(j);
-				gmesh->verts[j].pos.x = (float)vert.mData[0] / gmesh->scale;
-				gmesh->verts[j].pos.y = (float)vert.mData[1] / gmesh->scale;
-				gmesh->verts[j].pos.z = (float)vert.mData[2] / gmesh->scale;
+				gmesh->verts[j].pos.x = (float)vert.mData[0] * gmesh->scale;
+				gmesh->verts[j].pos.y = (float)vert.mData[1] * gmesh->scale;
+				gmesh->verts[j].pos.z = (float)vert.mData[2] * gmesh->scale;
 				gmesh->verts[j].pos.w = 1.0f;
 				// Generate random normal
 				//verts[j].Normal = RAND_NORMAL;
@@ -401,8 +406,8 @@ void Graphics::TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode, gMesh* gmes
 						i++;
 					}
 					OutputDebugString(t.c_str());
-					//HRESULT res = CreateDDSTextureFromFile(gDev.Get(), (const wchar_t*)txtname, nullptr, &shaderRV);
-					HRESULT res = CreateDDSTextureFromFile(gDev.Get(), L"Crate.dds", nullptr, &gmesh->shaderRV);
+					HRESULT res = CreateDDSTextureFromFile(gDev.Get(), (const wchar_t*)txtname, nullptr, &gmesh->shaderRV);
+					//HRESULT res = CreateDDSTextureFromFile(gDev.Get(), L"Crate.dds", nullptr, &gmesh->shaderRV);
 					//const wchar_t* textureName = (const wchar_t*)texture->GetFileName();
 					//HRESULT res = CreateDDSTextureFromFile(gDev.Get(), textureName, nullptr, &shaderRV);
 					//pTextureName = (char*)textureName;
@@ -415,99 +420,6 @@ void Graphics::TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode, gMesh* gmes
 			}
 		}
 	}
-}
-void Graphics::CreateSkyBox(ID3D11Device* gpDev, std::vector<gMesh*>& meshArr, const wchar_t* textureFile)
-{
-	int* indices = new int[36];
-	gVertex* verts = new gVertex[24];
-	
-#pragma region verts and normals
-	// Front Face
-	verts[0].pos = { -.25f, .25f,-.25f, 1.0f };	// top left	  
-	verts[1].pos = { .25f, .25f,-.25f, 1.0f };	// top right  
-	verts[2].pos = { -.25f,-.25f,-.25f, 1.0f };	// bot left	  
-	verts[3].pos = { .25f,-.25f,-.25f, 1.0f };	// bot right  
-	
-	verts[0].norm = { 0.0f, 0.0f, 1.0f, 0.0f };	// top left
-	verts[1].norm = { 0.0f, 0.0f, 1.0f, 0.0f };	// top right
-	verts[2].norm = { 0.0f, 0.0f, 1.0f, 0.0f };	// bot left
-	verts[3].norm = { 0.0f, 0.0f, 1.0f, 0.0f };	// bot right
-	//right Face
-	verts[4].pos = { .25f, .25f, -.25f, 1.0f };	// top left
-	verts[5].pos = { .25f, .25f,  .25f, 1.0f };	// top right
-	verts[6].pos = { .25f,-.25f, -.25f, 1.0f };	// bot left
-	verts[7].pos = { .25f,-.25f,  .25f, 1.0f };	// bot right
-	
-	verts[4].norm = { 1.0f,0.0f, 0.0f, 0.0f };	// top left
-	verts[5].norm = { 1.0f,0.0f, 0.0f, 0.0f };	// top right
-	verts[6].norm = { 1.0f,0.0f, 0.0f, 0.0f };	// bot left
-	verts[7].norm = { 1.0f,0.0f, 0.0f, 0.0f };	// bot right
-	//left Face
-	verts[8].pos = { -.25f, .25f, .25f, 1.0f }; // top left
-	verts[9].pos = { -.25f, .25f,-.25f, 1.0f }; // top right
-	verts[10].pos = { -.25f,-.25f, .25f, 1.0f }; // bot left
-	verts[11].pos = { -.25f,-.25f,-.25f, 1.0f }; // bot right
-	
-	verts[8].norm = { 1.0f,0.0f,0.0f, 0.0f };	// top left
-	verts[9].norm = { 1.0f,0.0f,0.0f, 0.0f };	// top right
-	verts[10].norm = { 1.0f,0.0f,0.0f, 0.0f };	// bot left
-	verts[11].norm = { 1.0f,0.0f,0.0f, 0.0f };	// bot right
-	//back Face
-	verts[12].pos = { .25f, .25f, .25f, 1.0f };	// top left
-	verts[13].pos = { -.25f, .25f, .25f, 1.0f };// top right
-	verts[14].pos = { .25f,-.25f, .25f, 1.0f };	// bot left
-	verts[15].pos = { -.25f,-.25f, .25f, 1.0f };// bot right
-	
-	verts[12].norm = { 0.0f,0.0f,-1.0f, 0.0f };	// top left
-	verts[13].norm = { 0.0f,0.0f,-1.0f, 0.0f };	// top right
-	verts[14].norm = { 0.0f,0.0f,-1.0f, 0.0f };	// bot left
-	verts[15].norm = { 0.0f,0.0f,-1.0f, 0.0f };	// bot right
-	//top Face
-	verts[16].pos = { -.25f, .25f, .25f, 1.0f };// top left
-	verts[17].pos = { .25f, .25f, .25f, 1.0f };	// top right
-	verts[18].pos = { -.25f, .25f,-.25f, 1.0f };// bot left
-	verts[19].pos = { .25f, .25f,-.25f, 1.0f };	// bot right
-	
-	verts[16].norm = { 0.0f, -1.0f,0.0f, 0.0f };// top left
-	verts[17].norm = { 0.0f, -1.0f,0.0f, 0.0f };// top right
-	verts[18].norm = { 0.0f, -1.0f,0.0f, 0.0f };// bot left
-	verts[19].norm = { 0.0f, -1.0f,0.0f, 0.0f };// bot right
-	//bottom Face
-	verts[20].pos = { -.25f,-.25f, .25f, 1.0f };// top left
-	verts[21].pos = { .25f,-.25f, .25f, 1.0f };	// top right
-	verts[22].pos = { -.25f,-.25f,-.25f, 1.0f };// bot left
-	verts[23].pos = { .25f,-.25f,-.25f, 1.0f };	// bot right
-	
-	verts[20].norm = { 0.0f,-.1f,0.0f, 0.0f };	// top left
-	verts[21].norm = { 0.0f,-.1f,0.0f, 0.0f };	// top right
-	verts[22].norm = { 0.0f,-.1f,0.0f, 0.0f };	// bot left
-	verts[23].norm = { 0.0f,-.1f,0.0f, 0.0f };	// bot right
-#pragma endregion
-
-#pragma region Indices
-	for (int i = 0; i < 36; i+=4)
-	{
-		indices[i] = i+0;
-		indices[i] = i+2;
-		indices[i] = i+1;
-		indices[i] = i+1;
-		indices[i] = i+2;
-		indices[i] = i+3;
-	}
-#pragma endregion
-	gMesh* nM = new gMesh();
-	nM->verts = verts;
-	nM->numVertices = 24;
-	nM->indices = indices;
-	nM->numIndices = 36;
-	nM->scale = 1.0f;
-	meshArr.push_back(nM);
-	numOfMeshs++;
-
-	HRESULT res = CreateDDSTextureFromFile(gDev.Get(), textureFile, nullptr, &meshArr[0]->shaderRV);
-	if (FAILED(res))
-		ToolBox::ThrowErrorMsg("CreateDDSTextureFromFile() Failed In LoadMesh!");
-
 }
 #pragma endregion
 HRESULT Graphics::CreateBuffers(std::vector<gMesh*>& meshArr)
@@ -571,8 +483,6 @@ HRESULT Graphics::CreateBuffers(std::vector<gMesh*>& meshArr)
 				return hr;
 			}
 		}
-
-
 		/////////////////// Creating sample state ///////////////////
 		D3D11_SAMPLER_DESC texDes;
 		texDes.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -635,32 +545,59 @@ HRESULT Graphics::CreateShaders(std::vector<gMesh*>& meshVec)
 	HRESULT hr;
 	for (UINT i = 0; i < meshVec.size(); i++)
 	{
-		if (meshVec[i]->gBlob != nullptr)
+		//if (meshVec[i]->gBlob != nullptr)
+		//{
+		//	meshVec[i]->gBlob.Reset();
+		//	meshVec[i]->gBlob = nullptr;
+		//}
+		if (meshVec[i]->isSkybox)
 		{
-			meshVec[i]->gBlob.Reset();
-			meshVec[i]->gBlob = nullptr;
+			//////////////////// create pixel shader ////////////////////
+			D3DReadFileToBlob(L"PixelShaderSkyBox.cso", meshVec[i]->gBlob.GetAddressOf());
+			hr = gDev->CreatePixelShader(meshVec[i]->gBlob->GetBufferPointer(), meshVec[i]->gBlob->GetBufferSize(), nullptr, meshVec[i]->gPixelShader.GetAddressOf());
+			if (FAILED(hr))
+			{
+				ToolBox::ThrowErrorMsg("CreatePixelShader Failed in InitDevice");
+				return hr;
+			}
 		}
-		//////////////////// create pixel shader ////////////////////
-		D3DReadFileToBlob(L"PixelShader.cso", meshVec[i]->gBlob.GetAddressOf());
-		hr = gDev->CreatePixelShader(meshVec[i]->gBlob->GetBufferPointer(), meshVec[i]->gBlob->GetBufferSize(), nullptr, meshVec[i]->gPixelShader.GetAddressOf());
-		if (FAILED(hr))
+		else
 		{
-			ToolBox::ThrowErrorMsg("CreatePixelShader Failed in InitDevice");
-			return hr;
+			//////////////////// create pixel shader ////////////////////
+			D3DReadFileToBlob(L"PixelShader.cso", meshVec[i]->gBlob.GetAddressOf());
+			hr = gDev->CreatePixelShader(meshVec[i]->gBlob->GetBufferPointer(), meshVec[i]->gBlob->GetBufferSize(), nullptr, meshVec[i]->gPixelShader.GetAddressOf());
+			if (FAILED(hr))
+			{
+				ToolBox::ThrowErrorMsg("CreatePixelShader Failed in InitDevice");
+				return hr;
+			}
 		}
 
 		///////////////////// bind pixel shader /////////////////////
 		gCon->PSSetShader(meshVec[i]->gPixelShader.Get(), nullptr, 0u);
 
-		/////////////////// create vertex shader ///////////////////
-		D3DReadFileToBlob(L"VertexShader.cso", meshVec[i]->gBlob.GetAddressOf());
-		hr = gDev->CreateVertexShader(meshVec[i]->gBlob->GetBufferPointer(), meshVec[i]->gBlob->GetBufferSize(), nullptr, meshVec[i]->gVertexShader.GetAddressOf());
-		if (FAILED(hr))
+		if (meshVec[i]->isSkybox)
 		{
-			ToolBox::ThrowErrorMsg("CreateVertexShader Failed in InitDevice");
-			return hr;
+			/////////////////// create vertex shader ///////////////////
+			D3DReadFileToBlob(L"VertexShaderSkybox.cso", meshVec[i]->gBlob.GetAddressOf());
+			hr = gDev->CreateVertexShader(meshVec[i]->gBlob->GetBufferPointer(), meshVec[i]->gBlob->GetBufferSize(), nullptr, meshVec[i]->gVertexShader.GetAddressOf());
+			if (FAILED(hr))
+			{
+				ToolBox::ThrowErrorMsg("CreateVertexShader Failed in InitDevice");
+				return hr;
+			}
 		}
-
+		else
+		{		
+			/////////////////// create vertex shader ///////////////////
+			D3DReadFileToBlob(L"VertexShader.cso", meshVec[i]->gBlob.GetAddressOf());
+			hr = gDev->CreateVertexShader(meshVec[i]->gBlob->GetBufferPointer(), meshVec[i]->gBlob->GetBufferSize(), nullptr, meshVec[i]->gVertexShader.GetAddressOf());
+			if (FAILED(hr))
+			{
+				ToolBox::ThrowErrorMsg("CreateVertexShader Failed in InitDevice");
+				return hr;
+			}
+		}
 		/////////////////////// bind vertex ///////////////////////
 		gCon->VSSetShader(meshVec[i]->gVertexShader.Get(), nullptr, 0u);
 
@@ -834,9 +771,10 @@ HRESULT Graphics::InitDevice()
 	//LoadMesh("SpaceShip_1.fbx", 1.0f, gppMesh, 0);
 	//LoadMesh("Desk_0.fbx", L"carbonfiber.dds", 1.0f, &gppMesh, 0);
 	//LoadMesh("Cube.fbx", L"Crate.dds", 0.5f, gppMesh, 0);
-	CreateSkyBox(gDev.Get(), gppMesh);
-	LoadMesh("Desk_1.fbx", L"carbonfiber.dds", 1.0f, gppMesh, 1);
-	LoadMesh("SpaceShip_3.fbx", L"carbonfiber.dds", 40.0f, gppMesh, 2);
+	//CreateSkyBox(gDev.Get(), gppMesh);
+	LoadMesh("ReverseCube.fbx", L"Skybox.dds", farPlane, gppMesh, numOfMeshs, true);
+	LoadMesh("Desk_1.fbx", L"carbonfiber.dds", 1.0f, gppMesh, numOfMeshs, false);
+	LoadMesh("SpaceShip_3.fbx", L"carbonfiber.dds", 0.04f, gppMesh, numOfMeshs, false);
 #pragma endregion
 
 #pragma region Create_Buffers
@@ -946,9 +884,9 @@ void Graphics::Render()
 #pragma region Update Constant Buffer
 	XMFLOAT4A move, rotate;
 
-	//move = camPos;
+	move = camPos;
 	//XMStoreFloat4A(&rotate, XMVector4Transform(XMVectorSet(0, 1, 0, 0), Camera));
-	move = XMFLOAT4A(0.0f, 0.0f, 10.0f, 0.0f);
+	//move = XMFLOAT4A(0.0f, 0.0f, 10.0f, 0.0f);
 	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
 	UpdateConstantBuffer(gppMesh[0], move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[0]->numIndices, 0u, 0);
