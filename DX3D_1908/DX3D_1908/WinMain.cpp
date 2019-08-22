@@ -25,7 +25,6 @@ float screenRatio;
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 WNDCLASSEX Init_WindowClass(const char* _className, HINSTANCE _hInst);
 HWND Init_Window(int _width, int _height, std::string _title, WNDCLASSEX* _WndClass);
-void ModelDraw_Switch(int nextModelToLoad);
 #pragma endregion
 
 int CALLBACK WinMain(

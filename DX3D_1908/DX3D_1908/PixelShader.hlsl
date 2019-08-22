@@ -69,23 +69,23 @@ float4 main(PS_Input psIn) : SV_TARGET
     float attenutation = 1.0f - saturate((length(PL_pos.xyz - psIn.wPos.xyz) / 50.0f));
     LightRatio = (attenutation * attenutation) * LightRatio;
    //outie += lerp(float4(0, 0, 0, 0), PL_color /** sin(vDTime * 2)*/, LightRatio);
-    outie += LightRatio * PL_color;
+    //outie += LightRatio * PL_color;
     //}
-    ///////////////// Specular Formula ///////////////
-    //float3 viewdir = normalize(vView._14_24_34 - psIn.wPos.xyz);
-    //float3 halfVec = normalize((-PL_pos.xyz) + viewdir);
-    //float intensity = max(clamp(psIn.norm.xyz, normalize(halfVec), 2.0f), 0);
-    //outie += PL_color * 2.5f * intensity * LightRatio;
-    //////////////////////////////////////////////////
+    /////////////// Specular Formula ///////////////
+    float3 viewdir = normalize(vView._14_24_34 - psIn.wPos.xyz);
+    float3 halfVec = normalize((-PL_pos.xyz) + viewdir);
+    float intensity = max(clamp(psIn.norm.xyz, normalize(halfVec), 2.0f), 0);
+    outie += PL_color * 2.5f * intensity * LightRatio;
+    ////////////////////////////////////////////////
    ////////////////////////////////////////
 
     ////////////// Spot Light ////////////////
     float innerRatio = SL_dir.w;
-    float outerRatio = innerRatio - 0.15f;
+    float outerRatio = innerRatio - 0.05f;
     float3 toLight = SL_pos.xyz - psIn.wPos.xyz; // vector from pixel to Light
     float distance = length(toLight); // length of vector
     toLight = (toLight / distance); // normalizing the toLight vector
-    float AngAtten = saturate(dot(-toLight, psIn.norm.xyz)); // angle between vector to the light from surface and the normal of the surface where 1.0 is directly at the light
+    float AngAtten = saturate(dot(toLight, psIn.norm.xyz)); // angle between vector to the light from surface and the normal of the surface where 1.0 is directly at the light
     float spotDot = saturate(dot(-toLight, SL_dir.xyz)); // 
     float spotAtten = saturate(((innerRatio) - (spotDot)) / ((innerRatio) - (outerRatio)));
     spotAtten -= 1.0f;

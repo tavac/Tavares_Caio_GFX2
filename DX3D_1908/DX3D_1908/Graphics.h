@@ -67,7 +67,7 @@ public:
 		Spot
 	};
 
-	HRESULT CreateLightBuffers(ID3D11Device& gpDev,
+	HRESULT CreateLightBuffers(ID3D11Device* gpDev,
 		wrl::ComPtr<ID3D11Buffer>* gpDLightBuffer,
 		wrl::ComPtr<ID3D11Buffer>* gpPLightBuffer,
 		wrl::ComPtr<ID3D11Buffer>* gpSLightBuffer);
@@ -88,10 +88,10 @@ public:
 	void ProcessFBXMesh(FbxNode* Node, gMesh* mesh); // Join with ProcessOBJMesh to make a template type mesh loader
 	void LoadUVFromFBX(FbxMesh* pMesh, std::vector<XMFLOAT2>* pVecUV);
 	void TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode, gMesh* gmesh); // This requires the model to have been made with a .dds file
-	//void ProcessOBJMesh(_OBJ_VERT_ ov[], int size); // Join with ProcessFBXMesh
-	////
+
+	void CreateSkyBox(ID3D11Device* gpDev, std::vector<gMesh*>& meshArr);
 	void CleanFrameBuffers(XMVECTORF32 DXCOLOR = Colors::Silver);
-	void UpdateConstantBuffer(gMesh* mesh, float cbTranslate[3], float cbRotate[3]);
+	void UpdateConstantBuffer(gMesh* mesh, XMFLOAT4A cbTranslate, XMFLOAT4A cbRotate);
 
 	void LoadMesh(std::string fileName, const wchar_t* textureFile, float mesh_scale, std::vector<gMesh*>& meshArr, UINT meshIndex);
 	HRESULT CreateShaders(std::vector<gMesh*>& meshVec);
@@ -131,6 +131,6 @@ public:
 	float FoV_angle = 90.0f;
 	float nearPlane = 0.001f;
 	float farPlane = 1000.0f;
-	XMMATRIX globalProj = XMMatrixPerspectiveFovLH((FoV_angle * (3.1415f / 180.0f)), 1280.0f / 720.0f, nearPlane, farPlane);
+	XMMATRIX globalProj = XMMatrixPerspectiveFovLH(degToRad(FoV_angle), hWndWidth / hWndHeight, nearPlane, farPlane);
 #pragma endregion
 };

@@ -15,10 +15,6 @@
 #include <fbxsdk.h>
 #include <vector>
 #include "DDSTextureLoader.h"
-
-#pragma region OBJ headers
-#include "Grail.h"
-#pragma endregion
 #pragma endregion
 
 #pragma region FROM WINDOWS_CPP

@@ -63,7 +63,6 @@ Graphics::~Graphics()
 }
 #pragma endregion
 
-
 #pragma region InitCalls
 #pragma region Mesh/Texture/File IO
 void Graphics::LoadMesh(std::string fileName, const wchar_t* textureFile, float mesh_scale, std::vector<gMesh*>& meshArr, UINT meshIndex)
@@ -417,6 +416,99 @@ void Graphics::TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode, gMesh* gmes
 		}
 	}
 }
+void Graphics::CreateSkyBox(ID3D11Device* gpDev, std::vector<gMesh*>& meshArr, const wchar_t* textureFile)
+{
+	int* indices = new int[36];
+	gVertex* verts = new gVertex[24];
+	
+#pragma region verts and normals
+	// Front Face
+	verts[0].pos = { -.25f, .25f,-.25f, 1.0f };	// top left	  
+	verts[1].pos = { .25f, .25f,-.25f, 1.0f };	// top right  
+	verts[2].pos = { -.25f,-.25f,-.25f, 1.0f };	// bot left	  
+	verts[3].pos = { .25f,-.25f,-.25f, 1.0f };	// bot right  
+	
+	verts[0].norm = { 0.0f, 0.0f, 1.0f, 0.0f };	// top left
+	verts[1].norm = { 0.0f, 0.0f, 1.0f, 0.0f };	// top right
+	verts[2].norm = { 0.0f, 0.0f, 1.0f, 0.0f };	// bot left
+	verts[3].norm = { 0.0f, 0.0f, 1.0f, 0.0f };	// bot right
+	//right Face
+	verts[4].pos = { .25f, .25f, -.25f, 1.0f };	// top left
+	verts[5].pos = { .25f, .25f,  .25f, 1.0f };	// top right
+	verts[6].pos = { .25f,-.25f, -.25f, 1.0f };	// bot left
+	verts[7].pos = { .25f,-.25f,  .25f, 1.0f };	// bot right
+	
+	verts[4].norm = { 1.0f,0.0f, 0.0f, 0.0f };	// top left
+	verts[5].norm = { 1.0f,0.0f, 0.0f, 0.0f };	// top right
+	verts[6].norm = { 1.0f,0.0f, 0.0f, 0.0f };	// bot left
+	verts[7].norm = { 1.0f,0.0f, 0.0f, 0.0f };	// bot right
+	//left Face
+	verts[8].pos = { -.25f, .25f, .25f, 1.0f }; // top left
+	verts[9].pos = { -.25f, .25f,-.25f, 1.0f }; // top right
+	verts[10].pos = { -.25f,-.25f, .25f, 1.0f }; // bot left
+	verts[11].pos = { -.25f,-.25f,-.25f, 1.0f }; // bot right
+	
+	verts[8].norm = { 1.0f,0.0f,0.0f, 0.0f };	// top left
+	verts[9].norm = { 1.0f,0.0f,0.0f, 0.0f };	// top right
+	verts[10].norm = { 1.0f,0.0f,0.0f, 0.0f };	// bot left
+	verts[11].norm = { 1.0f,0.0f,0.0f, 0.0f };	// bot right
+	//back Face
+	verts[12].pos = { .25f, .25f, .25f, 1.0f };	// top left
+	verts[13].pos = { -.25f, .25f, .25f, 1.0f };// top right
+	verts[14].pos = { .25f,-.25f, .25f, 1.0f };	// bot left
+	verts[15].pos = { -.25f,-.25f, .25f, 1.0f };// bot right
+	
+	verts[12].norm = { 0.0f,0.0f,-1.0f, 0.0f };	// top left
+	verts[13].norm = { 0.0f,0.0f,-1.0f, 0.0f };	// top right
+	verts[14].norm = { 0.0f,0.0f,-1.0f, 0.0f };	// bot left
+	verts[15].norm = { 0.0f,0.0f,-1.0f, 0.0f };	// bot right
+	//top Face
+	verts[16].pos = { -.25f, .25f, .25f, 1.0f };// top left
+	verts[17].pos = { .25f, .25f, .25f, 1.0f };	// top right
+	verts[18].pos = { -.25f, .25f,-.25f, 1.0f };// bot left
+	verts[19].pos = { .25f, .25f,-.25f, 1.0f };	// bot right
+	
+	verts[16].norm = { 0.0f, -1.0f,0.0f, 0.0f };// top left
+	verts[17].norm = { 0.0f, -1.0f,0.0f, 0.0f };// top right
+	verts[18].norm = { 0.0f, -1.0f,0.0f, 0.0f };// bot left
+	verts[19].norm = { 0.0f, -1.0f,0.0f, 0.0f };// bot right
+	//bottom Face
+	verts[20].pos = { -.25f,-.25f, .25f, 1.0f };// top left
+	verts[21].pos = { .25f,-.25f, .25f, 1.0f };	// top right
+	verts[22].pos = { -.25f,-.25f,-.25f, 1.0f };// bot left
+	verts[23].pos = { .25f,-.25f,-.25f, 1.0f };	// bot right
+	
+	verts[20].norm = { 0.0f,-.1f,0.0f, 0.0f };	// top left
+	verts[21].norm = { 0.0f,-.1f,0.0f, 0.0f };	// top right
+	verts[22].norm = { 0.0f,-.1f,0.0f, 0.0f };	// bot left
+	verts[23].norm = { 0.0f,-.1f,0.0f, 0.0f };	// bot right
+#pragma endregion
+
+#pragma region Indices
+	for (int i = 0; i < 36; i+=4)
+	{
+		indices[i] = i+0;
+		indices[i] = i+2;
+		indices[i] = i+1;
+		indices[i] = i+1;
+		indices[i] = i+2;
+		indices[i] = i+3;
+	}
+#pragma endregion
+	gMesh* nM = new gMesh();
+	nM->verts = verts;
+	nM->numVertices = 24;
+	nM->indices = indices;
+	nM->numIndices = 36;
+	nM->scale = 1.0f;
+	meshArr.push_back(nM);
+	numOfMeshs++;
+
+	HRESULT res = CreateDDSTextureFromFile(gDev.Get(), textureFile, nullptr, &meshArr[0]->shaderRV);
+	if (FAILED(res))
+		ToolBox::ThrowErrorMsg("CreateDDSTextureFromFile() Failed In LoadMesh!");
+
+}
 #pragma endregion
 HRESULT Graphics::CreateBuffers(std::vector<gMesh*>& meshArr)
 {
@@ -471,7 +563,7 @@ HRESULT Graphics::CreateBuffers(std::vector<gMesh*>& meshArr)
 			buffdesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 			buffdesc.CPUAccessFlags = 0;
 			D3D11_SUBRESOURCE_DATA subData = {};
-			subData.pSysMem = gppMesh[index]->indices;	
+			subData.pSysMem = gppMesh[index]->indices;
 			hr = gDev->CreateBuffer(&buffdesc, &subData, meshArr[index]->gIndexBuffer.GetAddressOf());
 			if (FAILED(hr))
 			{
@@ -497,10 +589,10 @@ HRESULT Graphics::CreateBuffers(std::vector<gMesh*>& meshArr)
 	}
 	return S_OK;
 }
-HRESULT Graphics::CreateLightBuffers(ID3D11Device& gpDev,
-									 wrl::ComPtr<ID3D11Buffer>* gpDLightBuffer,
-									 wrl::ComPtr<ID3D11Buffer>* gpPLightBuffer,
-									 wrl::ComPtr<ID3D11Buffer>* gpSLightBuffer)
+HRESULT Graphics::CreateLightBuffers(ID3D11Device* gpDev,
+	wrl::ComPtr<ID3D11Buffer>* gpDLightBuffer,
+	wrl::ComPtr<ID3D11Buffer>* gpPLightBuffer,
+	wrl::ComPtr<ID3D11Buffer>* gpSLightBuffer)
 {
 	HRESULT hr;
 	D3D11_BUFFER_DESC buffdesc = {};
@@ -511,7 +603,7 @@ HRESULT Graphics::CreateLightBuffers(ID3D11Device& gpDev,
 	buffdesc.ByteWidth = sizeof(gLightBuff);
 	buffdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	buffdesc.CPUAccessFlags = 0;
-	hr = gpDev.CreateBuffer(&buffdesc, nullptr, gpDLightBuffer->GetAddressOf());
+	hr = gpDev->CreateBuffer(&buffdesc, nullptr, gpDLightBuffer->GetAddressOf());
 	if (FAILED(hr))
 		return hr;
 
@@ -521,7 +613,7 @@ HRESULT Graphics::CreateLightBuffers(ID3D11Device& gpDev,
 	buffdesc.ByteWidth = sizeof(gLightBuff);
 	buffdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	buffdesc.CPUAccessFlags = 0;
-	hr = gpDev.CreateBuffer(&buffdesc, nullptr, gpPLightBuffer->GetAddressOf());
+	hr = gpDev->CreateBuffer(&buffdesc, nullptr, gpPLightBuffer->GetAddressOf());
 	if (FAILED(hr))
 		return hr;
 
@@ -531,7 +623,7 @@ HRESULT Graphics::CreateLightBuffers(ID3D11Device& gpDev,
 	buffdesc.ByteWidth = sizeof(gLightBuff);
 	buffdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	buffdesc.CPUAccessFlags = 0;
-	hr = gpDev.CreateBuffer(&buffdesc, nullptr, gpSLightBuffer->GetAddressOf());
+	hr = gpDev->CreateBuffer(&buffdesc, nullptr, gpSLightBuffer->GetAddressOf());
 	if (FAILED(hr))
 		return hr;
 
@@ -619,21 +711,8 @@ void Graphics::CleanFrameBuffers(XMVECTORF32 DXCOLOR)
 {
 	gCon->ClearRenderTargetView(gRtv.Get(), DXCOLOR);
 	gCon->ClearDepthStencilView(gDsv.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
-	//for (int i = 0; i < gppMesh.size(); i++)
-	//{
-	//	//gppMesh[i]->gConstantBuffer.Reset();
-	//	gppMesh[i]->gIndexBuffer.Reset();
-	//	gppMesh[i]->gInputLayout.Reset();
-	//	gppMesh[i]->gVertBuffer.Reset();
-	//	//gppMesh[i]->gVertexShader.Reset();
-		//gppMesh[i]->gConstantBuffer = nullptr;
-	//	gppMesh[i]->gIndexBuffer = nullptr;
-	//	gppMesh[i]->gInputLayout = nullptr;
-	//	gppMesh[i]->gVertBuffer = nullptr;
-	//	//gppMesh[i]->gVertexShader = nullptr;
-	//}
 }
-void Graphics::UpdateConstantBuffer(gMesh* mesh, float cbTranslate[3], float cbRotate[3])
+void Graphics::UpdateConstantBuffer(gMesh* mesh, XMFLOAT4A cbTranslate, XMFLOAT4A cbRotate)
 {
 	//////////////////// Bind Index Buffer ////////////////////
 	gCon->IASetIndexBuffer(mesh->gIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
@@ -645,13 +724,13 @@ void Graphics::UpdateConstantBuffer(gMesh* mesh, float cbTranslate[3], float cbR
 
 	// This sends World,View,Proj,AmbientLight through the shaders.
 	gConstantBuff gCB;
-	globalWorld = XMMatrixTranslation(cbTranslate[0], cbTranslate[1], cbTranslate[2]);
-	if (cbRotate[0] != 0)
-		globalWorld = XMMatrixMultiply(XMMatrixRotationAxis({ 1,0,0 }, degToRad(cbRotate[0])), globalWorld);
-	if (cbRotate[1] != 0)
-		globalWorld = XMMatrixMultiply(XMMatrixRotationAxis({ 0,1,0 }, degToRad(cbRotate[1])), globalWorld);
-	if (cbRotate[2] != 0)
-		globalWorld = XMMatrixMultiply(XMMatrixRotationAxis({ 0,0,1 }, degToRad(cbRotate[2])), globalWorld);
+	globalWorld = XMMatrixTranslation(cbTranslate.x, cbTranslate.y, cbTranslate.z);
+	if (cbRotate.x != 0)
+		globalWorld = XMMatrixMultiply(XMMatrixRotationAxis({ 1,0,0 }, degToRad(cbRotate.x)), globalWorld);
+	if (cbRotate.y != 0)
+		globalWorld = XMMatrixMultiply(XMMatrixRotationAxis({ 0,1,0 }, degToRad(cbRotate.y)), globalWorld);
+	if (cbRotate.z != 0)
+		globalWorld = XMMatrixMultiply(XMMatrixRotationAxis({ 0,0,1 }, degToRad(cbRotate.z)), globalWorld);
 
 	gCB.world = XMMatrixTranspose(globalWorld);
 	gCB.view = XMMatrixTranspose(globalView);
@@ -753,17 +832,18 @@ HRESULT Graphics::InitDevice()
 	//LoadMesh("Tester.fbx", 1.0f, gppMesh, 0);
 	//LoadMesh("NewDragon.fbx",10.0f, gppMesh, 0);
 	//LoadMesh("SpaceShip_1.fbx", 1.0f, gppMesh, 0);
-	//LoadMesh("SpaceShip_3.fbx", 0.5f, gppMesh, 0);
 	//LoadMesh("Desk_0.fbx", L"carbonfiber.dds", 1.0f, &gppMesh, 0);
-	LoadMesh("Desk_1.fbx", L"carbonfiber.dds", 1.0f, gppMesh, 0);
-	LoadMesh("Cube.fbx", L"Crate.dds", 50.0f, gppMesh, 1);
+	//LoadMesh("Cube.fbx", L"Crate.dds", 0.5f, gppMesh, 0);
+	CreateSkyBox(gDev.Get(), gppMesh);
+	LoadMesh("Desk_1.fbx", L"carbonfiber.dds", 1.0f, gppMesh, 1);
+	LoadMesh("SpaceShip_3.fbx", L"carbonfiber.dds", 40.0f, gppMesh, 2);
 #pragma endregion
 
 #pragma region Create_Buffers
 	CreateBuffers(gppMesh);
 
 	//////////////// Light Buffer ///////////////////
-	hr = CreateLightBuffers(*gDev.Get(), &gDLightBuffer, &gPLightBuffer, &gSLightBuffer);
+	hr = CreateLightBuffers(gDev.Get(), &gDLightBuffer, &gPLightBuffer, &gSLightBuffer);
 	if (FAILED(hr))
 	{
 		ToolBox::ThrowErrorMsg("CreateLightBuffers Failed in InitDevice");
@@ -771,12 +851,11 @@ HRESULT Graphics::InitDevice()
 	}
 #pragma endregion
 
-#pragma region Create Geometry / Vertex / PixelShaders
-
+#pragma region Create Geometry,Vertex,PixelShaders,InputLayout
 	CreateShaders(gppMesh);
 
-#pragma endregion
 	CreateInputLayout(gppMesh);
+#pragma endregion
 
 #pragma region Views
 	// Set primitive topology to triangle list ( group of 3 verts)
@@ -809,7 +888,7 @@ HRESULT Graphics::InitDevice()
 		return hr;
 
 	//// bind render target
-	//gCon->OMSetRenderTargets(1, gRtv.GetAddressOf(), gDsv.Get());
+	gCon->OMSetRenderTargets(1, gRtv.GetAddressOf(), gDsv.Get());
 
 	//// configer viewport
 	////D3D11_VIEWPORT port_one;
@@ -843,65 +922,46 @@ HRESULT Graphics::InitDevice()
 }
 void Graphics::Render()
 {
-	// bind render target
-	gCon->OMSetRenderTargets(1, gRtv.GetAddressOf(), gDsv.Get());
-
-	//// configer viewport
-	//D3D11_VIEWPORT port_one;
-	//port_one.Width = 640.0f;
-	//port_one.Height = 720.0f;
-	//port_one.MinDepth = 0.0f;
-	//port_one.MaxDepth = 1.0f;
-	//port_one.TopLeftX = 0.0f;
-	//port_one.TopLeftY = 0.0f;
-	//  
-	//D3D11_VIEWPORT port_two;
-	//port_two.Width = 640.0f;
-	//port_two.Height = 720.0f;
-	//port_two.MinDepth = 0.0f;
-	//port_two.MaxDepth = 1.0f;
-	//port_two.TopLeftX = 640.0f;
-	//port_two.TopLeftY = 0.0f;
-	//
-	//D3D11_VIEWPORT vp[2] = { port_one, port_two };
-	//
-	//gCon->RSSetViewports(2u, vp);
-
 	float deltaT = (float)gTimer->TimeSinceTick(gTimer);
 	CleanFrameBuffers();
 
-
 #pragma region Lights
+
 	// SUN DIRECTIONAL LIGHT
 	updateDirectionLight(gCon.Get(), 0u, 1u, gDLightBuffer.Get(),
 		XMFLOAT4A(0.55f, 0.0f, 0.45f, 0.0f), XMFLOAT4A(0.65f, 0.45f, 0.0f, 1.0f));
 
 	// LAMP POINT LIGHT
 	updatePointLight(gCon.Get(), 0u, 1u, gPLightBuffer.Get(),
-		XMFLOAT4A(7.0f, 5.0f, 40.0f, 0.0f),
-		10.0f,
-		XMFLOAT4A(0.0f, 1.0f, 0.0f, 1.0f));
-	//XMFLOAT4A(sin(degToRad(deltaT) + 10), 45.0f, sin(degToRad(deltaT * 50.0f) + 10)
+		XMFLOAT4A(7.0f, 5.0f, 10.0f, 0.0f), 100.0f, XMFLOAT4A(0.0f, 1.0f, 0.0f, 1.0f));
 
 	// CAMREA SPOT LIGHT
-	XMFLOAT4A tmp_pos;
-	XMStoreFloat4A(&tmp_pos, Camera.r[3]);
-	XMFLOAT4A tmp_dir;
-	XMStoreFloat4A(&tmp_dir, XMVector4Transform(XMVectorSet(0, 0, 1, 0), Camera));
-	updateSpotLight(gCon.Get(), 0u, 1u, gSLightBuffer.Get(),
-		tmp_pos, tmp_dir, 0.9f, XMFLOAT4A(0.75f, 0.5f, 0.5f, 1.0f));
+	XMFLOAT4A camPos;
+	XMStoreFloat4A(&camPos, Camera.r[3]);
+	XMFLOAT4A camForwDir;
+	XMStoreFloat4A(&camForwDir, XMVector4Transform(XMVectorSet(0, 0, 1, 0), Camera));
+	updateSpotLight(gCon.Get(), 0u, 1u, gSLightBuffer.Get(), camPos, camForwDir, 0.9f, XMFLOAT4A(1.0f, 0.0f, 0.0f, 1.0f));
 #pragma endregion
 
 #pragma region Update Constant Buffer
-	float move[] = { 10.0f, 0.0f, 0.0f };
-	float rotate[] = { 0.0f, -90.0f, 0.0f };
+	XMFLOAT4A move, rotate;
+
+	//move = camPos;
+	//XMStoreFloat4A(&rotate, XMVector4Transform(XMVectorSet(0, 1, 0, 0), Camera));
+	move = XMFLOAT4A(0.0f, 0.0f, 10.0f, 0.0f);
+	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
 	UpdateConstantBuffer(gppMesh[0], move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[0]->numIndices, 0u, 0);
 
-	float move1[] = { -10.0f, 0.0f, 0.0f };
-	float rotate1[] = { 0.0f, 0.0f, 0.0f };
-	UpdateConstantBuffer(gppMesh[1], move1, rotate1);
+	move = XMFLOAT4A(10.0f, 0.0f, 0.0f, 0.0f);
+	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
+	UpdateConstantBuffer(gppMesh[1], move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[1]->numIndices, 0u, 0);
+
+	move = XMFLOAT4A(9.5f, 3.65f, -3.5f, 0.0f);
+	rotate = XMFLOAT4A(0.0f, -30.0f, 0.0f, 0.0f);
+	UpdateConstantBuffer(gppMesh[2], move, rotate);
+	gCon->DrawIndexed((UINT)gppMesh[2]->numIndices, 0u, 0);
 #pragma endregion
 
 	gSwap->Present(1u, 0u);

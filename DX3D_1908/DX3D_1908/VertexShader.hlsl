@@ -55,8 +55,8 @@ VS_Output main(VS_Input vsIn)
 	vsOut.pos = mul(vsIn.pos, vWorld);
 	vsOut.wPos = mul(vsIn.pos, vWorld);
 
-    vsOut.norm = normalize(mul(vsIn.pos, vWorld));
-
+    vsOut.norm = normalize(mul(vsIn.norm, vWorld));
+    vsOut.norm.w = 0;
     vsOut.pos = mul(vsOut.pos, vView);
 	vsOut.pos = mul(vsOut.pos, vProj);
     vsOut.color = vsIn.color;
