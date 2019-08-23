@@ -1,0 +1,12 @@
+Graphics 2 - Debugging Notes
+
+Issue:
+  Lights not working at all positions.
+Hypothesis:
+  Directions or Normals are not being passed into the shaders correctly.
+Things done to fix issue:
+  In Pixel Shader:
+    -dot was taking light direction instead of -lightdirection.
+    -ps_in norm was wrong. showed -X rather than +Y.
+
+**ps_in norm.w needed to be set to 0 before multing to world**

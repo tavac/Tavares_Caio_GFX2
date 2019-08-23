@@ -41,43 +41,44 @@ struct PS_Input
 
 float4 main(PS_Input psIn) : SV_TARGET
 {
-    float4 outie = { 0, 0, 0, 0 };
+    float4 outie = (0.0f, 0.0f, 0.0f, 1.0f);//(txDiffuse.Sample(samLinear, psIn.uv));
+
+    float4 texColor = (txDiffuse.Sample(samLinear, psIn.uv));
     if (PL_color.w < 1.0f)
     {
         psIn.uv.x += sin(vDTime) * cos(vDTime) * (3.1415f / 180);
         psIn.uv.y += (sin(vDTime) * 0.1f);
     }
 
-    outie += vAmbLight;
+    outie += vAmbLight * texColor;
 
-   ///////////// Direction Light /////////////
+    ///////////// Direction Light /////////////
     //for (int d = 0; d < 2; d++)
     //{
-    float3 lightDir = DL_dir.xyz;
-        //lightDir.y = clamp(cos(vDTime), -1, 1);
-    float _dot = dot((lightDir), psIn.norm.xyz);
+    //float _dot = dot(-DL_dir.xyz, psIn.norm.xyz);
+    float _dot = dot(-DL_dir.xyz, psIn.norm.xyz);
     float LR = saturate(_dot);
-    outie += (LR * DL_color /** sin(vDTime * 2)*/);
+    outie += (LR * DL_color);
     //}
-   ///////////////////////////////////////////
+    ///////////////////////////////////////////
    
-   //////////// Point Light //////////////
+    //////////// Point Light //////////////
     //for (int p = 0; p < 1; p++)
     //{
     float3 ptLightDir = normalize(PL_pos.xyz - psIn.wPos.xyz);
     float LightRatio = saturate(dot(-ptLightDir, psIn.norm.xyz));
-    float attenutation = 1.0f - saturate((length(PL_pos.xyz - psIn.wPos.xyz) / 50.0f));
+    float attenutation = 1.0f - saturate(length(PL_pos.xyz - psIn.wPos.xyz) / PL_pos.w);
     LightRatio = (attenutation * attenutation) * LightRatio;
-   //outie += lerp(float4(0, 0, 0, 0), PL_color /** sin(vDTime * 2)*/, LightRatio);
-    //outie += LightRatio * PL_color;
+    //outie += lerp(float4(0, 0, 0, 0), PL_color /** sin(vDTime * 2)*/, LightRatio);
+    outie += LightRatio * PL_color;
     //}
     /////////////// Specular Formula ///////////////
-    float3 viewdir = normalize(vView._14_24_34 - psIn.wPos.xyz);
-    float3 halfVec = normalize((-PL_pos.xyz) + viewdir);
-    float intensity = max(clamp(psIn.norm.xyz, normalize(halfVec), 2.0f), 0);
-    outie += PL_color * 2.5f * intensity * LightRatio;
+    //float3 viewdir = normalize(vView._14_24_34 - psIn.wPos.xyz);
+    //float3 halfVec = normalize((-PL_pos.xyz) + viewdir);
+    //float intensity = max(clamp(psIn.norm.xyz, normalize(halfVec), 2.0f), 0);
+    //outie += PL_color * 2.5f * intensity * LightRatio;
     ////////////////////////////////////////////////
-   ////////////////////////////////////////
+    ////////////////////////////////////////
 
     ////////////// Spot Light ////////////////
     float innerRatio = SL_dir.w;
@@ -93,7 +94,7 @@ float4 main(PS_Input psIn) : SV_TARGET
     ////////////////////////////////////////////////
 
 
-    outie = (txDiffuse.Sample(samLinear, psIn.uv)) * outie;
+    outie = texColor * outie;
 
     return outie;
 }

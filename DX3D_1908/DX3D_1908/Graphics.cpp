@@ -673,7 +673,7 @@ void Graphics::UpdateConstantBuffer(gMesh* mesh, XMFLOAT4A cbTranslate, XMFLOAT4
 	gCB.view = XMMatrixTranspose(globalView);
 	gCB.proj = XMMatrixTranspose(globalProj);
 	gCB.dTime = (float)gTimer->deltaTime;
-	gCB.ambientLight = XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f);
+	gCB.ambientLight = XMFLOAT4(0.01f, 0.01f, 0.01f, 1.0f);
 	gCon->UpdateSubresource(mesh->gConstantBuffer.Get(), 0, nullptr, &gCB, 0, 0);
 
 	//////////////////////// Bind Shaders ////////////////////////
@@ -761,6 +761,7 @@ void Graphics::updateSpotLight(ID3D11DeviceContext* gpCon, UINT startIndex, UINT
 #pragma endregion
 
 #pragma region DeviceSetup/RenderPipeline
+//vvv Init Device vvv//
 HRESULT Graphics::InitDevice()
 {
 	gTimer->StartTimer(gTimer);
@@ -770,11 +771,10 @@ HRESULT Graphics::InitDevice()
 	//LoadMesh("NewDragon.fbx",10.0f, gppMesh, 0);
 	//LoadMesh("SpaceShip_1.fbx", 1.0f, gppMesh, 0);
 	//LoadMesh("Desk_0.fbx", L"carbonfiber.dds", 1.0f, &gppMesh, 0);
-	//LoadMesh("Cube.fbx", L"Crate.dds", 0.5f, gppMesh, 0);
-	//CreateSkyBox(gDev.Get(), gppMesh);
 	LoadMesh("ReverseCube.fbx", L"Skybox.dds", farPlane, gppMesh, numOfMeshs, true);
 	LoadMesh("Desk_1.fbx", L"carbonfiber.dds", 1.0f, gppMesh, numOfMeshs, false);
 	LoadMesh("SpaceShip_3.fbx", L"carbonfiber.dds", 0.04f, gppMesh, numOfMeshs, false);
+	LoadMesh("Cube.fbx", L"Crate.dds", .05f, gppMesh, numOfMeshs, false);
 #pragma endregion
 
 #pragma region Create_Buffers
@@ -828,62 +828,79 @@ HRESULT Graphics::InitDevice()
 	//// bind render target
 	gCon->OMSetRenderTargets(1, gRtv.GetAddressOf(), gDsv.Get());
 
-	//// configer viewport
-	////D3D11_VIEWPORT port_one;
-	////port_one.Width = 640.0f;
-	////port_one.Height = 720.0f;
-	////port_one.MinDepth = 0.0f;
-	////port_one.MaxDepth = 1.0f;
-	////port_one.TopLeftX = 0.0f;
-	////port_one.TopLeftY = 0.0f;
-	////  
-	////D3D11_VIEWPORT port_two;
-	////port_two.Width = 640.0f;
-	////port_two.Height = 720.0f;
-	////port_two.MinDepth = 0.0f;
-	////port_two.MaxDepth = 1.0f;
-	////port_two.TopLeftX = 640.0f;
-	////port_two.TopLeftY = 0.0f;
+	// configer viewport
+	D3D11_VIEWPORT port_one;
+	port_one.Width = 640.0f;
+	port_one.Height = 720.0f;
+	port_one.MinDepth = 0.0f;
+	port_one.MaxDepth = 1.0f;
+	port_one.TopLeftX = 0.0f;
+	port_one.TopLeftY = 0.0f;
+	  
+	D3D11_VIEWPORT port_two;
+	port_two.Width = 640.0f;
+	port_two.Height = 720.0f;
+	port_two.MinDepth = 0.0f;
+	port_two.MaxDepth = 1.0f;
+	port_two.TopLeftX = 640.0f;
+	port_two.TopLeftY = 0.0f;
 
-	////D3D11_VIEWPORT vp[2] = { port_one, port_two };
-	D3D11_VIEWPORT vp;
-	vp.Width = 1280.0f;
-	vp.Height = 720.0f;
-	vp.MinDepth = 0.0f;
-	vp.MaxDepth = 1.0f;
-	vp.TopLeftX = 0.0f;
-	vp.TopLeftY = 0.0f;
-	gCon->RSSetViewports(1u, &vp);
+	vp[0] = port_one; //{ port_one, port_two };
+	vp[1] = port_two;
+
+	//D3D11_VIEWPORT vp;
+	//vp.Width = 1280.0f;
+	//vp.Height = 720.0f;
+	//vp.MinDepth = 0.0f;
+	//vp.MaxDepth = 1.0f;
+	//vp.TopLeftX = 0.0f;
+	//vp.TopLeftY = 0.0f;
+	//gCon->RSSetViewports(1u, &vp);
 #pragma endregion
 
 	return hr;
 }
+//^^^ Init Device ^^^//
+
+//vvv Render vvv///
 void Graphics::Render()
 {
 	float deltaT = (float)gTimer->TimeSinceTick(gTimer);
 	CleanFrameBuffers();
 
-#pragma region Lights
+#pragma region Update Lights
 
 	// SUN DIRECTIONAL LIGHT
+	// old Dir = XMFLOAT4A(0.55f, 0.0f, 0.45f, 0.0f)
 	updateDirectionLight(gCon.Get(), 0u, 1u, gDLightBuffer.Get(),
-		XMFLOAT4A(0.55f, 0.0f, 0.45f, 0.0f), XMFLOAT4A(0.65f, 0.45f, 0.0f, 1.0f));
+		XMFLOAT4A(-1.0f,0.0f, 0.0f,0.0f), // direction
+		XMFLOAT4A(0.0f, 0.0f, 1.0f, 1.0f)); // color
 
 	// LAMP POINT LIGHT
 	updatePointLight(gCon.Get(), 0u, 1u, gPLightBuffer.Get(),
-		XMFLOAT4A(7.0f, 5.0f, 10.0f, 0.0f), 100.0f, XMFLOAT4A(0.0f, 1.0f, 0.0f, 1.0f));
+		XMFLOAT4A(25.0f, 0.0f, 10.0f, 0.0f), // direction
+		100.0f, // radius
+		XMFLOAT4A(0.0f, 1.0f, 0.0f, 1.0f)); // color
 
 	// CAMREA SPOT LIGHT
 	XMFLOAT4A camPos;
 	XMStoreFloat4A(&camPos, Camera.r[3]);
 	XMFLOAT4A camForwDir;
 	XMStoreFloat4A(&camForwDir, XMVector4Transform(XMVectorSet(0, 0, 1, 0), Camera));
-	updateSpotLight(gCon.Get(), 0u, 1u, gSLightBuffer.Get(), camPos, camForwDir, 0.9f, XMFLOAT4A(1.0f, 0.0f, 0.0f, 1.0f));
+	updateSpotLight(gCon.Get(), 0u, 1u, gSLightBuffer.Get(),
+		camPos, // position
+		camForwDir, // direction
+		0.9f, // cone ratio
+		XMFLOAT4A(1.0f, 0.0f, 0.0f, 1.0f)); // color
 #pragma endregion
 
-#pragma region Update Constant Buffer
+#pragma region Update Constant Buffer and draw objects
 	XMFLOAT4A move, rotate;
+#pragma region Draw 1
+	// Viewport 1
+	gCon->RSSetViewports(1u, &vp[0]);
 
+	// Skybox
 	move = camPos;
 	//XMStoreFloat4A(&rotate, XMVector4Transform(XMVectorSet(0, 1, 0, 0), Camera));
 	//move = XMFLOAT4A(0.0f, 0.0f, 10.0f, 0.0f);
@@ -891,17 +908,58 @@ void Graphics::Render()
 	UpdateConstantBuffer(gppMesh[0], move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[0]->numIndices, 0u, 0);
 
+	// Desk
 	move = XMFLOAT4A(10.0f, 0.0f, 0.0f, 0.0f);
 	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
 	UpdateConstantBuffer(gppMesh[1], move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[1]->numIndices, 0u, 0);
 
+	// Spaceship on desk
 	move = XMFLOAT4A(9.5f, 3.65f, -3.5f, 0.0f);
 	rotate = XMFLOAT4A(0.0f, -30.0f, 0.0f, 0.0f);
 	UpdateConstantBuffer(gppMesh[2], move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[2]->numIndices, 0u, 0);
+
+	// Box for testing
+	move = XMFLOAT4A(-5.0f, 0.0f, 2.0f, 0.0f);
+	rotate = XMFLOAT4A(0.0f, -30.0f, 0.0f, 0.0f);
+	UpdateConstantBuffer(gppMesh[3], move, rotate);
+	gCon->DrawIndexed((UINT)gppMesh[3]->numIndices, 0u, 0);
+
+#pragma endregion
+
+#pragma region draw 2
+	// Viewport 2
+	gCon->RSSetViewports(1u, &vp[1]);
+
+	// Skybox
+	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
+	UpdateConstantBuffer(gppMesh[0], move, rotate);
+	gCon->DrawIndexed((UINT)gppMesh[0]->numIndices, 0u, 0);
+
+	// Desk
+	move = XMFLOAT4A(10.0f, 0.0f, 0.0f, 0.0f);
+	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
+	UpdateConstantBuffer(gppMesh[1], move, rotate);
+	gCon->DrawIndexed((UINT)gppMesh[1]->numIndices, 0u, 0);
+
+	// Spaceship on desk
+	move = XMFLOAT4A(9.5f, 3.65f, -3.5f, 0.0f);
+	rotate = XMFLOAT4A(0.0f, -30.0f, 0.0f, 0.0f);
+	UpdateConstantBuffer(gppMesh[2], move, rotate);
+	gCon->DrawIndexed((UINT)gppMesh[2]->numIndices, 0u, 0);
+
+	// Box for testing
+	move = XMFLOAT4A(-5.0f, 0.0f, 2.0f, 0.0f);
+	rotate = XMFLOAT4A(0.0f, -30.0f, 0.0f, 0.0f);
+	UpdateConstantBuffer(gppMesh[3], move, rotate);
+	gCon->DrawIndexed((UINT)gppMesh[3]->numIndices, 0u, 0);
+
+#pragma endregion
+
 #pragma endregion
 
 	gSwap->Present(1u, 0u);
 }
+//^^^ Render ^^^//
 #pragma endregion

@@ -98,6 +98,7 @@ public:
 	HRESULT CreateBuffers(std::vector<gMesh*>& meshVec);
 	HRESULT CreateInputLayout(std::vector<gMesh*>& meshVec);
 	void CreateFloor(std::vector<gMesh*>& meshVec, UINT meshIndex);
+	D3D11_VIEWPORT vp[2];
 private:
 #pragma region Hointer Pell
 	wrl::ComPtr<ID3D11Device> gDev = nullptr;
