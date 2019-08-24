@@ -46,6 +46,8 @@ public:
 
 #pragma region Lights
 
+	// Position of directional light in degrees. Converted to radians in updatelight section of render.
+	float sunPos = 0;
 	UINT numOfTotalLights = 0;
 	UINT numOfDir_Lights = 0;
 	UINT numOfPointLights = 0;
@@ -114,6 +116,7 @@ private:
 
 #pragma endregion
 public:
+	void UpdateCamera(XMMATRIX CamToUpdate, bool listOfComs[], UINT numOfComs);
 	struct gConstantBuff
 	{
 		XMMATRIX world;

@@ -63,10 +63,8 @@ int CALLBACK WinMain(
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-		else
-		{
-			Gfx->Render();
-		}
+
+		Gfx->Render();
 	}
 
 	// CLEAN UP
@@ -234,6 +232,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	}
 	case WM_CHAR:
 	{
+		// IF for 1,2,3,4 camera types, camera 1 is free cam
 		if ((char)wParam == 'p')
 		{
 			std::ostringstream oss;
@@ -272,7 +271,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			XMMATRIX trans = XMMatrixTranslation(0.0f, 0.0f, -MoveSpeed);
 			Gfx->Camera = XMMatrixMultiply(trans, Gfx->Camera);
 		}
-		else if ((char)wParam == 'a') // Left
+		if ((char)wParam == 'a') // Left
 		{
 			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
 			//Gfx->globalView.r[2] += {0.1f, 0.0f, 0.0f};
