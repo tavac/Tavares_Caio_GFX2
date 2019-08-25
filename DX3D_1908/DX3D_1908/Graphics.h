@@ -7,7 +7,6 @@ class Graphics
 {
 public:
 	Timer* gTimer = new Timer();
-	float PointLight_A = 1.0f;
 	struct gVertex
 	{
 		XMFLOAT4 pos;
@@ -55,14 +54,20 @@ public:
 
 	struct gLightBuff
 	{
+		//XMMATRIX lightSpace = XMMatrixIdentity();
+		//XMMATRIX lightOrtho = XMMatrixOrthographicLH(hWndWidth, hWndHeight, .001f, 1000);
+		//float ZBuff[hWndHeight * hWndWidth] = { 0 };
 		XMFLOAT4A pos;
 		XMFLOAT4A dir;
 		XMFLOAT4A color;
 	};
 	
-	std::vector<gLightBuff*> gDirectionalLights = {};
-	std::vector<gLightBuff*> gPointLights = {};
-	std::vector<gLightBuff*> gSpotLights = {};
+	std::vector<gLightBuff> gDirectionalLights = {};
+
+	std::vector<gLightBuff> gPointLights = {};
+	float PointLight_A = 1.0f;
+
+	std::vector<gLightBuff> gSpotLights = {};
 
 	enum LightType {
 		Directional,
@@ -76,9 +81,7 @@ public:
 		wrl::ComPtr<ID3D11Buffer>* gpSLightBuffer);
 
 	void updateDirectionLight(ID3D11DeviceContext* gpCon, UINT startIndex, UINT numOfLights, ID3D11Buffer* gDLightBuffer, XMFLOAT4A dir, XMFLOAT4A color);
-
 	void updatePointLight(ID3D11DeviceContext* gpCon, UINT startIndex, UINT numOfLights, ID3D11Buffer* gPLightBuffer, XMFLOAT4A pos, float radius, XMFLOAT4A color);
-
 	void updateSpotLight(ID3D11DeviceContext* gpCon, UINT startIndex, UINT numOfLights, ID3D11Buffer* gSLightBuffer, XMFLOAT4A pos, XMFLOAT4A dir, float width, XMFLOAT4A color);
 
 #pragma endregion
@@ -121,7 +124,8 @@ public:
 	{
 		XMMATRIX world;
 		XMMATRIX view;
-		XMMATRIX proj;
+		XMMATRIX perspProj;
+		XMMATRIX orthoProj;
 		XMFLOAT4 ambientLight;
 		float dTime;
 	};
@@ -137,5 +141,6 @@ public:
 	float nearPlane = 0.001f;
 	float farPlane = 1000.0f;
 	XMMATRIX globalProj = XMMatrixPerspectiveFovLH(degToRad(FoV_angle), hWndWidth / hWndHeight, nearPlane, farPlane);
+	XMMATRIX globalOrthProj = XMMatrixOrthographicLH(hWndWidth, hWndHeight, nearPlane, farPlane);
 #pragma endregion
 };

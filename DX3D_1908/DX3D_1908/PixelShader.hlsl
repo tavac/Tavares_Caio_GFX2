@@ -5,13 +5,17 @@ cbuffer constBuff : register(b0)
 {
     matrix vWorld;
     matrix vView;
-    matrix vProj;
+    matrix vPersProj;
+    matrix vOrthProj;
     float4 vAmbLight;
     float vDTime;
 }
 
 cbuffer Dir_LightBuff : register(b1)
 {
+    //matrix DL_space;
+    //matrix DL_orthoProj;
+    //float DL_ZBuff[] = { 0 };
     float4 DL_pos;
     float4 DL_dir;
     float4 DL_color;
@@ -19,6 +23,9 @@ cbuffer Dir_LightBuff : register(b1)
 
 cbuffer Pnt_LightBuff : register(b2)
 {
+    //matrix PL_space;
+    //matrix PL_orthoProj;
+    //float PL_ZBuff[] = { 0 };
     float4 PL_pos;
     float4 PL_dir;
     float4 PL_color;
@@ -26,6 +33,9 @@ cbuffer Pnt_LightBuff : register(b2)
 
 cbuffer Spt_LightBuff : register(b3)
 {
+    //matrix SL_space;
+    //matrix SL_orthoProj;
+    //float SL_ZBuff[] = { 0 };
     float4 SL_pos;
     float4 SL_dir;
     float4 SL_color;
@@ -59,19 +69,17 @@ float4 main(PS_Input psIn) : SV_TARGET
     }
 
     //outie += vAmbLight * texColor;
+    ///////////// Direction Light /////////////
+    //for (int d = 0; d < 2; d++)
+    //{
+    //float _dot = dot(-DL_dir.xyz, psIn.norm.xyz);
+    float _dot = dot(-DL_dir.xyz, psIn.norm.xyz);
+    float LR = saturate(_dot);
+    //outie += (LR * DL_color);
+    outie += saturate(-DL_dir.y + ( /*(LR * DL_color)*/+SpecularEffect(psIn, DL_dir.xyz, LR, DL_color)));
+    //}
+    ///////////////////////////////////////////
 
-    ////////////// Spot Light ////////////////
-    float innerRatio = SL_dir.w;
-    float outerRatio = innerRatio - 0.05f;
-    float3 toLight = SL_pos.xyz - psIn.wPos.xyz; // vector from pixel to Light
-    float distance = length(toLight); // length of vector
-    toLight = (toLight / distance); // normalizing the toLight vector
-    float AngAtten = saturate(dot(toLight, psIn.norm.xyz)); // angle between vector to the light from surface and the normal of the surface where 1.0 is directly at the light
-    float spotDot = saturate(dot(-toLight, SL_dir.xyz)); // 
-    float spotAtten = saturate(((innerRatio) - (spotDot)) / ((innerRatio) - (outerRatio)));
-    spotAtten -= 1.0f;
-    //outie += (spotAtten * spotAtten * AngAtten * SL_color);
-    ////////////////////////////////////////////////
    
     //////////// Point Light //////////////
     //for (int p = 0; p < 1; p++)
@@ -95,17 +103,19 @@ float4 main(PS_Input psIn) : SV_TARGET
     ////////////////////////////////////////////////
     ////////////////////////////////////////
 
+    ////////////// Spot Light ////////////////
+    float innerRatio = SL_dir.w;
+    float outerRatio = innerRatio - 0.05f;
+    float3 toLight = SL_pos.xyz - psIn.wPos.xyz; // vector from pixel to Light
+    float distance = length(toLight); // length of vector
+    toLight = (toLight / distance); // normalizing the toLight vector
+    float AngAtten = saturate(dot(toLight, psIn.norm.xyz)); // angle between vector to the light from surface and the normal of the surface where 1.0 is directly at the light
+    float spotDot = saturate(dot(-toLight, SL_dir.xyz)); // 
+    float spotAtten = saturate(((innerRatio) - (spotDot)) / ((innerRatio) - (outerRatio)));
+    spotAtten -= 1.0f;
+    //outie += (spotAtten * spotAtten * AngAtten * SL_color);
+    ////////////////////////////////////////////////
 
-    ///////////// Direction Light /////////////
-    //for (int d = 0; d < 2; d++)
-    //{
-    //float _dot = dot(-DL_dir.xyz, psIn.norm.xyz);
-    float _dot = dot(-DL_dir.xyz, psIn.norm.xyz);
-    float LR = saturate(_dot);
-    //outie += (LR * DL_color);
-    outie += saturate(-DL_dir.y + ( /*(LR * DL_color)*/+SpecularEffect(psIn, DL_dir.xyz, LR, DL_color)));
-    //}
-    ///////////////////////////////////////////
 
     outie = texColor * outie;
 
