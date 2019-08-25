@@ -37,20 +37,23 @@ std::string ToolBox::CommandProcesser(std::string command)
 	//call/do function
 }
 
-void Timer::StartTimer(Timer* t)
+void Timer::StartTimer()
 {
-	t->timeStart = static_cast<float>(GetTickCount64());
-	t->timeCur = static_cast<float>(GetTickCount64());
+	timeStart = static_cast<float>(GetTickCount64());
+	timeCur = static_cast<float>(GetTickCount64());
 }
 
-float Timer::TimeSinceStart(Timer* t)
+float Timer::TimeSinceStart()
 {
-	return t->timeCur - t->timeStart;
+	return timeCur - timeStart;
 }
 
-float Timer::TimeSinceTick(Timer* t)
+float Timer::TimeSinceTick()
 {
-	t->timeCur = static_cast<float>(GetTickCount64());
-	t->deltaTime = (t->timeCur - t->timeStart) / 1000;
-	return t->deltaTime;
+	timeCur = static_cast<float>(GetTickCount64());
+	if (deltaTime == 0)
+		deltaTime = (timeCur - timeStart) / 100000000;
+	deltaTime = (timeCur - deltaTime);
+	deltaTime /= 100000000;
+	return deltaTime;
 }

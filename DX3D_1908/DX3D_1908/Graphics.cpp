@@ -772,7 +772,7 @@ void Graphics::UpdateCamera(XMMATRIX CamToUpdate, bool listOfComs[], UINT numOfC
 //vvv Init Device vvv//
 HRESULT Graphics::InitDevice()
 {
-	gTimer->StartTimer(gTimer);
+	gTimer->StartTimer();
 	HRESULT hr;
 #pragma region LOAD MODELS
 	//LoadMesh("Tester.fbx", 1.0f, gppMesh, 0);
@@ -874,9 +874,13 @@ HRESULT Graphics::InitDevice()
 //vvv Render vvv///
 void Graphics::Render()
 {
-	float deltaT = (float)gTimer->TimeSinceTick(gTimer);
 	CleanFrameBuffers();
+	float deltaT = (float)gTimer->TimeSinceTick();
 
+/*TODO	
+	figure out why i cant change the lightbuffers
+	maybe its because of the buffer size that has to match vertex but that should be right.
+*/
 #pragma region Update Lights
 
 	// SUN DIRECTIONAL LIGHT

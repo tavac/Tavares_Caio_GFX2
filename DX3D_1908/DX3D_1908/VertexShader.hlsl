@@ -14,8 +14,8 @@ cbuffer constBuff : register(b0)
 
 cbuffer Dir_LightBuff : register(b1)
 {
-    //matrix DL_space;
-    //matrix DL_orthoProj;
+    matrix DL_space;
+    matrix DL_orthoProj;
     //float DL_ZBuff[] = { 0 };
     float4 DL_pos;
     float4 DL_dir;
@@ -24,8 +24,8 @@ cbuffer Dir_LightBuff : register(b1)
 
 cbuffer Pnt_LightBuff : register(b2)
 {
-    //matrix PL_space;
-    //matrix PL_orthoProj;
+    matrix PL_space;
+    matrix PL_orthoProj;
     //float PL_ZBuff[] = { 0 };
     float4 PL_pos;
     float4 PL_dir;
@@ -34,8 +34,8 @@ cbuffer Pnt_LightBuff : register(b2)
 
 cbuffer Spt_LightBuff : register(b3)
 {
-    //matrix SL_space;
-    //matrix SL_orthoProj;
+    matrix SL_space;
+    matrix SL_orthoProj;
     //float SL_ZBuff[] = { 0 };
     float4 SL_pos;
     float4 SL_dir;

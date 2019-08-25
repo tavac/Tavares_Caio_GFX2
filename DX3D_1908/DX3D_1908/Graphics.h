@@ -54,9 +54,9 @@ public:
 
 	struct gLightBuff
 	{
-		//XMMATRIX lightSpace = XMMatrixIdentity();
-		//XMMATRIX lightOrtho = XMMatrixOrthographicLH(hWndWidth, hWndHeight, .001f, 1000);
-		//float ZBuff[hWndHeight * hWndWidth] = { 0 };
+		XMMATRIX lightSpace;
+		XMMATRIX lightOrtho;
+		//float ZBuff[hWndHeight * hWndWidth];
 		XMFLOAT4A pos;
 		XMFLOAT4A dir;
 		XMFLOAT4A color;

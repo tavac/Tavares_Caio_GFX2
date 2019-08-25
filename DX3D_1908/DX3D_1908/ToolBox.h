@@ -44,11 +44,11 @@ public:
 class Timer
 {
 public:
-	float timeStart;
-	float deltaTime;
-	float timeCur;
+	float timeStart = 0;
+	float deltaTime = 0;
+	float timeCur = 0;
 
-	void StartTimer(Timer* t);
-	float TimeSinceStart(Timer* t);
-	float TimeSinceTick(Timer* t);
+	void StartTimer();
+	float TimeSinceStart();
+	float TimeSinceTick();
 };
