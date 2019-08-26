@@ -4,6 +4,7 @@ cbuffer constBuff : register(b0)
 {
     matrix vWorld;
     matrix vView;
+    matrix vCam;
     matrix vProj;
     float4 vAmbLight;
     float vDTime;

@@ -5,6 +5,7 @@ cbuffer constBuff : register(b0)
 {
     matrix vWorld;
     matrix vView;
+    matrix vCam;
     matrix vPersProj;
     matrix vOrthProj;
     float4 vAmbLight;
@@ -51,10 +52,11 @@ struct PS_Input
 
 float4 SpecularEffect(PS_Input ps_in, float3 lightPos, float lightRatio, float4 lightColor)
 {
-    float3 viewdir = normalize(vView._14_24_34 - ps_in.wPos.xyz);
+    matrix cam = mul(vCam, vWorld);
+    float3 viewdir = normalize(cam._14_24_34 - ps_in.wPos.xyz);
     float3 halfVec = normalize((-lightPos) + viewdir);
-    float intensity = max(clamp(ps_in.norm.xyz, normalize(halfVec), 2.0f), 0);
-    return lightColor * intensity * lightRatio;
+    float intensity = max(clamp(dot(ps_in.norm.xyz, normalize(halfVec)), 0.0f, 2.0f), 0);
+    return (lightColor * intensity * lightRatio * 2.0f);
 }
 
 float4 main(PS_Input psIn) : SV_TARGET
@@ -62,21 +64,30 @@ float4 main(PS_Input psIn) : SV_TARGET
     float4 outie = float4(0.0f, 0.0f, 0.0f, 1.0f); //(txDiffuse.Sample(samLinear, psIn.uv));
 
     float4 texColor = (txDiffuse.Sample(samLinear, psIn.uv));
-    if (PL_color.w < 1.0f)
+    if (!any(texColor))
     {
-        psIn.uv.x += sin(vDTime) * cos(vDTime) * (3.1415f / 180);
-        psIn.uv.y += (sin(vDTime) * 0.1f);
+        texColor = psIn.color;
     }
+    //if (PL_color.w == 1.0f)
+    //{
+    //    psIn.uv.x += sin(vDTime * (3.1415f / 180)) * cos(vDTime * (3.1415f / 180));
+    //    psIn.uv.y += (sin(vDTime * (3.1415f / 180)) * 0.1f);
+    //}
 
     //outie += vAmbLight * texColor;
     ///////////// Direction Light /////////////
+    float4 vrtPos = mul(psIn.wPos, DL_space); // this is for shadows
+    vrtPos = mul(vrtPos, DL_orthoProj);
+    // find the Z from off-screen buffer and compare
+
     //for (int d = 0; d < 2; d++)
     //{
     //float _dot = dot(-DL_dir.xyz, psIn.norm.xyz);
     float _dot = dot(-DL_dir.xyz, psIn.norm.xyz);
     float LR = saturate(_dot);
     //outie += (LR * DL_color);
-    outie += saturate(-DL_dir.y + ( /*(LR * DL_color)*/+SpecularEffect(psIn, DL_dir.xyz, LR, DL_color)));
+    //if (DL_dir.y < .2f)
+        outie += saturate((-DL_dir.y * .75f) + ( /*(LR * DL_color) +*/SpecularEffect(psIn, DL_dir.xyz, LR, DL_color)));
     //}
     ///////////////////////////////////////////
 
@@ -90,10 +101,15 @@ float4 main(PS_Input psIn) : SV_TARGET
     LightRatio = (attenutation * attenutation) * LightRatio;
     //outie += lerp(float4(0, 0, 0, 0), PL_color /** sin(vDTime * 2)*/, LightRatio);
     if (DL_dir.y > 0.2f)
+    {
         outie += LightRatio * PL_color;
+        outie += SpecularEffect(psIn, PL_dir.xyz, LightRatio, PL_color);
+    }
     if (DL_dir.y < 0.2f && DL_dir.y > 0.15f)
+    {
         outie += LightRatio * PL_color * 2.0f;
-    //outie += SpecularEffect(psIn,PL_dir.xyz,LightRatio,PL_color);
+        outie += SpecularEffect(psIn, PL_dir.xyz, LightRatio, PL_color);
+    }
     //}
     /////////////// Specular Formula ///////////////
     //float3 PL_viewdir = normalize(vView._14_24_34 - psIn.wPos.xyz);
@@ -114,10 +130,11 @@ float4 main(PS_Input psIn) : SV_TARGET
     float spotAtten = saturate(((innerRatio) - (spotDot)) / ((innerRatio) - (outerRatio)));
     spotAtten -= 1.0f;
     //outie += (spotAtten * spotAtten * AngAtten * SL_color);
+    //outie += ((spotAtten * spotAtten * AngAtten * SL_color) + (SpecularEffect(psIn, SL_pos.xyz, (AngAtten), SL_color)));
     ////////////////////////////////////////////////
 
 
-    outie = texColor * outie;
+    outie = (texColor * outie);
 
     return outie;
 }

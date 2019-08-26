@@ -5,6 +5,7 @@ cbuffer constBuff : register(b0)
 {
 	matrix vWorld;
 	matrix vView;
+	matrix vCam;
 	matrix vPersProj;
 	matrix vOrthProj;
 	// lights and color floats

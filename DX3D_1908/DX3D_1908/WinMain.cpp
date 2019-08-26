@@ -361,7 +361,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	}
 	}
 	if (Gfx)
+	{
 		Gfx->globalView = XMMatrixInverse(nullptr, Gfx->Camera);
+	}
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 

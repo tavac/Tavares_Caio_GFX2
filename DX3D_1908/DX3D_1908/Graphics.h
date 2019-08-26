@@ -6,7 +6,16 @@ namespace wrl = Microsoft::WRL;
 class Graphics
 {
 public:
+	Graphics(HWND hWnd);
+	Graphics(const Graphics&) = delete;
+	Graphics& operator=(const Graphics&) = delete;
+	~Graphics();
+
+
+
 	Timer* gTimer = new Timer();
+
+#pragma region Mesh Stuff
 	struct gVertex
 	{
 		XMFLOAT4 pos;
@@ -18,14 +27,14 @@ public:
 	{
 		bool isSkybox = false;
 		wrl::ComPtr<ID3D11VertexShader> gVertexShader = nullptr;
-		//wrl::ComPtr<ID3D11GeometryShader> gGeometryShader = nullptr;
+		wrl::ComPtr<ID3D11GeometryShader> gGeometryShader = nullptr;
 		wrl::ComPtr<ID3D11PixelShader> gPixelShader = nullptr;
 		wrl::ComPtr<ID3DBlob> gBlob = nullptr;
 
 		wrl::ComPtr<ID3D11Buffer> gConstantBuffer = nullptr;
 		wrl::ComPtr<ID3D11Buffer> gIndexBuffer = nullptr;
 		wrl::ComPtr<ID3D11Buffer> gVertBuffer = nullptr;
-		//wrl::ComPtr<ID3D11Buffer> gGeoBuffer = nullptr;
+		wrl::ComPtr<ID3D11Buffer> gGeoBuffer = nullptr;
 
 		wrl::ComPtr<ID3D11ShaderResourceView> shaderRV = nullptr;
 		wrl::ComPtr<ID3D11SamplerState> smplrState = nullptr;
@@ -42,9 +51,18 @@ public:
 	};
 	std::vector<gMesh*> gppMesh;
 	int numOfMeshs = 0;
+	void LoadMesh(std::string fileName, const wchar_t* textureFile, float mesh_scale, std::vector<gMesh*>& meshArr, UINT meshIndex, bool isSkybox);
+	void ProcessFBXMesh(FbxNode* Node, gMesh* mesh); // Join with ProcessOBJMesh to make a template type mesh loader
+	void LoadUVFromFBX(FbxMesh* pMesh, std::vector<XMFLOAT2>* pVecUV);
+	void TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode, gMesh* gmesh); // This requires the model to have been made with a .dds file
+
+	void CreateFloor(std::vector<gMesh*>& meshVec, UINT meshIndex, UINT floorWidth, UINT floorDepth);
+#pragma endregion
 
 #pragma region Lights
-
+	wrl::ComPtr<ID3D11Buffer> gDLightBuffer = nullptr;
+	wrl::ComPtr<ID3D11Buffer> gPLightBuffer = nullptr;
+	wrl::ComPtr<ID3D11Buffer> gSLightBuffer = nullptr;
 	// Position of directional light in degrees. Converted to radians in updatelight section of render.
 	float sunPos = 0;
 	UINT numOfTotalLights = 0;
@@ -85,25 +103,12 @@ public:
 	void updateSpotLight(ID3D11DeviceContext* gpCon, UINT startIndex, UINT numOfLights, ID3D11Buffer* gSLightBuffer, XMFLOAT4A pos, XMFLOAT4A dir, float width, XMFLOAT4A color);
 
 #pragma endregion
-	Graphics(HWND hWnd);
-	Graphics(const Graphics&) = delete;
-	Graphics& operator=(const Graphics&) = delete;
-	~Graphics();
-	HRESULT InitDevice();
-	void Render();
-	void ProcessFBXMesh(FbxNode* Node, gMesh* mesh); // Join with ProcessOBJMesh to make a template type mesh loader
-	void LoadUVFromFBX(FbxMesh* pMesh, std::vector<XMFLOAT2>* pVecUV);
-	void TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode, gMesh* gmesh); // This requires the model to have been made with a .dds file
 
-	void CleanFrameBuffers(XMVECTORF32 DXCOLOR = Colors::Silver);
-	void UpdateConstantBuffer(gMesh* mesh, XMFLOAT4A cbTranslate, XMFLOAT4A cbRotate);
 
-	void LoadMesh(std::string fileName, const wchar_t* textureFile, float mesh_scale, std::vector<gMesh*>& meshArr, UINT meshIndex, bool isSkybox);
-	HRESULT CreateShaders(std::vector<gMesh*>& meshVec);
-	HRESULT CreateBuffers(std::vector<gMesh*>& meshVec);
-	HRESULT CreateInputLayout(std::vector<gMesh*>& meshVec);
-	void CreateFloor(std::vector<gMesh*>& meshVec, UINT meshIndex);
-	D3D11_VIEWPORT vp[2];
+
+
+
+
 private:
 #pragma region Hointer Pell
 	wrl::ComPtr<ID3D11Device> gDev = nullptr;
@@ -112,9 +117,7 @@ private:
 	wrl::ComPtr<ID3D11RenderTargetView> gRtv = nullptr;
 	wrl::ComPtr<ID3D11DepthStencilView> gDsv = nullptr;
 	wrl::ComPtr<ID3D11Texture2D> gDepthStencil = nullptr;
-	wrl::ComPtr<ID3D11Buffer> gDLightBuffer = nullptr;
-	wrl::ComPtr<ID3D11Buffer> gPLightBuffer = nullptr;
-	wrl::ComPtr<ID3D11Buffer> gSLightBuffer = nullptr;
+
 
 
 #pragma endregion
@@ -124,6 +127,7 @@ public:
 	{
 		XMMATRIX world;
 		XMMATRIX view;
+		XMMATRIX camera;
 		XMMATRIX perspProj;
 		XMMATRIX orthoProj;
 		XMFLOAT4 ambientLight;
@@ -132,8 +136,8 @@ public:
 
 #pragma region WorldViewProjection
 	XMMATRIX globalWorld = XMMatrixIdentity();
-	XMVECTOR Eye = XMVectorSet(0.0f, 0.0f, -10.0f, 0.0f);
-	XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	XMVECTOR Eye = XMVectorSet(24.0f, 5.0f, -0.5f, 0.0f);
+	XMVECTOR At = XMVectorSet(-1.0f, 0.0f, 0.0f, 0.0f);
 	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	XMMATRIX globalView = XMMatrixLookAtLH(Eye, At, Up);
 	XMMATRIX Camera = XMMatrixInverse(nullptr, globalView);
@@ -142,5 +146,18 @@ public:
 	float farPlane = 1000.0f;
 	XMMATRIX globalProj = XMMatrixPerspectiveFovLH(degToRad(FoV_angle), hWndWidth / hWndHeight, nearPlane, farPlane);
 	XMMATRIX globalOrthProj = XMMatrixOrthographicLH(hWndWidth, hWndHeight, nearPlane, farPlane);
+#pragma endregion
+
+#pragma region Initializations and Draws
+	HRESULT InitDevice();
+	HRESULT CreateShaders(std::vector<gMesh*>& meshVec);
+	HRESULT CreateBuffers(std::vector<gMesh*>& meshVec);
+	HRESULT CreateInputLayout(std::vector<gMesh*>& meshVec);
+
+	void Render();
+	D3D11_VIEWPORT vp[2];
+	void CleanFrameBuffers(XMVECTORF32 DXCOLOR = Colors::Silver);
+	void UpdateConstantBuffer(gMesh* mesh, XMFLOAT4A cbTranslate, XMFLOAT4A cbRotate);
+
 #pragma endregion
 };

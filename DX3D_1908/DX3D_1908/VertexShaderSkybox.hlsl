@@ -3,6 +3,7 @@ cbuffer constBuff : register(b0)
 {
     matrix vWorld;
     matrix vView;
+    matrix vCam;
     matrix vProj;
 	// lights and color floats
     float4 vAmbLight;

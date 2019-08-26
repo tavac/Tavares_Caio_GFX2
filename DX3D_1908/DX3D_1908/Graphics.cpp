@@ -65,9 +65,60 @@ Graphics::~Graphics()
 
 #pragma region InitCalls
 #pragma region Mesh/Texture/File IO
-void Graphics::CreateFloor(std::vector<gMesh*>& meshVec, UINT meshIndex)
+void Graphics::CreateFloor(std::vector<gMesh*>& meshVec, UINT meshIndex, UINT floorWidth, UINT floorDepth)
 {
+	UINT quads = floorWidth * floorDepth;
+	UINT indices = 6 * (quads * quads);
 
+	gMesh* floor = new gMesh();
+	meshVec.push_back(floor);
+
+	meshVec[meshIndex]->isSkybox = false;
+	meshVec[meshIndex]->verts = new gVertex[quads*quads*4];
+	meshVec[meshIndex]->indices = new int[indices];
+
+	UINT d = 0;
+	for (UINT z = 0; z < quads; z++)
+		for (UINT x = 0; x < quads; d += 4, x++)
+		{
+			meshVec[meshIndex]->verts[0 + d].pos = XMFLOAT4A(0.0f + x, -0.5f, 0.0f + z, 1.0f);	// TL
+			meshVec[meshIndex]->verts[1 + d].pos = XMFLOAT4A(0.0f + x, -0.5f, 1.0f + z, 1.0f);	// TR
+			meshVec[meshIndex]->verts[2 + d].pos = XMFLOAT4A(1.0f + x, -0.5f, 1.0f + z, 1.0f);	// BR
+			meshVec[meshIndex]->verts[3 + d].pos = XMFLOAT4A(1.0f + x, -0.5f, 0.0f + z, 1.0f);	// BL
+
+			meshVec[meshIndex]->verts[0 + d].uv = XMFLOAT2A(0.0f, 0.0f);	// TL
+			meshVec[meshIndex]->verts[1 + d].uv = XMFLOAT2A(1.0f, 0.0f);	// TR
+			meshVec[meshIndex]->verts[2 + d].uv = XMFLOAT2A(1.0f, 1.0f);	// BR
+			meshVec[meshIndex]->verts[3 + d].uv = XMFLOAT2A(0.0f, 1.0f);	// BL
+
+			meshVec[meshIndex]->verts[0 + d].color = XMFLOAT4A(0.0f, 1.0f, 0.0f, 1.0f);	// TL
+			meshVec[meshIndex]->verts[1 + d].color = XMFLOAT4A(0.0f, 1.0f, 0.0f, 1.0f);	// TR
+			meshVec[meshIndex]->verts[2 + d].color = XMFLOAT4A(0.0f, 1.0f, 0.0f, 1.0f);	// BR
+			meshVec[meshIndex]->verts[3 + d].color = XMFLOAT4A(0.0f, 1.0f, 0.0f, 1.0f);	// BL
+
+			meshVec[meshIndex]->verts[0 + d].norm = XMFLOAT4A(0.0f, 1.0f, 0.0f, 0.0f);	// TL
+			meshVec[meshIndex]->verts[1 + d].norm = XMFLOAT4A(0.0f, 1.0f, 0.0f, 0.0f);	// TR
+			meshVec[meshIndex]->verts[2 + d].norm = XMFLOAT4A(0.0f, 1.0f, 0.0f, 0.0f);	// BR
+			meshVec[meshIndex]->verts[3 + d].norm = XMFLOAT4A(0.0f, 1.0f, 0.0f, 0.0f);	// BL
+
+
+		}
+
+
+		for (UINT i = 0, v = 0; i < indices; i += 6, v+=4)
+		{
+			meshVec[meshIndex]->indices[0+i] = 0+v;
+			meshVec[meshIndex]->indices[1+i] = 1+v;
+			meshVec[meshIndex]->indices[2+i] = 3+v;
+			meshVec[meshIndex]->indices[3+i] = 3+v;
+			meshVec[meshIndex]->indices[4+i] = 1+v;
+			meshVec[meshIndex]->indices[5+i] = 2+v;
+		}
+			meshVec[meshIndex]->numVertices = quads * quads * 4;
+			meshVec[meshIndex]->numIndices = indices;
+			//meshVec[meshIndex]->indices = new int[5];
+			//meshVec[meshIndex]->verts = new gVertex[5];
+			numOfMeshs++;
 }
 void Graphics::LoadMesh(std::string fileName, const wchar_t* textureFile, float mesh_scale, std::vector<gMesh*>& meshArr, UINT meshIndex, bool isSkybox)
 {
@@ -466,6 +517,7 @@ HRESULT Graphics::CreateBuffers(std::vector<gMesh*>& meshArr)
 			}
 		}
 
+		// TODO Set additional vertex buffer slot with per instance structured information.
 		if (meshArr[index]->gIndexBuffer == nullptr)
 		{
 			///////////////////// Index Buffer /////////////////////
@@ -598,20 +650,20 @@ HRESULT Graphics::CreateShaders(std::vector<gMesh*>& meshVec)
 				return hr;
 			}
 		}
-		/////////////////////// bind vertex ///////////////////////
+		/////////////////////// bind vertex shader ///////////////////////
 		gCon->VSSetShader(meshVec[i]->gVertexShader.Get(), nullptr, 0u);
 
 		///////////////////// create geometry shader ///////////////////
-		//D3DReadFileToBlob(L"GeometryShader.cso", &gBlob);
-		//hr = gDev->CreateGeometryShader(gBlob->GetBufferPointer(), gBlob->GetBufferSize(), nullptr, &gGeometryShader);
+		//D3DReadFileToBlob(L"GeometryShader.cso", meshVec[i]->gBlob.GetAddressOf());
+		//hr = gDev->CreateGeometryShader(meshVec[i]->gBlob->GetBufferPointer(), meshVec[i]->gBlob->GetBufferSize(), nullptr, meshVec[i]->gGeometryShader.GetAddressOf());
 		//if (FAILED(hr))
 		//{
 		//	ToolBox::ThrowErrorMsg("CreateGeometryShader Failed in InitDevice");
 		//	return hr;
 		//}
-
-		//gCon->GSSetShader(meshVec[i]->gVertexShader.Get(), nullptr, 0u);
-
+		//
+		///////////////////////// bind geometry shader ///////////////////////
+		//gCon->GSSetShader(meshVec[i]->gGeometryShader.Get(), nullptr, 0u);
 
 	}
 	return S_OK;
@@ -671,6 +723,7 @@ void Graphics::UpdateConstantBuffer(gMesh* mesh, XMFLOAT4A cbTranslate, XMFLOAT4
 
 	gCB.world = XMMatrixTranspose(globalWorld);
 	gCB.view = XMMatrixTranspose(globalView);
+	gCB.camera = XMMatrixTranspose(Camera);
 	gCB.perspProj = XMMatrixTranspose(globalProj);
 	gCB.orthoProj = XMMatrixTranspose(globalOrthProj);
 	gCB.ambientLight = XMFLOAT4(0.01f, 0.01f, 0.01f, 1.0f);
@@ -683,8 +736,13 @@ void Graphics::UpdateConstantBuffer(gMesh* mesh, XMFLOAT4A cbTranslate, XMFLOAT4
 							  *gDLightBuffer.GetAddressOf(),
 							  *gPLightBuffer.GetAddressOf(),
 							  *gSLightBuffer.GetAddressOf() };
+	// Vertex Shader
 	gCon->VSSetShader(mesh->gVertexShader.Get(), nullptr, 0u);
 	gCon->VSSetConstantBuffers(0u, (UINT)ARRAYSIZE(buffs), buffs);
+	// Geometry Shader
+	//gCon->GSSetShader(mesh->gGeometryShader.Get(), nullptr, 0u);
+	//gCon->GSSetConstantBuffers(0u, (UINT)ARRAYSIZE(buffs), buffs);
+	// Pixel Shader
 	gCon->PSSetShader(mesh->gPixelShader.Get(), nullptr, 0u);
 	gCon->PSSetConstantBuffers(0u, (UINT)ARRAYSIZE(buffs), buffs);
 	gCon->PSSetShaderResources(0, 1, mesh->shaderRV.GetAddressOf());
@@ -775,15 +833,12 @@ HRESULT Graphics::InitDevice()
 	gTimer->StartTimer();
 	HRESULT hr;
 #pragma region LOAD MODELS
-	//LoadMesh("Tester.fbx", 1.0f, gppMesh, 0);
-	//LoadMesh("NewDragon.fbx",10.0f, gppMesh, 0);
-	//LoadMesh("SpaceShip_1.fbx", 1.0f, gppMesh, 0);
-	//LoadMesh("Desk_0.fbx", L"carbonfiber.dds", 1.0f, &gppMesh, 0);
 	LoadMesh("ReverseCube.fbx", L"Skybox.dds", farPlane, gppMesh, numOfMeshs, true);
 	LoadMesh("Desk_1.fbx", L"stainless_steel.dds", 1.0f, gppMesh, numOfMeshs, false);
 	LoadMesh("Ball_Lamp_0.fbx", L"stainless_steel.dds", 1.0f, gppMesh, numOfMeshs, false);
 	LoadMesh("SpaceShip_3.fbx", L"stainless_steel.dds", 0.04f, gppMesh, numOfMeshs, false);
-	LoadMesh("Cube.fbx", L"Crate.dds", .05f, gppMesh, numOfMeshs, false);
+	CreateFloor(gppMesh, numOfMeshs,10u,10u);
+	//LoadMesh("Cube.fbx", L"Crate.dds", .05f, gppMesh, numOfMeshs, false);
 #pragma endregion
 
 #pragma region Create_Buffers
@@ -884,10 +939,10 @@ void Graphics::Render()
 #pragma region Update Lights
 
 	// SUN DIRECTIONAL LIGHT
-	sunPos += 0.25f;
+	sunPos += 0.1f;
 	updateDirectionLight(gCon.Get(), 0u, 1u, gDLightBuffer.Get(),
 		XMFLOAT4A(0.0f, cosf(degToRad(sunPos)), sinf(degToRad(sunPos)), 0.0f), // direction
-		XMFLOAT4A(0.85f, 0.35f, 0.0f, 1.0f)); // color
+		XMFLOAT4A(0.65f, 0.25f, 0.0f, 1.0f)); // color
 
 	// LAMP POINT LIGHT
 	updatePointLight(gCon.Get(), 0u, 1u, gPLightBuffer.Get(),
@@ -905,6 +960,12 @@ void Graphics::Render()
 		camForwDir, // direction
 		0.99f, // cone ratio
 		XMFLOAT4A(1.0f, 0.0f, 0.0f, 1.0f)); // color
+
+	//updateSpotLight(gCon.Get(), 0u, 1u, gSLightBuffer.Get(),
+	//	XMFLOAT4A(-5.0f, 2.0f, 0.0f, 0.0f),
+	//	XMFLOAT4A(-1.0f, 0.0f, 0.0f, 0.0f),
+	//	0.5f,
+	//	XMFLOAT4A(0.0f, 0.55f, 0.65f, 1.0f));
 #pragma endregion
 
 #pragma region Update Constant Buffer and draw objects
@@ -941,8 +1002,14 @@ void Graphics::Render()
 	gCon->DrawIndexed((UINT)gppMesh[3]->numIndices, 0u, 0);
 
 	// Box for testing
-	move = XMFLOAT4A(-5.0f, 0.0f, 2.0f, 0.0f);
-	rotate = XMFLOAT4A(0.0f, -30.0f, 0.0f, 0.0f);
+	//move = XMFLOAT4A(-5.0f, 0.0f, 2.0f, 0.0f);
+	//rotate = XMFLOAT4A(0.0f, -30.0f, 0.0f, 0.0f);
+	//UpdateConstantBuffer(gppMesh[4], move, rotate);
+	//gCon->DrawIndexed((UINT)gppMesh[4]->numIndices, 0u, 0);
+
+	// floor
+	move = XMFLOAT4A(-50.0f, 0.0f, -50.0f, 0.0f);
+	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
 	UpdateConstantBuffer(gppMesh[4], move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[4]->numIndices, 0u, 0);
 
@@ -977,8 +1044,14 @@ void Graphics::Render()
 	gCon->DrawIndexed((UINT)gppMesh[3]->numIndices, 0u, 0);
 
 	// Box for testing
-	move = XMFLOAT4A(-5.0f, 0.0f, 2.0f, 0.0f);
-	rotate = XMFLOAT4A(0.0f, -30.0f, 0.0f, 0.0f);
+	//move = XMFLOAT4A(-5.0f, 0.0f, 2.0f, 0.0f);
+	//rotate = XMFLOAT4A(0.0f, -30.0f, 0.0f, 0.0f);
+	//UpdateConstantBuffer(gppMesh[4], move, rotate);
+	//gCon->DrawIndexed((UINT)gppMesh[4]->numIndices, 0u, 0);
+
+	// floor
+	move = XMFLOAT4A(-50.0f, 0.0f, -50.0f, 0.0f);
+	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
 	UpdateConstantBuffer(gppMesh[4], move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[4]->numIndices, 0u, 0);
 
