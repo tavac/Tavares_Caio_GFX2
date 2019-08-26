@@ -701,7 +701,7 @@ void Graphics::CleanFrameBuffers(XMVECTORF32 DXCOLOR)
 	gCon->ClearRenderTargetView(gRtv.Get(), DXCOLOR);
 	gCon->ClearDepthStencilView(gDsv.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
 }
-void Graphics::UpdateConstantBuffer(gMesh* mesh, XMFLOAT4A cbTranslate, XMFLOAT4A cbRotate)
+void Graphics::UpdateConstantBuffer(gMesh* mesh, XMMATRIX view, XMMATRIX cam, XMFLOAT4A cbTranslate, XMFLOAT4A cbRotate)
 {
 	//////////////////// Bind Index Buffer ////////////////////
 	gCon->IASetIndexBuffer(mesh->gIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
@@ -722,8 +722,8 @@ void Graphics::UpdateConstantBuffer(gMesh* mesh, XMFLOAT4A cbTranslate, XMFLOAT4
 		globalWorld = XMMatrixMultiply(XMMatrixRotationAxis({ 0,0,1 }, degToRad(cbRotate.z)), globalWorld);
 
 	gCB.world = XMMatrixTranspose(globalWorld);
-	gCB.view = XMMatrixTranspose(globalView);
-	gCB.camera = XMMatrixTranspose(Camera);
+	gCB.view = XMMatrixTranspose(view);
+	gCB.camera = XMMatrixTranspose(cam);
 	gCB.perspProj = XMMatrixTranspose(globalProj);
 	gCB.orthoProj = XMMatrixTranspose(globalOrthProj);
 	gCB.ambientLight = XMFLOAT4(0.01f, 0.01f, 0.01f, 1.0f);
@@ -837,7 +837,7 @@ HRESULT Graphics::InitDevice()
 	LoadMesh("Desk_1.fbx", L"stainless_steel.dds", 1.0f, gppMesh, numOfMeshs, false);
 	LoadMesh("Ball_Lamp_0.fbx", L"stainless_steel.dds", 1.0f, gppMesh, numOfMeshs, false);
 	LoadMesh("SpaceShip_3.fbx", L"stainless_steel.dds", 0.04f, gppMesh, numOfMeshs, false);
-	CreateFloor(gppMesh, numOfMeshs,10u,10u);
+	CreateFloor(gppMesh, numOfMeshs,(floorW = 10u),(floorD = 10u));
 	//LoadMesh("Cube.fbx", L"Crate.dds", .05f, gppMesh, numOfMeshs, false);
 #pragma endregion
 
@@ -948,24 +948,18 @@ void Graphics::Render()
 	updatePointLight(gCon.Get(), 0u, 1u, gPLightBuffer.Get(),
 		XMFLOAT4A(10.5f, 5.25f, 4.25f, 0.0f), // position
 		15.0f, // radius
-		XMFLOAT4A(0.95f, 0.95f, 0.55f, 1.0f)); // color
+		XMFLOAT4A(0.95f, 0.95f, 0.55f, PointLight_A)); // color
 
 	// CAMREA SPOT LIGHT
-	XMFLOAT4A camPos;
-	XMStoreFloat4A(&camPos, Camera.r[3]);
-	XMFLOAT4A camForwDir;
-	XMStoreFloat4A(&camForwDir, XMVector4Transform(XMVectorSet(0, 0, 1, 0), Camera));
-	updateSpotLight(gCon.Get(), 0u, 1u, gSLightBuffer.Get(),
-		camPos, // position
-		camForwDir, // direction
-		0.99f, // cone ratio
-		XMFLOAT4A(1.0f, 0.0f, 0.0f, 1.0f)); // color
-
+	//XMFLOAT4A camPos;
+	//XMStoreFloat4A(&camPos, Camera_1.r[3]);
+	//XMFLOAT4A camForwDir;
+	//XMStoreFloat4A(&camForwDir, XMVector4Transform(XMVectorSet(0, 0, 1, 0), Camera_1));
 	//updateSpotLight(gCon.Get(), 0u, 1u, gSLightBuffer.Get(),
-	//	XMFLOAT4A(-5.0f, 2.0f, 0.0f, 0.0f),
-	//	XMFLOAT4A(-1.0f, 0.0f, 0.0f, 0.0f),
-	//	0.5f,
-	//	XMFLOAT4A(0.0f, 0.55f, 0.65f, 1.0f));
+	//	camPos, // position
+	//	camForwDir, // direction
+	//	0.99f, // cone ratio
+	//	XMFLOAT4A(1.0f, 0.0f, 0.0f, 1.0f)); // color
 #pragma endregion
 
 #pragma region Update Constant Buffer and draw objects
@@ -976,29 +970,31 @@ void Graphics::Render()
 
 	// TO DO: UpdateConstantBuffer will take a camera from the array of cameras who's index will be based on the last inputed value from WinMain.cpp
 	// Skybox
-	move = camPos;
-	//XMStoreFloat4A(&rotate, XMVector4Transform(XMVectorSet(0, 1, 0, 0), Camera));
-	//move = XMFLOAT4A(0.0f, 0.0f, 10.0f, 0.0f);
+	XMFLOAT4A camPos_1;
+	XMStoreFloat4A(&camPos_1, Camera_1.r[3]);
+	XMFLOAT4A camForwDir_1;
+	XMStoreFloat4A(&camForwDir_1, XMVector4Transform(XMVectorSet(0, 0, 1, 0), Camera_1));
+	move = camPos_1;
 	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[0], move, rotate);
+	UpdateConstantBuffer(gppMesh[0],globalView_1, Camera_1, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[0]->numIndices, 0u, 0);
 
 	// Desk
 	move = XMFLOAT4A(10.0f, 0.0f, 0.0f, 0.0f);
 	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[1], move, rotate);
+	UpdateConstantBuffer(gppMesh[1],globalView_1, Camera_1, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[1]->numIndices, 0u, 0);
 
 	// Ball Lamp on desk
 	move = XMFLOAT4A(10.5f, 4.25f, 4.25f, 0.0f);
 	rotate = XMFLOAT4A(0.0f, -30.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[2], move, rotate);
+	UpdateConstantBuffer(gppMesh[2],globalView_1, Camera_1, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[2]->numIndices, 0u, 0);
 
 	// Spaceship on desk
 	move = XMFLOAT4A(9.5f, 3.65f, -3.5f, 0.0f);
 	rotate = XMFLOAT4A(0.0f, -30.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[3], move, rotate);
+	UpdateConstantBuffer(gppMesh[3],globalView_1, Camera_1, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[3]->numIndices, 0u, 0);
 
 	// Box for testing
@@ -1008,9 +1004,9 @@ void Graphics::Render()
 	//gCon->DrawIndexed((UINT)gppMesh[4]->numIndices, 0u, 0);
 
 	// floor
-	move = XMFLOAT4A(-50.0f, 0.0f, -50.0f, 0.0f);
+	move = XMFLOAT4A(-((floorD*floorW)/2.0f), 0.0f, -((floorD * floorW) / 2.0f), 0.0f);
 	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[4], move, rotate);
+	UpdateConstantBuffer(gppMesh[4],globalView_1, Camera_1, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[4]->numIndices, 0u, 0);
 
 #pragma endregion
@@ -1020,27 +1016,31 @@ void Graphics::Render()
 	gCon->RSSetViewports(1u, &vp[1]);
 
 	// TO DO: UpdateConstantBuffer will take a camera from the array of cameras who's index will be based on the last inputed value from WinMain.cpp
-	move = camPos;
+	XMFLOAT4A camPos_2;
+	XMStoreFloat4A(&camPos_2, Camera_2.r[3]);
+	XMFLOAT4A camForwDir_2;
+	XMStoreFloat4A(&camForwDir_2, XMVector4Transform(XMVectorSet(0, 0, 1, 0), Camera_2));
+	move = camPos_2;
 	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[0], move, rotate);
+	UpdateConstantBuffer(gppMesh[0],globalView_2, Camera_2, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[0]->numIndices, 0u, 0);
 
 	// Desk
 	move = XMFLOAT4A(10.0f, 0.0f, 0.0f, 0.0f);
 	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[1], move, rotate);
+	UpdateConstantBuffer(gppMesh[1],globalView_2, Camera_2, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[1]->numIndices, 0u, 0);
 
 	// Ball Lamp on desk
 	move = XMFLOAT4A(10.5f, 4.23f, 4.25f, 0.0f);
 	rotate = XMFLOAT4A(0.0f, -30.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[2], move, rotate);
+	UpdateConstantBuffer(gppMesh[2],globalView_2, Camera_2, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[2]->numIndices, 0u, 0);
 
 	// Spaceship on desk
 	move = XMFLOAT4A(9.5f, 3.65f, -3.5f, 0.0f);
 	rotate = XMFLOAT4A(0.0f, -30.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[3], move, rotate);
+	UpdateConstantBuffer(gppMesh[3],globalView_2, Camera_2, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[3]->numIndices, 0u, 0);
 
 	// Box for testing
@@ -1050,9 +1050,9 @@ void Graphics::Render()
 	//gCon->DrawIndexed((UINT)gppMesh[4]->numIndices, 0u, 0);
 
 	// floor
-	move = XMFLOAT4A(-50.0f, 0.0f, -50.0f, 0.0f);
+	move = XMFLOAT4A(-((floorD * floorW) / 2.0f), 0.0f, -((floorD * floorW) / 2.0f), 0.0f);
 	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[4], move, rotate);
+	UpdateConstantBuffer(gppMesh[4],globalView_2, Camera_2, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[4]->numIndices, 0u, 0);
 
 #pragma endregion

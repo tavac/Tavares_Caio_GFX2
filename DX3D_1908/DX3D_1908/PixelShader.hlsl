@@ -68,11 +68,11 @@ float4 main(PS_Input psIn) : SV_TARGET
     {
         texColor = psIn.color;
     }
-    //if (PL_color.w == 1.0f)
-    //{
-    //    psIn.uv.x += sin(vDTime * (3.1415f / 180)) * cos(vDTime * (3.1415f / 180));
-    //    psIn.uv.y += (sin(vDTime * (3.1415f / 180)) * 0.1f);
-    //}
+    if (PL_color.w < 1.0f)
+    {
+        psIn.uv.x += sin(vDTime * (3.1415f / 180)) * cos(vDTime * (3.1415f / 180));
+        psIn.uv.y += (sin(vDTime * (3.1415f / 180)) * 0.1f);
+    }
 
     //outie += vAmbLight * texColor;
     ///////////// Direction Light /////////////
@@ -130,7 +130,7 @@ float4 main(PS_Input psIn) : SV_TARGET
     float spotAtten = saturate(((innerRatio) - (spotDot)) / ((innerRatio) - (outerRatio)));
     spotAtten -= 1.0f;
     //outie += (spotAtten * spotAtten * AngAtten * SL_color);
-    //outie += ((spotAtten * spotAtten * AngAtten * SL_color) + (SpecularEffect(psIn, SL_pos.xyz, (AngAtten), SL_color)));
+    outie += ((spotAtten * spotAtten * AngAtten * SL_color) + (SpecularEffect(psIn, SL_pos.xyz, (AngAtten * spotDot * spotAtten), SL_color)));
     ////////////////////////////////////////////////
 
 

@@ -56,6 +56,7 @@ public:
 	void LoadUVFromFBX(FbxMesh* pMesh, std::vector<XMFLOAT2>* pVecUV);
 	void TextureFileFromFBX(FbxMesh* mesh, FbxNode* childNode, gMesh* gmesh); // This requires the model to have been made with a .dds file
 
+	UINT floorW, floorD;
 	void CreateFloor(std::vector<gMesh*>& meshVec, UINT meshIndex, UINT floorWidth, UINT floorDepth);
 #pragma endregion
 
@@ -65,6 +66,7 @@ public:
 	wrl::ComPtr<ID3D11Buffer> gSLightBuffer = nullptr;
 	// Position of directional light in degrees. Converted to radians in updatelight section of render.
 	float sunPos = 0;
+	float randomLightPos = 0;
 	UINT numOfTotalLights = 0;
 	UINT numOfDir_Lights = 0;
 	UINT numOfPointLights = 0;
@@ -139,8 +141,10 @@ public:
 	XMVECTOR Eye = XMVectorSet(24.0f, 5.0f, -0.5f, 0.0f);
 	XMVECTOR At = XMVectorSet(-1.0f, 0.0f, 0.0f, 0.0f);
 	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	XMMATRIX globalView = XMMatrixLookAtLH(Eye, At, Up);
-	XMMATRIX Camera = XMMatrixInverse(nullptr, globalView);
+	XMMATRIX globalView_1 = XMMatrixLookAtLH(Eye, At, Up);
+	XMMATRIX globalView_2 = XMMatrixLookAtLH(Eye, At, Up);
+	XMMATRIX Camera_1 = XMMatrixInverse(nullptr, globalView_1);
+	XMMATRIX Camera_2 = XMMatrixInverse(nullptr, globalView_2);
 	float FoV_angle = 60.0f;
 	float nearPlane = 0.001f;
 	float farPlane = 1000.0f;
@@ -157,7 +161,7 @@ public:
 	void Render();
 	D3D11_VIEWPORT vp[2];
 	void CleanFrameBuffers(XMVECTORF32 DXCOLOR = Colors::Silver);
-	void UpdateConstantBuffer(gMesh* mesh, XMFLOAT4A cbTranslate, XMFLOAT4A cbRotate);
+	void UpdateConstantBuffer(gMesh* mesh,XMMATRIX view, XMMATRIX cam, XMFLOAT4A cbTranslate, XMFLOAT4A cbRotate);
 
 #pragma endregion
 };

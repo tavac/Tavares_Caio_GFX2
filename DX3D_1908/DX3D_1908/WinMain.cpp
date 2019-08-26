@@ -19,6 +19,10 @@ float last_Y;
 float screenY;
 float screenX;
 float screenRatio;
+
+int CamInUse = 0;
+XMMATRIX* views[2];
+XMMATRIX* cams[2];
 #pragma endregion
 
 #pragma region ForwardDeclarations
@@ -45,7 +49,10 @@ int CALLBACK WinMain(
 	hWnd = Init_Window(hWndWidth, hWndHeight, winTitle, &wc);
 	Gfx = new Graphics(hWnd);
 	Gfx->InitDevice();
-
+	cams[0] = &Gfx->Camera_1;
+	views[0] = &Gfx->globalView_1;
+	cams[1] = &Gfx->Camera_2;
+	views[1] = &Gfx->globalView_2;
 	// Message Loop
 	MSG msg = { 0 };
 	while (WM_QUIT != msg.message)
@@ -154,138 +161,123 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		else
 		{
-			if (Gfx->FoV_angle > 90) Gfx->FoV_angle -= 0.01f;
-			else if (Gfx->FoV_angle < 30) Gfx->FoV_angle += 0.01f;
+			if (Gfx->FoV_angle > 90) Gfx->FoV_angle -= 0.05f;
+			else if (Gfx->FoV_angle < 30) Gfx->FoV_angle += 0.05f;
 		}
 	}
 	break;
 	case WM_KEYDOWN:
 	{
-		if (wParam == VK_UP)
+		if (GetAsyncKeyState(VK_TAB))
 		{
-			//float xPos = GET_X_LPARAM(lParam);
-			//float yPos = GET_Y_LPARAM(lParam);
-			//if (xPos > 0 && xPos < hWndWidth && yPos > 0 && yPos < hWndHeight)
-			//{
-			//if (xPos != last_X)
-			//{
-				//float Yangle = xPos - last_X;
-				//XMMATRIX rotationY = XMMatrixRotationY(degToRad(Yangle * screenRatio));
-				//XMVECTOR saver = Gfx->Camera.r[3];
-				//Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-				//Gfx->Camera = XMMatrixMultiply(Gfx->Camera, rotationY);
-				//Gfx->Camera.r[3] = saver;
-			//}
-			//if (yPos != last_Y)
-			//{
-				//float Xangle = yPos - last_Y;
-				//XMMATRIX rotationX = XMMatrixRotationX(degToRad(Xangle * 0.5f));
-			XMVECTOR saver = Gfx->Camera.r[3];
-			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-			Gfx->Camera = XMMatrixMultiply(XMMatrixRotationX(degToRad(-2.5f)), Gfx->Camera);
-			Gfx->Camera.r[3] = saver;
-			//}
-			//}
-			//last_X = xPos;
-			//last_Y = yPos;
+			CamInUse++;
+			if (CamInUse >= ARRAYSIZE(cams))
+				CamInUse = 0;
 		}
-		else if (wParam == VK_DOWN)
+		if (GetAsyncKeyState(VK_UP))
 		{
-			XMVECTOR saver = Gfx->Camera.r[3];
-			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-			Gfx->Camera = XMMatrixMultiply(XMMatrixRotationX(degToRad(2.5f)), Gfx->Camera);
-			Gfx->Camera.r[3] = saver;
+			XMVECTOR saver = cams[CamInUse]->r[3];
+			cams[CamInUse]->r[3] = XMVectorSet(0, 0, 0, 1);
+			*cams[CamInUse] = XMMatrixMultiply(XMMatrixRotationX(degToRad(-2.5f)), *cams[CamInUse]);
+			cams[CamInUse]->r[3] = saver;
 		}
-		else if (wParam == VK_LEFT)
+		else if (GetAsyncKeyState(VK_DOWN))
 		{
-			XMVECTOR saver = Gfx->Camera.r[3];
-			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, XMMatrixRotationY(degToRad(-2.5f)));
-			Gfx->Camera.r[3] = saver;
+			XMVECTOR saver = cams[CamInUse]->r[3];
+			cams[CamInUse]->r[3] = XMVectorSet(0, 0, 0, 1);
+			*cams[CamInUse] = XMMatrixMultiply(XMMatrixRotationX(degToRad(2.5f)), *cams[CamInUse]);
+			cams[CamInUse]->r[3] = saver;
 		}
-		else if (wParam == VK_RIGHT)
+		if (GetAsyncKeyState(VK_LEFT))
 		{
-			XMVECTOR saver = Gfx->Camera.r[3];
-			Gfx->Camera.r[3] = XMVectorSet(0, 0, 0, 1);
-			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, XMMatrixRotationY(degToRad(2.5f)));
-			Gfx->Camera.r[3] = saver;
+			XMVECTOR saver = cams[CamInUse]->r[3];
+			cams[CamInUse]->r[3] = XMVectorSet(0, 0, 0, 1);
+			*cams[CamInUse] = XMMatrixMultiply(*cams[CamInUse], XMMatrixRotationY(degToRad(-2.5f)));
+			cams[CamInUse]->r[3] = saver;
+		}
+		else if (GetAsyncKeyState(VK_RIGHT))
+		{
+			XMVECTOR saver = cams[CamInUse]->r[3];
+			cams[CamInUse]->r[3] = XMVectorSet(0, 0, 0, 1);
+			*cams[CamInUse] = XMMatrixMultiply(*cams[CamInUse], XMMatrixRotationY(degToRad(2.5f)));
+			cams[CamInUse]->r[3] = saver;
 		}
 
 		// Up
 		if (GetAsyncKeyState(VK_SPACE))
 		{
-			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
-			//Gfx->globalView.r[3] += {0.0f, -0.1f, 0.0f};
-			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
 			XMMATRIX trans = XMMatrixTranslation(0.0f, MoveSpeed, 0.0f);
-			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, trans);
+			*cams[CamInUse] = XMMatrixMultiply(*cams[CamInUse], trans);
 		}
 		// Down
-		if (GetAsyncKeyState(VK_LSHIFT))
+		else if (GetAsyncKeyState(VK_LSHIFT))
 		{
-			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
-			//Gfx->globalView.r[3] += {0.0f, 0.1f, 0.0f};
-			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
 			XMMATRIX trans = XMMatrixTranslation(0.0f, -MoveSpeed, 0.0f);
-			Gfx->Camera = XMMatrixMultiply(Gfx->Camera, trans);
+			*cams[CamInUse] = XMMatrixMultiply(*cams[CamInUse], trans);
 		}
-	}
-	case WM_CHAR:
-	{
+	//}
+	//case WM_CHAR:
+	//{
 		// IF for 1,2,3,4 camera types, camera 1 is free cam
-		if ((char)wParam == 'p')
+		if (GetAsyncKeyState(0x50))
+		//if ((char)wParam == 'p')
 		{
 			std::ostringstream oss;
 			XMFLOAT4 currPos;
-			XMStoreFloat4(&currPos, Gfx->Camera.r[3]);
+			XMStoreFloat4(&currPos, cams[CamInUse]->r[3]);
 			oss << "Camera Position: (" << currPos.x << "," << currPos.y << "," << currPos.z << ")" << std::endl;
 			OutputDebugString(oss.str().c_str());
 			oss.clear();
 		}
-		if ((char)wParam == 'l')
+		if (GetAsyncKeyState(0x4C))
 		{
 			if (Gfx->PointLight_A < 1.0f)
 				Gfx->PointLight_A = 1.0f;
 			else
 				Gfx->PointLight_A = 0.0f;
 		}
-		if ((char)wParam == 'o' || (char)wParam == '0') // Go Home Cam youre drunk
+		if (GetAsyncKeyState(0x4F)) // Go Home Cam youre drunk
 		{
-			Gfx->globalView = XMMatrixLookAtLH(Gfx->Eye, Gfx->At, Gfx->Up);
-			Gfx->Camera = XMMatrixInverse(nullptr, Gfx->globalView);
+			Gfx->At = XMLoadFloat4A(&Gfx->gDirectionalLights[0].dir);
+			Gfx->At.m128_f32[0] *= -10.0f;
+			Gfx->At.m128_f32[1] *= -10.0f;
+			Gfx->At.m128_f32[2] *= -10.0f;
+			//*views[CamInUse] = XMMatrixLookAtLH(Gfx->Eye, Gfx->At, Gfx->Up);
+			*views[CamInUse] = XMMatrixLookAtLH(cams[CamInUse]->r[3], Gfx->At, Gfx->Up);
+			*cams[CamInUse] = XMMatrixInverse(nullptr, *views[CamInUse]);
 			return DefWindowProc(hWnd, msg, wParam, lParam);
 		}
-		if ((char)wParam == 'w') // Forward
+		if (GetAsyncKeyState(0x57)) // Forward
 		{
 			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
 			//Gfx->globalView.r[2] -= {0.0f, 0.0f, 0.1f};
 			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
 			XMMATRIX trans = XMMatrixTranslation(0.0f, 0.0f, MoveSpeed);
-			Gfx->Camera = XMMatrixMultiply(trans, Gfx->Camera);
+			*cams[CamInUse] = XMMatrixMultiply(trans, *cams[CamInUse]);
 		}
-		else if ((char)wParam == 's') // Back
+		else if (GetAsyncKeyState(0x53)) // Back
 		{
 			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
 			//Gfx->globalView.r[2] += {0.0f, 0.0f, 0.1f};
 			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
 			XMMATRIX trans = XMMatrixTranslation(0.0f, 0.0f, -MoveSpeed);
-			Gfx->Camera = XMMatrixMultiply(trans, Gfx->Camera);
+			*cams[CamInUse] = XMMatrixMultiply(trans, *cams[CamInUse]);
 		}
-		if ((char)wParam == 'a') // Left
+		if (GetAsyncKeyState(0x41)) // Left
 		{
 			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
 			//Gfx->globalView.r[2] += {0.1f, 0.0f, 0.0f};
 			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
 			XMMATRIX trans = XMMatrixTranslation(-MoveSpeed, 0.0f, 0.0f);
-			Gfx->Camera = XMMatrixMultiply(trans, Gfx->Camera);
+			*cams[CamInUse] = XMMatrixMultiply(trans, *cams[CamInUse]);
 		}
-		else if ((char)wParam == 'd') // Right
+		else if (GetAsyncKeyState(0x44)) // Right
 		{
 			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
 			//Gfx->globalView.r[2] -= {0.1f, 0.0f, 0.0f};
 			//Gfx->globalView = XMMatrixInverse(&XMMatrixDeterminant(Gfx->globalView), Gfx->globalView);
 			XMMATRIX trans = XMMatrixTranslation(MoveSpeed, 0.0f, 0.0f);
-			Gfx->Camera = XMMatrixMultiply(trans, Gfx->Camera);
+			*cams[CamInUse] = XMMatrixMultiply(trans, *cams[CamInUse]);
 		}
 
 		//// roll left
@@ -362,7 +354,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	}
 	if (Gfx)
 	{
-		Gfx->globalView = XMMatrixInverse(nullptr, Gfx->Camera);
+		*views[CamInUse] = XMMatrixInverse(nullptr, *cams[CamInUse]);
 	}
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
