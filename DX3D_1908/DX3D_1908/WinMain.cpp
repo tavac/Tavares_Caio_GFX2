@@ -23,6 +23,7 @@ float screenRatio;
 int CamInUse = 0;
 XMMATRIX* views[2];
 XMMATRIX* cams[2];
+bool lookat = false;
 #pragma endregion
 
 #pragma region ForwardDeclarations
@@ -238,14 +239,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		if (GetAsyncKeyState(0x4F)) // Go Home Cam youre drunk
 		{
-			Gfx->At = XMLoadFloat4A(&Gfx->gDirectionalLights[0].dir);
-			Gfx->At.m128_f32[0] *= -10.0f;
-			Gfx->At.m128_f32[1] *= -10.0f;
-			Gfx->At.m128_f32[2] *= -10.0f;
-			//*views[CamInUse] = XMMatrixLookAtLH(Gfx->Eye, Gfx->At, Gfx->Up);
-			*views[CamInUse] = XMMatrixLookAtLH(cams[CamInUse]->r[3], Gfx->At, Gfx->Up);
-			*cams[CamInUse] = XMMatrixInverse(nullptr, *views[CamInUse]);
-			return DefWindowProc(hWnd, msg, wParam, lParam);
+			lookat = !lookat;
 		}
 		if (GetAsyncKeyState(0x57)) // Forward
 		{
@@ -351,6 +345,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			//oss.clear();
 		}
 	}
+	}
+	if (lookat)
+	{
+		Gfx->At = XMLoadFloat4A(&Gfx->gPointLights[0].pos);
+		//Gfx->At.m128_f32[0] *= -10.0f;
+		//Gfx->At.m128_f32[1] *= -10.0f;
+		//Gfx->At.m128_f32[2] *= -10.0f;
+		//*views[CamInUse] = XMMatrixLookAtLH(Gfx->Eye, Gfx->At, Gfx->Up);
+		*views[CamInUse] = XMMatrixLookAtLH(cams[CamInUse]->r[3], Gfx->At, Gfx->Up);
+		*cams[CamInUse] = XMMatrixInverse(nullptr, *views[CamInUse]);
 	}
 	if (Gfx)
 	{

@@ -45,6 +45,7 @@ void Timer::StartTimer()
 
 float Timer::TimeSinceStart()
 {
+	timeCur = static_cast<float>(GetTickCount64());
 	return timeCur - timeStart;
 }
 

@@ -116,6 +116,10 @@ void Graphics::CreateFloor(std::vector<gMesh*>& meshVec, UINT meshIndex, UINT fl
 		}
 			meshVec[meshIndex]->numVertices = quads * quads * 4;
 			meshVec[meshIndex]->numIndices = indices;
+
+			HRESULT res = CreateDDSTextureFromFile(gDev.Get(), L"concrete.dds", nullptr, &meshVec[meshIndex]->shaderRV);
+			if (FAILED(res))
+				ToolBox::ThrowErrorMsg("CreateDDSTextureFromFile() Failed In LoadMesh!");
 			//meshVec[meshIndex]->indices = new int[5];
 			//meshVec[meshIndex]->verts = new gVertex[5];
 			numOfMeshs++;
@@ -834,6 +838,7 @@ HRESULT Graphics::InitDevice()
 	HRESULT hr;
 #pragma region LOAD MODELS
 	LoadMesh("ReverseCube.fbx", L"Skybox.dds", farPlane, gppMesh, numOfMeshs, true);
+	LoadMesh("OfficeRoom_0.fbx", L"stainless_steel.dds", 1.0f, gppMesh, numOfMeshs, false);
 	LoadMesh("Desk_1.fbx", L"stainless_steel.dds", 1.0f, gppMesh, numOfMeshs, false);
 	LoadMesh("Ball_Lamp_0.fbx", L"stainless_steel.dds", 1.0f, gppMesh, numOfMeshs, false);
 	LoadMesh("SpaceShip_3.fbx", L"stainless_steel.dds", 0.04f, gppMesh, numOfMeshs, false);
@@ -930,7 +935,7 @@ HRESULT Graphics::InitDevice()
 void Graphics::Render()
 {
 	CleanFrameBuffers();
-	float deltaT = (float)gTimer->TimeSinceTick();
+	float deltaT = (float)gTimer->TimeSinceStart();
 
 /*TODO	
 	figure out why i cant change the lightbuffers
@@ -942,7 +947,7 @@ void Graphics::Render()
 	sunPos += 0.1f;
 	updateDirectionLight(gCon.Get(), 0u, 1u, gDLightBuffer.Get(),
 		XMFLOAT4A(0.0f, cosf(degToRad(sunPos)), sinf(degToRad(sunPos)), 0.0f), // direction
-		XMFLOAT4A(0.65f, 0.25f, 0.0f, 1.0f)); // color
+		XMFLOAT4A(0.65f, 0.55f, 0.35f, 1.0f)); // color
 
 	// LAMP POINT LIGHT
 	updatePointLight(gCon.Get(), 0u, 1u, gPLightBuffer.Get(),
@@ -979,23 +984,29 @@ void Graphics::Render()
 	UpdateConstantBuffer(gppMesh[0],globalView_1, Camera_1, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[0]->numIndices, 0u, 0);
 
-	// Desk
+	// room
 	move = XMFLOAT4A(10.0f, 0.0f, 0.0f, 0.0f);
 	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
 	UpdateConstantBuffer(gppMesh[1],globalView_1, Camera_1, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[1]->numIndices, 0u, 0);
 
+	// Desk
+	move = XMFLOAT4A(10.0f, 0.0f, 0.0f, 0.0f);
+	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
+	UpdateConstantBuffer(gppMesh[2], globalView_1, Camera_1, move, rotate);
+	gCon->DrawIndexed((UINT)gppMesh[2]->numIndices, 0u, 0);
+
 	// Ball Lamp on desk
 	move = XMFLOAT4A(10.5f, 4.25f, 4.25f, 0.0f);
 	rotate = XMFLOAT4A(0.0f, -30.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[2],globalView_1, Camera_1, move, rotate);
-	gCon->DrawIndexed((UINT)gppMesh[2]->numIndices, 0u, 0);
+	UpdateConstantBuffer(gppMesh[3],globalView_1, Camera_1, move, rotate);
+	gCon->DrawIndexed((UINT)gppMesh[3]->numIndices, 0u, 0);
 
 	// Spaceship on desk
 	move = XMFLOAT4A(9.5f, 3.65f, -3.5f, 0.0f);
 	rotate = XMFLOAT4A(0.0f, -30.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[3],globalView_1, Camera_1, move, rotate);
-	gCon->DrawIndexed((UINT)gppMesh[3]->numIndices, 0u, 0);
+	UpdateConstantBuffer(gppMesh[4],globalView_1, Camera_1, move, rotate);
+	gCon->DrawIndexed((UINT)gppMesh[4]->numIndices, 0u, 0);
 
 	// Box for testing
 	//move = XMFLOAT4A(-5.0f, 0.0f, 2.0f, 0.0f);
@@ -1006,8 +1017,8 @@ void Graphics::Render()
 	// floor
 	move = XMFLOAT4A(-((floorD*floorW)/2.0f), 0.0f, -((floorD * floorW) / 2.0f), 0.0f);
 	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[4],globalView_1, Camera_1, move, rotate);
-	gCon->DrawIndexed((UINT)gppMesh[4]->numIndices, 0u, 0);
+	UpdateConstantBuffer(gppMesh[5],globalView_1, Camera_1, move, rotate);
+	gCon->DrawIndexed((UINT)gppMesh[5]->numIndices, 0u, 0);
 
 #pragma endregion
 
@@ -1025,23 +1036,29 @@ void Graphics::Render()
 	UpdateConstantBuffer(gppMesh[0],globalView_2, Camera_2, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[0]->numIndices, 0u, 0);
 
-	// Desk
+	// room
 	move = XMFLOAT4A(10.0f, 0.0f, 0.0f, 0.0f);
 	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
 	UpdateConstantBuffer(gppMesh[1],globalView_2, Camera_2, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[1]->numIndices, 0u, 0);
 
+	// Desk
+	move = XMFLOAT4A(10.0f, 0.0f, 0.0f, 0.0f);
+	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
+	UpdateConstantBuffer(gppMesh[2], globalView_2, Camera_2, move, rotate);
+	gCon->DrawIndexed((UINT)gppMesh[2]->numIndices, 0u, 0);
+
 	// Ball Lamp on desk
 	move = XMFLOAT4A(10.5f, 4.23f, 4.25f, 0.0f);
 	rotate = XMFLOAT4A(0.0f, -30.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[2],globalView_2, Camera_2, move, rotate);
-	gCon->DrawIndexed((UINT)gppMesh[2]->numIndices, 0u, 0);
+	UpdateConstantBuffer(gppMesh[3],globalView_2, Camera_2, move, rotate);
+	gCon->DrawIndexed((UINT)gppMesh[3]->numIndices, 0u, 0);
 
 	// Spaceship on desk
 	move = XMFLOAT4A(9.5f, 3.65f, -3.5f, 0.0f);
 	rotate = XMFLOAT4A(0.0f, -30.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[3],globalView_2, Camera_2, move, rotate);
-	gCon->DrawIndexed((UINT)gppMesh[3]->numIndices, 0u, 0);
+	UpdateConstantBuffer(gppMesh[4],globalView_2, Camera_2, move, rotate);
+	gCon->DrawIndexed((UINT)gppMesh[4]->numIndices, 0u, 0);
 
 	// Box for testing
 	//move = XMFLOAT4A(-5.0f, 0.0f, 2.0f, 0.0f);
@@ -1052,8 +1069,8 @@ void Graphics::Render()
 	// floor
 	move = XMFLOAT4A(-((floorD * floorW) / 2.0f), 0.0f, -((floorD * floorW) / 2.0f), 0.0f);
 	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[4],globalView_2, Camera_2, move, rotate);
-	gCon->DrawIndexed((UINT)gppMesh[4]->numIndices, 0u, 0);
+	UpdateConstantBuffer(gppMesh[5],globalView_2, Camera_2, move, rotate);
+	gCon->DrawIndexed((UINT)gppMesh[5]->numIndices, 0u, 0);
 
 #pragma endregion
 

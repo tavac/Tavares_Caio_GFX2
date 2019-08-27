@@ -70,6 +70,8 @@ VS_Output main(VS_Input vsIn)
     //float4 _DL_color = DL_color;
 
 	VS_Output vsOut = (VS_Output)0;
+    //vsIn.pos.y += sin(DL_dir.y * 100);
+    //vsIn.pos.x += sin(DL_dir.z * 100);
 	vsOut.pos = mul(vsIn.pos, vWorld);
 	vsOut.wPos = mul(vsIn.pos, vWorld);
 

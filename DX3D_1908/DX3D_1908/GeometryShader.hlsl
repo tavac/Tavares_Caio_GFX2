@@ -48,7 +48,7 @@ void main(
     verts[0].pos.x -= 0.5f;
 
     verts[2].pos = verts[0].pos;
-    verts[2].pos.x += 1.0f;
+    verts[2].pos.x += 10.0f;
 
     verts[1].pos.xyz = input[1].xyz;
 
