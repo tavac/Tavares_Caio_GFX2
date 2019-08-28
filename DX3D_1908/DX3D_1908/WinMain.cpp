@@ -1,11 +1,11 @@
 //#include <Windows.h>
-#include "ModelFactory.h"
-
+//#include "ModelFactory.h"
+#include "Graphics.h"
 
 #pragma region Variables
 WNDCLASSEX WndCls;
 HWND hWnd;
-std::string winTitle = "Hit 'TAB' to enter command, Execute with 'ENTER'";
+std::string winTitle = "Caio Tavares GFX2 Project | See KeyBinds.txt for info";
 Graphics* Gfx = nullptr;
 std::string strIB;
 bool isTyping = false;
@@ -23,6 +23,8 @@ float screenRatio;
 int CamInUse = 0;
 XMMATRIX* views[2];
 XMMATRIX* cams[2];
+XMMATRIX* projs[2];
+float* fovs[2];
 bool lookat = false;
 #pragma endregion
 
@@ -52,8 +54,14 @@ int CALLBACK WinMain(
 	Gfx->InitDevice();
 	cams[0] = &Gfx->Camera_1;
 	views[0] = &Gfx->globalView_1;
+	projs[0] = &Gfx->globalProj_1;
+	fovs[0] = &Gfx->FoV_angle_1;
 	cams[1] = &Gfx->Camera_2;
 	views[1] = &Gfx->globalView_2;
+	projs[1] = &Gfx->globalProj_2;
+	fovs[1] = &Gfx->FoV_angle_2;
+
+
 	// Message Loop
 	MSG msg = { 0 };
 	while (WM_QUIT != msg.message)
@@ -144,6 +152,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		oss.clear();
 	}
 	break;
+	case WM_ENTERSIZEMOVE:
+	{
+		//RECT* nWnd = new RECT();
+		//GetClientRect(hWnd, nWnd);
+		//UINT nHeight = nWnd->bottom - nWnd->top;
+		//UINT nWidth = nWnd->right - nWnd->left;
+		//hWndHeight = nWidth / hWndAspectRatio;
+		//hWndWidth = nHeight * hWndAspectRatio;
+
+	}
+	break;
 	// Camera Controls
 	case WM_MOUSEWHEEL:
 	{
@@ -154,21 +173,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		//	Gfx->globalProj = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
 		//}
 		//else if ((char)wParam == 'r') // Fov narrower // zoom in
-		if (Gfx->FoV_angle <= 90 && Gfx->FoV_angle >= 30)
+		if ((*fovs[CamInUse]) <= 90 && (*fovs[CamInUse]) >= 30)
 		{
 			float direction = GET_WHEEL_DELTA_WPARAM(wParam) * 0.01f;
-			Gfx->FoV_angle += direction;
-			Gfx->globalProj = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
+			(*fovs[CamInUse]) += direction;
+			*projs[CamInUse] = XMMatrixPerspectiveFovLH(degToRad((*fovs[CamInUse])), hWndWidth / hWndHeight, Gfx->nearPlane, Gfx->farPlane);
 		}
 		else
 		{
-			if (Gfx->FoV_angle > 90) Gfx->FoV_angle -= 0.05f;
-			else if (Gfx->FoV_angle < 30) Gfx->FoV_angle += 0.05f;
+			if ((*fovs[CamInUse]) > 90) (*fovs[CamInUse]) -= 0.05f;
+			else if ((*fovs[CamInUse]) < 30) (*fovs[CamInUse]) += 0.05f;
+
+			*projs[CamInUse] = XMMatrixPerspectiveFovLH(degToRad((*fovs[CamInUse])), hWndWidth / hWndHeight, Gfx->nearPlane, Gfx->farPlane);
+
 		}
 	}
 	break;
 	case WM_KEYDOWN:
 	{
+		if (GetAsyncKeyState(0x46))
+		{
+			(*fovs[CamInUse]) = 60;
+			*projs[CamInUse] = XMMatrixPerspectiveFovLH(degToRad((*fovs[CamInUse])), hWndWidth / hWndHeight, Gfx->nearPlane, Gfx->farPlane);
+		}
 		if (GetAsyncKeyState(VK_TAB))
 		{
 			CamInUse++;
@@ -293,20 +320,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		//	Gfx->Camera.r[3] = saver;
 		//}
 
-		if ((char)wParam == '=') // Far plane closer
+		if ((char)wParam == '-') // Far plane closer
 		{
 			if (Gfx->farPlane > 50.0f)
 			{
 				Gfx->farPlane -= 50.0f;
-				Gfx->globalProj = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
+				Gfx->globalProj_1 = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle_1), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
 			}
 		}
-		else if ((char)wParam == '-') // Far plane further
+		else if ((char)wParam == '=') // Far plane further
 		{
 			if (Gfx->farPlane < 500.0f)
 			{
 				Gfx->farPlane += 50.0f;
-				Gfx->globalProj = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
+				Gfx->globalProj_1 = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle_1), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
 			}
 		}
 		else if ((char)wParam == '[') // Near plane closer
@@ -314,15 +341,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			if (Gfx->nearPlane > 0.001)
 			{
 				Gfx->nearPlane /= 10.0f;
-				Gfx->globalProj = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
+				Gfx->globalProj_1 = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle_1), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
 			}
 		}
 		else if ((char)wParam == ']') // Near plane further
 		{
 			if (Gfx->nearPlane < 25.0f)
 			{
-				Gfx->nearPlane *= 10.0f;
-				Gfx->globalProj = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
+				Gfx->nearPlane += 10.0f;
+				Gfx->globalProj_1 = XMMatrixPerspectiveFovLH(degToRad(Gfx->FoV_angle_1), 1280.0f / 720.0f, Gfx->nearPlane, Gfx->farPlane);
 			}
 		}
 		if ((char)wParam == ',')
@@ -394,10 +421,10 @@ HWND Init_Window(int _width, int _height, std::string _title, WNDCLASSEX* _WndCl
 	ClientRect.right = (long)(ClientRect.left + _width);
 	ClientRect.top = labs((long)(centerScreen.y - (_height * 0.5f)));
 	ClientRect.bottom = (long)(ClientRect.top + static_cast<long>(_height));
-	AdjustWindowRect(&ClientRect, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE);
+	AdjustWindowRect(&ClientRect, WS_CAPTION | WS_SIZEBOX| WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU, FALSE);
 	HWND hWnd = CreateWindowEx(
 		0, _WndClass->lpszClassName, _title.c_str(),
-		WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU,
+		WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU | WS_SIZEBOX,
 		ClientRect.left, ClientRect.top, ClientRect.right - ClientRect.left, ClientRect.bottom - ClientRect.top,
 		nullptr, nullptr, _WndClass->hInstance, nullptr);
 

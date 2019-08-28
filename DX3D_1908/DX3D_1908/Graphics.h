@@ -154,10 +154,12 @@ public:
 	XMMATRIX globalView_2 = XMMatrixLookAtLH(Eye, At, Up);
 	XMMATRIX Camera_1 = XMMatrixInverse(nullptr, globalView_1);
 	XMMATRIX Camera_2 = XMMatrixInverse(nullptr, globalView_2);
-	float FoV_angle = 60.0f;
+	float FoV_angle_1 = 60.0f;
+	float FoV_angle_2 = 60.0f;
 	float nearPlane = 0.001f;
 	float farPlane = 1000.0f;
-	XMMATRIX globalProj = XMMatrixPerspectiveFovLH(degToRad(FoV_angle), hWndWidth / hWndHeight, nearPlane, farPlane);
+	XMMATRIX globalProj_1 = XMMatrixPerspectiveFovLH(degToRad(FoV_angle_1), hWndWidth / hWndHeight, nearPlane, farPlane);
+	XMMATRIX globalProj_2 = XMMatrixPerspectiveFovLH(degToRad(FoV_angle_2), hWndWidth / hWndHeight, nearPlane, farPlane);
 	XMMATRIX globalOrthProj = XMMatrixOrthographicLH(hWndWidth, hWndHeight, nearPlane, farPlane);
 #pragma endregion
 
@@ -170,7 +172,7 @@ public:
 	void Render();
 	D3D11_VIEWPORT vp[2];
 	void CleanFrameBuffers(XMVECTORF32 DXCOLOR = Colors::Silver);
-	void UpdateConstantBuffer(gMesh* mesh,XMMATRIX view, XMMATRIX cam, XMFLOAT4A cbTranslate, XMFLOAT4A cbRotate);
+	void UpdateConstantBuffer(gMesh* mesh,XMMATRIX view, XMMATRIX cam, XMMATRIX proj, XMFLOAT4A cbTranslate, XMFLOAT4A cbRotate);
 
 #pragma endregion
 };

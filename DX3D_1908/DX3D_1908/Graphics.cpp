@@ -117,6 +117,7 @@ void Graphics::CreateFloor(std::vector<gMesh*>& meshVec, UINT meshIndex, UINT fl
 	meshVec[meshIndex]->numVertices = quads * quads * 4;
 	meshVec[meshIndex]->numIndices = indices;
 
+
 	HRESULT res = CreateDDSTextureFromFile(gDev.Get(), L"concrete.dds", nullptr, &meshVec[meshIndex]->shaderRV);
 	if (FAILED(res))
 		ToolBox::ThrowErrorMsg("CreateDDSTextureFromFile() Failed In LoadMesh!");
@@ -705,7 +706,7 @@ void Graphics::CleanFrameBuffers(XMVECTORF32 DXCOLOR)
 	gCon->ClearRenderTargetView(gRtv.Get(), DXCOLOR);
 	gCon->ClearDepthStencilView(gDsv.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
 }
-void Graphics::UpdateConstantBuffer(gMesh* mesh, XMMATRIX view, XMMATRIX cam, XMFLOAT4A cbTranslate, XMFLOAT4A cbRotate)
+void Graphics::UpdateConstantBuffer(gMesh* mesh, XMMATRIX view, XMMATRIX cam, XMMATRIX proj, XMFLOAT4A cbTranslate, XMFLOAT4A cbRotate)
 {
 	//////////////////// Bind Index Buffer ////////////////////
 	gCon->IASetIndexBuffer(mesh->gIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
@@ -728,7 +729,7 @@ void Graphics::UpdateConstantBuffer(gMesh* mesh, XMMATRIX view, XMMATRIX cam, XM
 	gCB.world = XMMatrixTranspose(globalWorld);
 	gCB.view = XMMatrixTranspose(view);
 	gCB.camera = XMMatrixTranspose(cam);
-	gCB.perspProj = XMMatrixTranspose(globalProj);
+	gCB.perspProj = XMMatrixTranspose(proj);
 	gCB.orthoProj = XMMatrixTranspose(globalOrthProj);
 	gCB.ambientLight = XMFLOAT4(0.01f, 0.01f, 0.01f, 1.0f);
 	gCB.dTime = (float)gTimer->deltaTime;
@@ -869,64 +870,65 @@ HRESULT Graphics::InitDevice()
 	gCon->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 #pragma region Off-screen 2D Texture
-	//D3D11_TEXTURE2D_DESC offTex = {};
-	//offTex.Width = 100;
-	//offTex.Height = 100;
-	//offTex.MipLevels = 0;
-	//offTex.ArraySize = 1;
-	//offTex.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-	//offTex.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	//offTex.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
-	//offTex.Usage = D3D11_USAGE_DEFAULT;
-	//offTex.CPUAccessFlags = 0;
-	//offTex.SampleDesc.Count = 1;
-	//offTex.SampleDesc.Quality = 0;
-	//hr = gDev->CreateTexture2D(&offTex, nullptr, gOffTexture2D.GetAddressOf());
-	//if (FAILED(hr))
-	//	return hr;
-	//
-	//D3D11_RENDER_TARGET_VIEW_DESC offRTV = {};
-	//offRTV.Format = offTex.Format;
-	//offRTV.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-	//offRTV.Texture2D.MipSlice = 0;
-	//hr = gDev->CreateRenderTargetView(gOffTexture2D.Get(), &offRTV, goffRtv.GetAddressOf());
-	//if (FAILED(hr))
-	//	return hr;
-	//
-	//D3D11_SHADER_RESOURCE_VIEW_DESC srvdes = {};
-	//srvdes.Format = offTex.Format;
-	//srvdes.Texture2D.MipLevels = 1;
-	//srvdes.Texture2D.MostDetailedMip = 0;
-	//srvdes.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	//gDev->CreateShaderResourceView(gOffTexture2D.Get(), &srvdes, gppMesh[5]->shaderRV.GetAddressOf());
-	//if (FAILED(hr))
-	//	return hr;
-	//
-	//
-	//D3D11_TEXTURE2D_DESC offDepth = {};
-	//offDepth.Width = 100;
-	//offDepth.Height = 100;
-	//offDepth.MipLevels = 0;
-	//offDepth.ArraySize = 1;
-	//offDepth.Format = DXGI_FORMAT_D32_FLOAT;
-	//offDepth.SampleDesc.Count = 1;
-	//offDepth.SampleDesc.Quality = 0;
-	//offDepth.Usage = D3D11_USAGE_DEFAULT;
-	//offDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	//offDepth.CPUAccessFlags = 0;
-	//offDepth.MiscFlags = 0;
-	//hr = gDev->CreateTexture2D(&offDepth, nullptr, gOffStencilTexture2D.GetAddressOf());
-	//if (FAILED(hr))
-	//	return hr;
-	//
-	//D3D11_DEPTH_STENCIL_VIEW_DESC offDSV = {};
-	//offDSV.Format = DXGI_FORMAT_D32_FLOAT;
-	//offDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	//offDSV.Texture2D.MipSlice = 0;
-	//hr = gDev->CreateDepthStencilView(gOffStencilTexture2D.Get(), &offDSV, gOffDsv.GetAddressOf());
-	//if (FAILED(hr))
-	//	return hr;
-	//
+	D3D11_TEXTURE2D_DESC offTex = {};
+	offTex.Width = 10;
+	offTex.Height = 10;
+	offTex.MipLevels = 0;
+	offTex.ArraySize = 1;
+	offTex.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	offTex.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	offTex.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+	offTex.Usage = D3D11_USAGE_DEFAULT;
+	offTex.CPUAccessFlags = 0;
+	offTex.SampleDesc.Count = 1;
+	offTex.SampleDesc.Quality = 0;
+	hr = gDev->CreateTexture2D(&offTex, nullptr, gOffTexture2D.GetAddressOf()); // Creating 2d texture to be written on by RTV
+	if (FAILED(hr))
+		return hr;
+	
+	D3D11_RENDER_TARGET_VIEW_DESC offRTV = {};
+	offRTV.Format = offTex.Format;
+	offRTV.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	offRTV.Texture2D.MipSlice = 0;
+	hr = gDev->CreateRenderTargetView(gOffTexture2D.Get(), &offRTV, goffRtv.GetAddressOf()); // Creating RTV to write on texture ( color buffer)
+	if (FAILED(hr))
+		return hr;
+	
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvdes = {};
+	srvdes.Format = offTex.Format;
+	srvdes.Texture2D.MipLevels = 1;
+	srvdes.Texture2D.MostDetailedMip = 0;
+	srvdes.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	//gppMesh[5]->shaderRV.Reset();
+	//gDev->CreateShaderResourceView(gOffTexture2D.Get(), &srvdes, gppMesh[5]->shaderRV.ReleaseAndGetAddressOf()); // Creating a Shader resource on the floorquads so the texture gets rendered on it.
+ 	if (FAILED(hr))
+		return hr;
+	
+	
+	D3D11_TEXTURE2D_DESC offDepth = {};
+	offDepth.Width = 10;
+	offDepth.Height = 10;
+	offDepth.MipLevels = 0;
+	offDepth.ArraySize = 1;
+	offDepth.Format = DXGI_FORMAT_D32_FLOAT;
+	offDepth.SampleDesc.Count = 1;
+	offDepth.SampleDesc.Quality = 0;
+	offDepth.Usage = D3D11_USAGE_DEFAULT;
+	offDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	offDepth.CPUAccessFlags = 0;
+	offDepth.MiscFlags = 0;
+	hr = gDev->CreateTexture2D(&offDepth, nullptr, gOffStencilTexture2D.GetAddressOf()); // depth stencil texture. ( depth buffer)
+	if (FAILED(hr))
+		return hr;
+	
+	D3D11_DEPTH_STENCIL_VIEW_DESC offDSV = {};
+	offDSV.Format = DXGI_FORMAT_D32_FLOAT;
+	offDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	offDSV.Texture2D.MipSlice = 0;
+	hr = gDev->CreateDepthStencilView(gOffStencilTexture2D.Get(), &offDSV, gOffDsv.GetAddressOf()); // Depth stencil view to write on depth buffer.
+	if (FAILED(hr))
+		return hr;
+	
 	//gCon->OMSetRenderTargets(1, goffRtv.GetAddressOf(), gOffDsv.Get());
 #pragma endregion
 
@@ -957,27 +959,9 @@ HRESULT Graphics::InitDevice()
 		return hr;
 
 	//// bind render target
-	gCon->OMSetRenderTargets(1, gRtv.GetAddressOf(), gDsv.Get());
+	//gCon->OMSetRenderTargets(1, gRtv.GetAddressOf(), gDsv.Get());
 
-	// configer viewport
-	D3D11_VIEWPORT port_one;
-	port_one.Width = 640.0f;
-	port_one.Height = 720.0f;
-	port_one.MinDepth = 0.0f;
-	port_one.MaxDepth = 1.0f;
-	port_one.TopLeftX = 0.0f;
-	port_one.TopLeftY = 0.0f;
 
-	D3D11_VIEWPORT port_two;
-	port_two.Width = 640.0f;
-	port_two.Height = 720.0f;
-	port_two.MinDepth = 0.0f;
-	port_two.MaxDepth = 1.0f;
-	port_two.TopLeftX = 640.0f;
-	port_two.TopLeftY = 0.0f;
-
-	vp[0] = port_one; //{ port_one, port_two };
-	vp[1] = port_two;
 
 	//D3D11_VIEWPORT vp;
 	//vp.Width = 1280.0f;
@@ -996,19 +980,42 @@ HRESULT Graphics::InitDevice()
 //vvv Render vvv///
 void Graphics::Render()
 {
-	gCon->RSSetViewports(1u, &vp[0]);
+	// configer viewport
+	D3D11_VIEWPORT port_one;
+	port_one.Width = hWndWidth * 0.5f;
+	port_one.Height = hWndHeight;
+	port_one.MinDepth = 0.0f;
+	port_one.MaxDepth = 1.0f;
+	port_one.TopLeftX = 0.0f;
+	port_one.TopLeftY = 0.0f;
 
-	// set
+	D3D11_VIEWPORT port_two;
+	port_two.Width = hWndWidth * 0.5f;
+	port_two.Height = hWndHeight;
+	port_two.MinDepth = 0.0f;
+	port_two.MaxDepth = 1.0f;
+	port_two.TopLeftX = hWndWidth * 0.5f;
+	port_two.TopLeftY = 0.0f;
+
+	vp[0] = port_one; //{ port_one, port_two };
+	vp[1] = port_two;
+
+
+	gCon->RSSetViewports(1u, &vp[0]);
+	
+	//// set
 	//gCon->OMSetRenderTargets(1, goffRtv.GetAddressOf(), gOffDsv.Get());
 	//// clear
 	//gCon->ClearRenderTargetView(goffRtv.Get(), DirectX::Colors::Cyan);
 	//// draw
-	//UpdateConstantBuffer(gppMesh[4], globalView_2, Camera_2, XMFLOAT4A(0, 0, 0, 0), XMFLOAT4A(0, 0, 0, 0));
+	//UpdateConstantBuffer(gppMesh[4], globalView_2, Camera_2, XMFLOAT4A(sinf(sunPos), 0, 0, 0), XMFLOAT4A(0, 0, 0, 0));
 	//gCon->DrawIndexed((UINT)gppMesh[4]->numIndices, 0u, 0); // im clearing the rtv but it wont draw too it.?
-	//
-	//
-	//gCon->OMSetRenderTargets(1, gRtv.GetAddressOf(), gDsv.Get());
+	
+	//gSwap->Present(1u, 0u);
+	gCon->OMSetRenderTargets(1, gRtv.GetAddressOf(), gDsv.Get());
 
+
+	//gCon->ClearDepthStencilView(gOffDsv.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
 	CleanFrameBuffers();
 	float deltaT = (float)gTimer->TimeSinceStart();
 
@@ -1057,31 +1064,31 @@ void Graphics::Render()
 	XMStoreFloat4A(&camForwDir_1, XMVector4Transform(XMVectorSet(0, 0, 1, 0), Camera_1));
 	move = camPos_1;
 	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[0], globalView_1, Camera_1, move, rotate);
+	UpdateConstantBuffer(gppMesh[0], globalView_1, Camera_1, globalProj_1, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[0]->numIndices, 0u, 0);
 
 	// room
 	move = XMFLOAT4A(10.0f, 0.0f, 0.0f, 0.0f);
 	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[1], globalView_1, Camera_1, move, rotate);
+	UpdateConstantBuffer(gppMesh[1], globalView_1, Camera_1, globalProj_1, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[1]->numIndices, 0u, 0);
 
 	// Desk
 	move = XMFLOAT4A(10.0f, 0.0f, 0.0f, 0.0f);
 	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[2], globalView_1, Camera_1, move, rotate);
+	UpdateConstantBuffer(gppMesh[2], globalView_1, Camera_1, globalProj_1, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[2]->numIndices, 0u, 0);
 
 	// Ball Lamp on desk
 	move = XMFLOAT4A(10.5f, 4.25f, 4.25f, 0.0f);
 	rotate = XMFLOAT4A(0.0f, -30.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[3], globalView_1, Camera_1, move, rotate);
+	UpdateConstantBuffer(gppMesh[3], globalView_1, Camera_1, globalProj_1, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[3]->numIndices, 0u, 0);
 
 	// Spaceship on desk
 	move = XMFLOAT4A(9.5f, 3.65f, -3.5f, 0.0f);
 	rotate = XMFLOAT4A(0.0f, -30.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[4], globalView_1, Camera_1, move, rotate);
+	UpdateConstantBuffer(gppMesh[4], globalView_1, Camera_1, globalProj_1, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[4]->numIndices, 0u, 0);
 
 	// Box for testing
@@ -1093,7 +1100,7 @@ void Graphics::Render()
 	// floor
 	move = XMFLOAT4A(-((floorD * floorW) / 2.0f), 0.0f, -((floorD * floorW) / 2.0f), 0.0f);
 	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[5], globalView_1, Camera_1, move, rotate);
+	UpdateConstantBuffer(gppMesh[5], globalView_1, Camera_1, globalProj_1, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[5]->numIndices, 0u, 0);
 
 #pragma endregion
@@ -1109,31 +1116,31 @@ void Graphics::Render()
 	XMStoreFloat4A(&camForwDir_2, XMVector4Transform(XMVectorSet(0, 0, 1, 0), Camera_2));
 	move = camPos_2;
 	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[0], globalView_2, Camera_2, move, rotate);
+	UpdateConstantBuffer(gppMesh[0], globalView_2, Camera_2, globalProj_2, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[0]->numIndices, 0u, 0);
 
 	// room
 	move = XMFLOAT4A(10.0f, 0.0f, 0.0f, 0.0f);
 	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[1], globalView_2, Camera_2, move, rotate);
+	UpdateConstantBuffer(gppMesh[1], globalView_2, Camera_2, globalProj_2, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[1]->numIndices, 0u, 0);
 
 	// Desk
 	move = XMFLOAT4A(10.0f, 0.0f, 0.0f, 0.0f);
 	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[2], globalView_2, Camera_2, move, rotate);
+	UpdateConstantBuffer(gppMesh[2], globalView_2, Camera_2, globalProj_2, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[2]->numIndices, 0u, 0);
 
 	// Ball Lamp on desk
 	move = XMFLOAT4A(10.5f, 4.23f, 4.25f, 0.0f);
 	rotate = XMFLOAT4A(0.0f, -30.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[3], globalView_2, Camera_2, move, rotate);
+	UpdateConstantBuffer(gppMesh[3], globalView_2, Camera_2, globalProj_2, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[3]->numIndices, 0u, 0);
 
 	// Spaceship on desk
 	move = XMFLOAT4A(9.5f, 3.65f, -3.5f, 0.0f);
 	rotate = XMFLOAT4A(0.0f, -30.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[4], globalView_2, Camera_2, move, rotate);
+	UpdateConstantBuffer(gppMesh[4], globalView_2, Camera_2, globalProj_2, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[4]->numIndices, 0u, 0);
 
 	// Box for testing
@@ -1145,7 +1152,7 @@ void Graphics::Render()
 	// floor
 	move = XMFLOAT4A(-((floorD * floorW) / 2.0f), 0.0f, -((floorD * floorW) / 2.0f), 0.0f);
 	rotate = XMFLOAT4A(0.0f, 0.0f, 0.0f, 0.0f);
-	UpdateConstantBuffer(gppMesh[5], globalView_2, Camera_2, move, rotate);
+	UpdateConstantBuffer(gppMesh[5], globalView_2, Camera_2, globalProj_2, move, rotate);
 	gCon->DrawIndexed((UINT)gppMesh[5]->numIndices, 0u, 0);
 
 #pragma endregion
@@ -1153,6 +1160,7 @@ void Graphics::Render()
 #pragma endregion
 
 	gSwap->Present(1u, 0u);
+
 }
 //^^^ Render ^^^//
 #pragma endregion

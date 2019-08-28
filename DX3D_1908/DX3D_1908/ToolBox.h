@@ -22,8 +22,9 @@
 #include <time.h>
 #pragma endregion
 
-#define	hWndWidth 1280
-#define hWndHeight 720
+static UINT hWndWidth = 1280;
+static UINT hWndHeight = 720;
+static const double hWndAspectRatio = (hWndHeight / hWndWidth);
 #define degToRad(deg) (deg*(3.1415f/180.0f))
 
 class ToolBox

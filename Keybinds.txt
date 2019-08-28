@@ -1,11 +1,15 @@
+Theme: "OFFICE IN THE SKY"
+ NOTE TO CLARK: Run DX3D_1908.exe - shortcut because the exe is in project folders with DLLs
+
 ++CAMERA CONTROLS
 
-'o' or '0' = Reset Camera Position
-'l' = Toggle translating UVs
+'o' = LOOK AT LAMP  (Toggle)
+'Tab' = to switch to controlling other viewport camera
 TRANSLATION:
 --- 'WASD' ========= X,Z Locals
 --- Space/LShift === Up/Down
---- 'R'/'F' ======== ZoomIN/ZoomOut (FoV)
+--- "MouseWheel" === ZoomIN/ZoomOut (FoV)
+--- "F" ============ Reset FoV
 --- '-' ============ -FarPlane
 --- '=' ============ +FarPlane
 --- '[' ============ -NearPlane
