@@ -5,6 +5,7 @@ cbuffer constBuff : register(b0)
 {
     matrix vWorld;
     matrix vView;
+    matrix vCam;
     matrix vPersProj;
     matrix vOrthProj;
 	// lights and color floats
@@ -12,14 +13,14 @@ cbuffer constBuff : register(b0)
     float vDTime;
 }
 
-//struct GS_Input
-//{
-//    float4 pos : POSITION;
-//    float4 norm : NORMAL0;
-//    float2 uv : TEXCOORD0;
-//    float4 color : COLOR0;
-//    float4 wPos : PosInWorld;
-//};
+struct GS_Input
+{
+    float4 pos : SV_POSITION;
+    float4 norm : NORMAL0;
+    float2 uv : TEXCOORD0;
+    float4 color : COLOR0;
+    float4 wPos : PosInWorld;
+};
 
 struct GS_Output
 {
@@ -47,12 +48,14 @@ void main(
     verts[0].pos.xyz = input[0].xyz;
     verts[0].pos.x -= 0.5f;
 
+    verts[1].pos.xyz = input[1].xyz;
+    //verts[1].pos.x += 0.5f;
+
     verts[2].pos = verts[0].pos;
     verts[2].pos.x += 10.0f;
 
-    verts[1].pos.xyz = input[1].xyz;
 
-    float4x4 mVP = mul(vView, vPersProj);
+    //float4x4 mVP = mul(vView, vPersProj);
 	for (uint i = 0; i < 3; i++)
 	{
 		output.Append(verts[0]);

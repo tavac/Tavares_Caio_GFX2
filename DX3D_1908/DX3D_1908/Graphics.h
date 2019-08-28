@@ -120,6 +120,15 @@ private:
 	wrl::ComPtr<ID3D11DepthStencilView> gDsv = nullptr;
 	wrl::ComPtr<ID3D11Texture2D> gDepthStencil = nullptr;
 
+	// RTT
+	wrl::ComPtr<ID3D11RenderTargetView> goffRtv = nullptr; // color
+	wrl::ComPtr<ID3D11DepthStencilView> gOffDsv = nullptr; // depth
+	wrl::ComPtr<ID3D11Texture2D> gOffStencilTexture2D = nullptr; 
+	wrl::ComPtr<ID3D11Texture2D> gOffTexture2D = nullptr; // read
+	wrl::ComPtr<ID3D11ShaderResourceView> gOffSRV = nullptr; // read
+
+
+
 
 
 #pragma endregion
