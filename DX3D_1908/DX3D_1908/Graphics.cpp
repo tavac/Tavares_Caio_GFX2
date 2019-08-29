@@ -744,7 +744,7 @@ void Graphics::UpdateConstantBuffer(gMesh* mesh, XMMATRIX view, XMMATRIX cam, XM
 	// Vertex Shader
 	gCon->VSSetShader(mesh->gVertexShader.Get(), nullptr, 0u);
 	gCon->VSSetConstantBuffers(0u, (UINT)ARRAYSIZE(buffs), buffs);
-	// Geometry Shader
+	//// Geometry Shader
 	//gCon->GSSetShader(mesh->gGeometryShader.Get(), nullptr, 0u);
 	//gCon->GSSetConstantBuffers(0u, (UINT)ARRAYSIZE(buffs), buffs);
 	// Pixel Shader

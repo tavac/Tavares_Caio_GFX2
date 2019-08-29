@@ -40,6 +40,7 @@ int CALLBACK WinMain(
 	_In_ LPSTR lpCmdLine,
 	_In_ int nCmdShow)
 {
+
 	screenY = static_cast<float>(GetSystemMetrics(SM_CYSCREEN));
 	screenX = static_cast<float>(GetSystemMetrics(SM_CXSCREEN));
 	centerScreen = { (screenX * 0.5f) ,(screenY * 0.5f) };
